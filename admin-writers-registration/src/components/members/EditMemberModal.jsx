@@ -4,10 +4,7 @@ import CustomInput from '../custom/CustomInput';
 import { CustomSelect } from '../custom/CustomSelect';
 import CustomButton from '../custom/CustomButton';
 
-const memberTypeOptions = [
-  { value: "Life Time Member", label: "Life Time Member" },
-  { value: "Associate Member", label: "Associate Member" },
-];
+
 
 const statusOptions = [
   { value: "Active", label: "Active" },
@@ -16,7 +13,6 @@ const statusOptions = [
 
 export default function EditMemberModal({ isOpen, onClose, member, onSave, loading }) {
   const [name, setName] = useState('');
-  const [memberType, setMemberType] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('Active');
@@ -26,7 +22,6 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
   useEffect(() => {
     if (member) {
       setName(member.name || '');
-      setMemberType(member.memberType || 'Life Time Member');
       setMobileNumber(member.mobileNumber || '');
       setEmail(member.email || '');
       setStatus(member.status || 'Active');
@@ -78,7 +73,6 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
 
     onSave(member.membershipId, {
       name: name.trim(),
-      memberType,
       mobileNumber: mobileNumber.trim(),
       email: email.trim(),
       status
@@ -99,13 +93,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
           error={errors.name}
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <CustomSelect
-            label="Member Type *"
-            dropdownData={memberTypeOptions}
-            value={memberType}
-            onChange={(val) => setMemberType(val)}
-          />
+        <div>
           <CustomSelect
             label="Status *"
             dropdownData={statusOptions}

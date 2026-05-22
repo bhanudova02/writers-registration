@@ -4,6 +4,7 @@ import { FiAlertTriangle, FiCheck, FiDollarSign, FiClock, FiLayers } from "react
 import { collection, onSnapshot, doc, updateDoc, setDoc, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
 import CustomButton from "../../components/custom/CustomButton";
+import Modal from "../../components/common/Modal";
 import { toast } from "react-toastify";
 
 export default function RenewalsPage() {
@@ -12,6 +13,9 @@ export default function RenewalsPage() {
     const [members, setMembers] = useState([]);
     const [recentTransactions, setRecentTransactions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+
+    const [upgradeModalData, setUpgradeModalData] = useState({ isOpen: false, memberId: '', name: '' });
+    const [renewModalData, setRenewModalData] = useState({ isOpen: false, memberId: '', name: '' });
 
     // Fetch members real-time
     useEffect(() => {
@@ -98,9 +102,13 @@ export default function RenewalsPage() {
     const mtdCollected = recentTransactions.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
 
     // Record Offline Renewal
-    const handleRecordAndRenew = async (memberId, name) => {
-        const confirmRenewal = window.confirm(`Confirm offline renewal payment of ₹1,200 for ${name} (ID: ${memberId})?`);
-        if (!confirmRenewal) return;
+    const triggerRenewModal = (memberId, name) => {
+        setRenewModalData({ isOpen: true, memberId, name });
+    };
+
+    const confirmRecordAndRenew = async () => {
+        const { memberId, name } = renewModalData;
+        setRenewModalData({ isOpen: false, memberId: '', name: '' });
 
         try {
             const memberRef = doc(db, "members", memberId);
@@ -130,9 +138,13 @@ export default function RenewalsPage() {
     };
 
     // Upgrade to Life Time Member
-    const handleUpgradeToLife = async (memberId, name) => {
-        const confirmUpgrade = window.confirm(`Are you sure you want to upgrade ${name} (ID: ${memberId}) to a Life Time Member? Expiry limits will be permanently removed.`);
-        if (!confirmUpgrade) return;
+    const triggerUpgradeModal = (memberId, name) => {
+        setUpgradeModalData({ isOpen: true, memberId, name });
+    };
+
+    const confirmUpgradeToLife = async () => {
+        const { memberId, name } = upgradeModalData;
+        setUpgradeModalData({ isOpen: false, memberId: '', name: '' });
 
         try {
             const memberRef = doc(db, "members", memberId);
@@ -291,7 +303,7 @@ export default function RenewalsPage() {
                                                             bgColor="bg-green-600 hover:bg-green-700"
                                                             textColor="text-white"
                                                             className="py-1 px-2 text-xs font-semibold whitespace-nowrap"
-                                                            onClick={() => handleRecordAndRenew(renew.id, renew.name)}
+                                                            onClick={() => triggerRenewModal(renew.id, renew.name)}
                                                         />
                                                     )}
                                                     <CustomButton
@@ -300,7 +312,7 @@ export default function RenewalsPage() {
                                                         textColor="text-white"
                                                         className="py-1 px-2 text-xs font-semibold whitespace-nowrap"
                                                         icon={FaUserGraduate}
-                                                        onClick={() => handleUpgradeToLife(renew.id, renew.name)}
+                                                        onClick={() => triggerUpgradeModal(renew.id, renew.name)}
                                                     />
                                                 </div>
                                             </td>
@@ -372,6 +384,71 @@ export default function RenewalsPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Renew Modal */}
+            <Modal
+                isOpen={renewModalData.isOpen}
+                onClose={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
+                title="Confirm Offline Renewal"
+                widthClass="max-w-md"
+            >
+                <div className="text-zinc-700 text-sm">
+                    <p className="mb-4">
+                        Please confirm that you have received an offline renewal payment of <span className="font-bold text-green-600">₹1,200</span> for <strong>{renewModalData.name}</strong> (ID: {renewModalData.memberId}).
+                    </p>
+                    <p className="mb-6 text-xs text-zinc-500 italic">
+                        This action will extend the membership by exactly 1 year from today and record a transaction in the database.
+                    </p>
+                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+                        <CustomButton
+                            label="Cancel"
+                            onClick={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
+                            bgColor="bg-zinc-100 hover:bg-zinc-200"
+                            textColor="text-zinc-700"
+                            className="border border-zinc-300"
+                        />
+                        <CustomButton
+                            label="Confirm Renewal"
+                            onClick={confirmRecordAndRenew}
+                            bgColor="bg-green-600 hover:bg-green-700"
+                            textColor="text-white"
+                        />
+                    </div>
+                </div>
+            </Modal>
+
+            {/* Upgrade to Life Time Modal */}
+            <Modal
+                isOpen={upgradeModalData.isOpen}
+                onClose={() => setUpgradeModalData({ isOpen: false, memberId: '', name: '' })}
+                title="Confirm Life Time Upgrade"
+                widthClass="max-w-md"
+            >
+                <div className="text-zinc-700 text-sm">
+                    <p className="mb-4">
+                        Are you sure you want to upgrade <strong>{upgradeModalData.name}</strong> (ID: {upgradeModalData.memberId}) to a <strong>Life Time Member</strong>?
+                    </p>
+                    <p className="mb-6 text-xs text-amber-600 font-semibold bg-amber-50 border border-amber-200 p-3 rounded">
+                        <FiAlertTriangle className="inline text-amber-500 mr-1 -mt-0.5" />
+                        Warning: This action will permanently remove all expiration tracking and grace periods for this member.
+                    </p>
+                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+                        <CustomButton
+                            label="Cancel"
+                            onClick={() => setUpgradeModalData({ isOpen: false, memberId: '', name: '' })}
+                            bgColor="bg-zinc-100 hover:bg-zinc-200"
+                            textColor="text-zinc-700"
+                            className="border border-zinc-300"
+                        />
+                        <CustomButton
+                            label="Confirm Upgrade"
+                            onClick={confirmUpgradeToLife}
+                            bgColor="bg-zinc-800 hover:bg-zinc-900"
+                            textColor="text-white"
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
