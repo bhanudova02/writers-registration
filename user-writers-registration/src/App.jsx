@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { AlertTriangle, CheckCircle2, FileText, Lock, Phone, ReceiptText, UploadCloud, User, ShieldAlert, Check, RefreshCw, Key } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, FileText, Lock, Phone, ReceiptText, UploadCloud, User, ShieldAlert, Check, RefreshCw, Key, Loader2 } from 'lucide-react';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db, setupRecaptcha, sendOtp } from './firebase';
 
@@ -34,6 +34,8 @@ export default function App() {
   const [otpCode, setOtpCode] = useState('');
   const [confirmationResult, setConfirmationResult] = useState(null);
   const [otpError, setOtpError] = useState('');
+  const [resendTimer, setResendTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
 
   // Dashboard / Form States
   const [scriptTitle, setScriptTitle] = useState('');
@@ -210,6 +212,8 @@ export default function App() {
 
       setShowOtpScreen(true);
       setOtpError('');
+      setResendTimer(60);
+      setCanResend(false);
     } catch (error) {
       console.error("Firebase sendOtp failed:", error);
       
@@ -226,6 +230,28 @@ export default function App() {
     } finally {
       setIsValidating(false);
     }
+  };
+
+  // Resend OTP Timer & Handler
+  useEffect(() => {
+    let interval;
+    if (showOtpScreen && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [showOtpScreen, resendTimer]);
+
+  const handleResendOtp = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!canResend) return;
+    setResendTimer(60);
+    setCanResend(false);
+    setOtpError('');
+    await handleVerifyDetails(e || new Event('submit'));
   };
 
   // Verify OTP Code
@@ -531,6 +557,23 @@ export default function App() {
                   />
                 </div>
 
+                <div className="text-center pb-2">
+                  {canResend ? (
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      disabled={isValidating}
+                      className="text-xs font-bold text-amber-500 hover:text-amber-400 underline transition disabled:opacity-50"
+                    >
+                      Resend OTP
+                    </button>
+                  ) : (
+                    <p className="text-xs text-zinc-500 font-semibold">
+                      Resend OTP in <span className="text-amber-400">{resendTimer}s</span>
+                    </p>
+                  )}
+                </div>
+
                 <div className="flex gap-2.5">
                   <button
                     type="button"
@@ -541,8 +584,10 @@ export default function App() {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold py-2.5 px-4 rounded text-xs transition active:scale-[0.98] cursor-pointer"
+                    disabled={isValidating}
+                    className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold py-2.5 px-4 rounded text-xs transition active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                   >
+                    {isValidating && <Loader2 size={14} className="animate-spin" />}
                     Confirm Login
                   </button>
                 </div>
