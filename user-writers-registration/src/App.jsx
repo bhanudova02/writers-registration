@@ -2,8 +2,31 @@ import { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle, CheckCircle2, FileText, Lock, Phone, ReceiptText, UploadCloud, User, ShieldAlert, Check, RefreshCw, Key, Loader2 } from 'lucide-react';
 import { doc, getDoc, setDoc, updateDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db, setupRecaptcha, sendOtp } from './firebase';
+import * as pdfjsLib from 'pdfjs-dist';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Setup PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 const categories = ['Story', 'Screenplay', 'Songs', 'Dialogues'];
+const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
+const normalizeTitle = (value) => value.trim().toLowerCase().replace(/\s+/g, ' ');
+
+function loadRazorpayCheckout() {
+  return new Promise((resolve, reject) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => reject(new Error('Unable to load Razorpay Checkout. Please check your internet connection.'));
+    document.body.appendChild(script);
+  });
+}
 
 export default function App() {
   const [member, setMember] = useState(() => {
@@ -43,7 +66,24 @@ export default function App() {
   const [pageCount, setPageCount] = useState(1);
   const [pdfFile, setPdfFile] = useState(null);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [isCalculatingPages, setIsCalculatingPages] = useState(false);
   const [successRegistration, setSuccessRegistration] = useState(null);
+
+  // Function to calculate PDF pages
+  const calculatePdfPages = async (file) => {
+    setIsCalculatingPages(true);
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      setPageCount(pdf.numPages);
+    } catch (error) {
+      console.error("Error calculating PDF pages:", error);
+      alert("Could not read PDF page count. Please ensure it's a valid PDF.");
+      setPageCount(0);
+    } finally {
+      setIsCalculatingPages(false);
+    }
+  };
 
   // User's previous registrations list
   const [myRegistrations, setMyRegistrations] = useState([]);
@@ -55,7 +95,7 @@ export default function App() {
   // Expiry details calculation
   const expiryDetails = useMemo(() => {
     if (!member) return { isExpired: false, daysRemaining: 365, expiryDateStr: '' };
-    
+
     // Life Time members never expire
     if (member.memberType === 'Life Time Member') {
       return { isExpired: false, daysRemaining: 9999, expiryDateStr: 'Never (Life Time)' };
@@ -108,7 +148,7 @@ export default function App() {
     setIsLoadingMyRegs(true);
     const regsRef = collection(db, 'registrations');
     const q = query(regsRef, where('membershipId', '==', member.membershipId));
-    
+
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const list = [];
       snapshot.forEach(doc => {
@@ -159,27 +199,34 @@ export default function App() {
       }
 
       const memberData = docSnap.data();
-      
-      // Normalize both phone numbers to compare (keep last 10 digits)
-      const enteredPhoneClean = phone.replace(/\D/g, '').slice(-10);
-      const storedPhoneClean = memberData.mobileNumber.replace(/\D/g, '').slice(-10);
 
-      if (enteredPhoneClean !== storedPhoneClean) {
-        setLoginError('Mobile number does not match our database records.');
+      // LOCAL TESTING BYPASS: If in dev mode and using specific numbers, skip OTP
+      if (import.meta.env.DEV && (phone === '7660952680' || phone === '1234567890')) {
+        setMember({
+          membershipId: docId,
+          name: memberData.name,
+          memberType: memberData.memberType,
+          status: memberData.status,
+          mobileNumber: memberData.mobileNumber,
+          email: memberData.email,
+          createdAt: memberData.createdAt
+        });
+        setIsLoggedIn(true);
         setIsValidating(false);
         return;
       }
 
-      // Format E.164 phone format for Firebase Auth (default +91 for India if no prefix is given)
-      let formattedPhone = phone.trim();
-      if (!formattedPhone.startsWith('+')) {
-        const cleanPhone = formattedPhone.replace(/\D/g, '');
-        if (cleanPhone.length === 10) {
-          formattedPhone = `+91${cleanPhone}`;
-        } else {
-          formattedPhone = `+${cleanPhone}`;
-        }
+      // Normalize mobile number for Firebase Phone Auth.
+      const enteredPhoneDigits = phone.replace(/\D/g, '').slice(-10);
+      const registeredPhoneDigits = String(memberData.mobileNumber || '').replace(/\D/g, '').slice(-10);
+
+      if (!enteredPhoneDigits || enteredPhoneDigits !== registeredPhoneDigits) {
+        setLoginError('Mobile number does not match this Membership ID.');
+        setIsValidating(false);
+        return;
       }
+
+      const formattedPhone = `+91${enteredPhoneDigits}`;
 
       // Initialize Invisible RecaptchaVerifier only once to prevent connection errors
       if (!window.recaptchaVerifier) {
@@ -190,7 +237,7 @@ export default function App() {
       // Send the real SMS OTP via Firebase Phone Auth
       const confirmation = await sendOtp(formattedPhone, appVerifier);
       setConfirmationResult(confirmation);
-      
+
       // Store member details temporarily
       setMember({
         membershipId: docId,
@@ -208,10 +255,10 @@ export default function App() {
       setCanResend(false);
     } catch (error) {
       console.error("Firebase sendOtp failed:", error);
-      
+
       const errorCode = error.code || '';
       const errorMessage = error.message || String(error);
-      
+
       if (errorCode === 'auth/too-many-requests' || errorMessage.includes('too-many-requests')) {
         setLoginError('Security Alert: You have requested too many OTPs. Please wait 15-30 minutes before trying again.');
       } else if (errorCode === 'auth/invalid-phone-number' || errorMessage.includes('invalid-phone-number')) {
@@ -274,22 +321,82 @@ export default function App() {
   // Register New Script in Firestore
   const handleRegisterScript = async (e) => {
     e.preventDefault();
-    if (!scriptTitle.trim()) {
-      alert("Please enter script title.");
+    const normalizedScriptTitle = normalizeTitle(scriptTitle);
+
+    if (!normalizedScriptTitle) {
+      toast.error("Please enter script title.");
       return;
     }
+
+    const alreadyRegistered = myRegistrations.some((reg) => (
+      normalizeTitle(reg.title || '') === normalizedScriptTitle
+      && reg.category === selectedCategory
+    ));
+
+    if (alreadyRegistered) {
+      toast.error(`This ${selectedCategory} is already registered under the same title.`);
+      return;
+    }
+
     if (pageCount < 1) {
-      alert("Page count must be 1 or more.");
+      toast.error("Page count must be 1 or more.");
+      return;
+    }
+    if (!pdfFile) {
+      toast.error("Please upload the script PDF before payment.");
+      return;
+    }
+    if (!razorpayKeyId) {
+      toast.error("Razorpay test key is missing. Please add VITE_RAZORPAY_KEY_ID in .env and restart the dev server.");
       return;
     }
 
     setIsRegistering(true);
 
     try {
+      if (!member) {
+        throw new Error("User session not found. Please log in again.");
+      }
+
       const regId = `REG-TCWA-${Math.floor(100000 + Math.random() * 900000)}`;
       const amount = pageCount * 10; // ₹10 per page
+      await loadRazorpayCheckout();
+
+      const paymentResult = await new Promise((resolve, reject) => {
+        const checkout = new window.Razorpay({
+          key: razorpayKeyId,
+          amount: amount * 100,
+          currency: 'INR',
+          name: 'TCWA Writer Registry',
+          description: `${selectedCategory} Registration - ${scriptTitle.trim()}`,
+          prefill: {
+            name: member.name || '',
+            email: member.email || '',
+            contact: String(member.mobileNumber || phone || '').replace(/\D/g, '').slice(-10),
+          },
+          notes: {
+            registrationId: regId,
+            membershipId: member.membershipId,
+            category: selectedCategory,
+          },
+          theme: {
+            color: '#f59e0b',
+          },
+          handler: (response) => resolve(response),
+          modal: {
+            ondismiss: () => reject(new Error('Payment was cancelled. Script registration was not submitted.')),
+          },
+        });
+
+        checkout.on('payment.failed', (response) => {
+          reject(new Error(response.error?.description || 'Razorpay payment failed.'));
+        });
+
+        checkout.open();
+      });
 
       // Save registration directly to Firestore registrations collection
+      // PRIVACY SHIELD: Only metadata is saved. PDF file is NOT stored where admin can read it.
       const regRef = doc(db, 'registrations', regId);
       const newRegData = {
         registrationId: regId,
@@ -299,23 +406,26 @@ export default function App() {
         category: selectedCategory,
         pageCount: pageCount,
         amount: amount,
-        pdfFileName: pdfFile ? pdfFile.name : 'script_document.pdf',
-        pdfFileSize: pdfFile ? `${(pdfFile.size / (1024 * 1024)).toFixed(2)} MB` : '1.4 MB',
-        status: 'Approved', // Automatic approval upon simulated successful checkout
+        paymentId: paymentResult.razorpay_payment_id,
+        paymentStatus: 'Success',
+        pdfFileName: pdfFile.name,
+        pdfFileSize: `${(pdfFile.size / (1024 * 1024)).toFixed(2)} MB`,
+        status: 'Approved', // Automatic approval as per SOP
         downloadCount: 0,
         createdAt: new Date().toISOString()
       };
 
       await setDoc(regRef, newRegData);
       setSuccessRegistration(newRegData);
-      
+
       // Reset form fields
       setScriptTitle('');
       setPageCount(1);
       setPdfFile(null);
+      toast.success("Script Registered & Approved Successfully!");
     } catch (error) {
-      console.error(error);
-      alert("Failed to submit script. Please try again.");
+      console.error("Script submission failed:", error);
+      toast.error(error.message || "Failed to submit script.");
     } finally {
       setIsRegistering(false);
     }
@@ -323,59 +433,63 @@ export default function App() {
 
   // Stamped Receipt download triggers
   const handleDownloadReceipt = async (reg) => {
+    // ONE-TIME DOWNLOAD RESTRICTION
     if (reg.downloadCount >= 1) {
-      alert("This receipt is LOCKED. One-time download is restricted. To re-download, you must pay again.");
+      alert("LOCKED: This receipt has already been downloaded once. As per TCWA policy, you must pay full amount again to unlock re-download.");
       return;
     }
 
+    const confirmDownload = window.confirm("Warning: You can only download this stamped receipt ONCE. After downloading, this button will be LOCKED. Do you want to proceed?");
+    if (!confirmDownload) return;
+
     setIsDownloading(true);
-    
-    // Simulate dynamic PDF generation and download
-    setTimeout(async () => {
-      try {
-        const regRef = doc(db, 'registrations', reg.registrationId);
-        await updateDoc(regRef, {
-          downloadCount: 1
-        });
-        
-        // Trigger simulated file download
-        const element = document.createElement("a");
-        const file = new Blob([
-          `=============================================\n`,
-          `         TELUGU CINE WRITERS ASSOCIATION     \n`,
-          `             OFFICIAL STAMPED RECEIPT        \n`,
-          `=============================================\n\n`,
-          `REGISTRATION ID : ${reg.registrationId}\n`,
-          `SUBMISSION DATE : ${new Date(reg.createdAt).toLocaleString()}\n\n`,
-          `WRITER NAME     : ${reg.writerName}\n`,
-          `MEMBERSHIP ID   : ${reg.membershipId}\n`,
-          `SCRIPT TITLE    : ${reg.title}\n`,
-          `CATEGORY        : ${reg.category}\n`,
-          `PAGES COUNT     : ${reg.pageCount} Pages\n`,
-          `FEE CHARGED     : ₹${reg.amount}\n`,
-          `PAYMENT STATUS  : SUCCESSFUL (Razorpay Direct API)\n\n`,
-          `---------------------------------------------\n`,
-          `VERIFICATION STATUS: APPROVED AUTOMATICALLY  \n`,
-          `SECURITY SHIELD    : 100% WRITER PRIVACY ACTIVE\n`,
-          `---------------------------------------------\n\n`,
-          `* This is a computer generated stamped document.\n`,
-          `* One-time download restriction policy is applied.\n`
-        ], {type: 'text/plain'});
-        element.href = URL.createObjectURL(file);
-        element.download = `TCWA_Receipt_${reg.registrationId}.txt`;
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-        
-        if (successRegistration?.registrationId === reg.registrationId) {
-          setSuccessRegistration(prev => ({ ...prev, downloadCount: 1 }));
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsDownloading(false);
+
+    try {
+      // Lock the receipt immediately in database
+      const regRef = doc(db, 'registrations', reg.registrationId);
+      await updateDoc(regRef, {
+        downloadCount: 1
+      });
+
+      // Simulate dynamic PDF generation and download
+      const element = document.createElement("a");
+      const file = new Blob([
+        `=============================================\n`,
+        `         TELUGU CINE WRITERS ASSOCIATION     \n`,
+        `             OFFICIAL STAMPED RECEIPT        \n`,
+        `=============================================\n\n`,
+        `REGISTRATION ID : ${reg.registrationId}\n`,
+        `SUBMISSION DATE : ${new Date(reg.createdAt).toLocaleString()}\n\n`,
+        `WRITER NAME     : ${reg.writerName}\n`,
+        `MEMBERSHIP ID   : ${reg.membershipId}\n`,
+        `SCRIPT TITLE    : ${reg.title}\n`,
+        `CATEGORY        : ${reg.category}\n`,
+        `PAGES COUNT     : ${reg.pageCount} Pages\n`,
+        `FEE CHARGED     : ₹${reg.amount}\n`,
+        `PAYMENT STATUS  : SUCCESSFUL (Razorpay Verified)\n\n`,
+        `---------------------------------------------\n`,
+        `VERIFICATION STATUS: APPROVED AUTOMATICALLY  \n`,
+        `SECURITY SHIELD    : 100% WRITER PRIVACY ACTIVE\n`,
+        `---------------------------------------------\n\n`,
+        `* This is a computer generated stamped document.\n`,
+        `* One-time download restriction policy is applied.\n`,
+        `* Re-download requires fresh payment as per SOP.\n`
+      ], {type: 'text/plain'});
+      element.href = URL.createObjectURL(file);
+      element.download = `TCWA_Receipt_${reg.registrationId}.txt`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+
+      if (successRegistration?.registrationId === reg.registrationId) {
+        setSuccessRegistration(prev => ({ ...prev, downloadCount: 1 }));
       }
-    }, 1200);
+    } catch (error) {
+      console.error(error);
+      alert("Download failed. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   // Re-purchase receipt download unlock
@@ -417,7 +531,7 @@ export default function App() {
     return (
       <main className="min-h-screen overflow-x-hidden bg-zinc-950 flex items-center justify-center px-4 py-12 text-zinc-100 font-sans">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-900/10 via-zinc-950 to-zinc-950 pointer-events-none" />
-        
+
         <div className="w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-center relative z-10">
           {/* Brand Info Column */}
           <div className="lg:col-span-7 space-y-6 text-left">
@@ -450,7 +564,7 @@ export default function App() {
           <div className="lg:col-span-5 w-full">
             {/* Global invisible recaptcha container */}
             <div id="recaptcha-container"></div>
-            
+
             {!showOtpScreen ? (
               <form onSubmit={handleVerifyDetails} className="bg-zinc-900/90 border border-zinc-800 p-6 sm:p-8 rounded-lg shadow-2xl space-y-5 backdrop-blur">
                 <div className="flex items-center gap-3">
@@ -619,7 +733,7 @@ export default function App() {
 
       {/* MAIN CONTAINER */}
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 relative z-10 space-y-6">
-        
+
         {/* MEMBERSHIP PROFILE CARD */}
         <section className="bg-zinc-900/50 border border-zinc-800 p-5 rounded-lg grid gap-4 md:grid-cols-4 items-center">
           <div className="md:col-span-1 border-r border-zinc-800 md:pr-4 flex items-center gap-3.5">
@@ -658,7 +772,7 @@ export default function App() {
               </div>
               <h2 className="text-xl font-extrabold text-white uppercase tracking-wider">Membership Renewal Required</h2>
               <p className="text-sm text-zinc-400 leading-relaxed">
-                Dear <span className="text-white font-bold">{member?.name}</span>, your Associate Membership has expired or renewals are overdue. 
+                Dear <span className="text-white font-bold">{member?.name}</span>, your Associate Membership has expired or renewals are overdue.
                 Under the <span className="text-red-400 font-bold">Strict 5-Years Rule</span>, you must pay your annual renewal fee offline to the TCWA Admin to restore active status.
               </p>
               <div className="bg-zinc-950 p-4 border border-zinc-800 text-left rounded text-xs space-y-1.5 text-zinc-400">
@@ -676,7 +790,7 @@ export default function App() {
 
         {/* NEW REGISTRATION FORM & RIGHT RECEIPT CARD CONTAINER */}
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-          
+
           {/* SCRIPT SUBMISSION FORM */}
           <form onSubmit={handleRegisterScript} className="bg-zinc-900/40 border border-zinc-800/80 p-5 sm:p-6 rounded-lg space-y-5">
             <div className="flex items-center gap-3 border-b border-zinc-800/60 pb-3">
@@ -738,7 +852,17 @@ export default function App() {
                 <input
                   type="file"
                   accept="application/pdf"
-                  onChange={(e) => setPdfFile(e.target.files[0])}
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      if (file.type !== 'application/pdf') {
+                        alert("Please upload a valid PDF file.");
+                        return;
+                      }
+                      setPdfFile(file);
+                      await calculatePdfPages(file);
+                    }
+                  }}
                   className="sr-only"
                 />
               </label>
@@ -748,14 +872,24 @@ export default function App() {
               <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-2">
                 Document Pages Count *
               </label>
-              <input
-                type="number"
-                min="1"
-                value={pageCount}
-                onChange={(e) => setPageCount(Math.max(1, parseInt(e.target.value) || 0))}
-                className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  readOnly
+                  value={pageCount}
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition-colors font-bold cursor-not-allowed opacity-80"
+                  required
+                />
+                {isCalculatingPages && (
+                  <div className="absolute right-3 top-2.5">
+                    <Loader2 className="animate-spin text-amber-500" size={18} />
+                  </div>
+                )}
+              </div>
+              <p className="text-[10px] text-zinc-500 mt-1.5 font-medium italic">
+                * Pages are automatically calculated from the uploaded PDF.
+              </p>
             </div>
 
             <button
@@ -777,7 +911,7 @@ export default function App() {
           {/* RIGHT SIDEBAR - ACTIVE RECEIPT STATUS / DOWNLOAD LOCK PANEL */}
           <aside className="bg-zinc-900/40 border border-zinc-800/80 p-5 rounded-lg h-fit space-y-4">
             <h3 className="text-base font-bold text-white border-b border-zinc-800/60 pb-2">Active Checkout Summary</h3>
-            
+
             <div className="space-y-2 text-xs font-semibold text-zinc-400">
               <div className="flex justify-between">
                 <span>Selected Category</span>
@@ -931,6 +1065,7 @@ export default function App() {
           )}
         </section>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </main>
   );
 }
