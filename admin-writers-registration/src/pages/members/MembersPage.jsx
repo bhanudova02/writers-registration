@@ -216,7 +216,7 @@ export default function MembersPage() {
         <div className="pb-4">
             <div className="flex items-center gap-2 ms-1 mb-4">
                 <FaUsers className="text-xl md:text-2xl text-zinc-700 -mt-0.5" />
-                <h2 className="text-xl font-bold">TCWA Members Management</h2>
+                <h2 className="text-lg sm:text-xl font-bold">TCWA Members Management</h2>
             </div>
 
             <div className="w-full mt-3">

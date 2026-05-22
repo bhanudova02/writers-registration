@@ -218,14 +218,14 @@ export default function RenewalsPage() {
     const graceAlerts = members.filter(m => m.status === "Grace Period");
 
     return (
-        <div className="p-6">
-            <div className="flex items-center gap-2 mb-6">
+        <div className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
                 <FaSyncAlt className="text-xl md:text-2xl text-zinc-700 -mt-0.5" />
-                <h1 className="text-2xl font-bold text-gray-800">Membership Renewals</h1>
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-800">Membership Renewals</h1>
             </div>
 
             {/* Metrics cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div className="bg-white p-3 md:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
                         <h3 className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">Associate Members</h3>

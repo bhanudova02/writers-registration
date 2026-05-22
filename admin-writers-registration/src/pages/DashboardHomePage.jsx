@@ -100,9 +100,9 @@ export default function DashboardHomePage() {
     }, []);
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
             <div>
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FiActivity className="text-zinc-600 animate-pulse" />
                     <span>Dashboard Overview</span>
                 </h1>
@@ -110,16 +110,16 @@ export default function DashboardHomePage() {
             </div>
 
             {/* Metrics cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
                 {/* Total Members */}
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-zinc-200 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Total Members</h3>
-                            <p className="text-3xl font-black text-zinc-800 mt-2">{stats.totalMembers}</p>
+                            <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Members</h3>
+                            <p className="text-xl sm:text-3xl font-black text-zinc-800 mt-1 sm:mt-2">{stats.totalMembers}</p>
                         </div>
-                        <div className="p-4 bg-zinc-50 rounded-lg border border-zinc-100 group-hover:bg-zinc-100 transition-colors">
-                            <FaUsers className="text-zinc-500 text-xl" />
+                        <div className="p-2 sm:p-4 bg-zinc-50 rounded-lg border border-zinc-100 group-hover:bg-zinc-100 transition-colors">
+                            <FaUsers className="text-zinc-500 text-base sm:text-xl" />
                         </div>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-zinc-400" />
@@ -129,11 +129,11 @@ export default function DashboardHomePage() {
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-zinc-200 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Registered Scripts</h3>
-                            <p className="text-3xl font-black text-amber-600 mt-2">{stats.totalScripts}</p>
+                            <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Registered Scripts</h3>
+                            <p className="text-xl sm:text-3xl font-black text-amber-600 mt-1 sm:mt-2">{stats.totalScripts}</p>
                         </div>
-                        <div className="p-4 bg-amber-50 rounded-lg border border-amber-100 group-hover:bg-amber-100 transition-colors">
-                            <FaFileAlt className="text-amber-500 text-xl" />
+                        <div className="p-2 sm:p-4 bg-amber-50 rounded-lg border border-amber-100 group-hover:bg-amber-100 transition-colors">
+                            <FaFileAlt className="text-amber-500 text-base sm:text-xl" />
                         </div>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-amber-400" />
@@ -143,11 +143,11 @@ export default function DashboardHomePage() {
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-zinc-200 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Pending Renewals</h3>
-                            <p className="text-3xl font-black text-red-600 mt-2">{stats.pendingRenewals}</p>
+                            <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pending Renewals</h3>
+                            <p className="text-xl sm:text-3xl font-black text-red-600 mt-1 sm:mt-2">{stats.pendingRenewals}</p>
                         </div>
-                        <div className="p-4 bg-red-50 rounded-lg border border-red-100 group-hover:bg-red-100 transition-colors">
-                            <FaSyncAlt className="text-red-500 text-xl" />
+                        <div className="p-2 sm:p-4 bg-red-50 rounded-lg border border-red-100 group-hover:bg-red-100 transition-colors">
+                            <FaSyncAlt className="text-red-500 text-base sm:text-xl" />
                         </div>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-400" />
@@ -157,11 +157,11 @@ export default function DashboardHomePage() {
                 <div className="bg-white p-6 rounded-lg shadow-sm border border-zinc-200 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Total Revenue</h3>
-                            <p className="text-3xl font-black text-green-600 mt-2">₹{stats.totalRevenue.toLocaleString()}</p>
+                            <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Revenue</h3>
+                            <p className="text-xl sm:text-3xl font-black text-green-600 mt-1 sm:mt-2">₹{stats.totalRevenue.toLocaleString()}</p>
                         </div>
-                        <div className="p-4 bg-green-50 rounded-lg border border-green-100 group-hover:bg-green-100 transition-colors">
-                            <FaRupeeSign className="text-green-500 text-xl" />
+                        <div className="p-2 sm:p-4 bg-green-50 rounded-lg border border-green-100 group-hover:bg-green-100 transition-colors">
+                            <FaRupeeSign className="text-green-500 text-base sm:text-xl" />
                         </div>
                     </div>
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-400" />

@@ -104,50 +104,50 @@ export default function NotificationsPage() {
     };
 
     return (
-        <div className="p-6">
-            <div className="flex items-center gap-2 mb-6">
+        <div className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
                 <FaBell className="text-xl md:text-2xl text-zinc-700 -mt-0.5" />
-                <h1 className="text-2xl font-bold text-gray-800">Broadcast SMS & Notifications</h1>
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-800">Broadcast SMS & Notifications</h1>
             </div>
 
             {/* Metrics cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">SMS Balance</h3>
-                        <p className="text-2xl font-bold text-green-600 mt-1">45,820</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">SMS Balance</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">45,820</p>
                     </div>
-                    <div className="p-3 bg-green-50 rounded border border-green-100">
-                        <FiMessageSquare className="text-green-500 text-lg" />
+                    <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
+                        <FiMessageSquare className="text-green-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Campaigns Sent</h3>
-                        <p className="text-2xl font-bold text-zinc-800 mt-1">{broadcasts.length}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Campaigns Sent</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-zinc-800 mt-1">{broadcasts.length}</p>
                     </div>
-                    <div className="p-3 bg-zinc-50 rounded border border-zinc-100">
-                        <FaPaperPlane className="text-zinc-500 text-lg" />
+                    <div className="p-2 sm:p-3 bg-zinc-50 rounded border border-zinc-100">
+                        <FaPaperPlane className="text-zinc-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Total Sent SMS</h3>
-                        <p className="text-2xl font-bold text-blue-600 mt-1">
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Sent SMS</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">
                             {broadcasts.reduce((acc, c) => acc + (c.recipientsCount || 0), 0).toLocaleString()}
                         </p>
                     </div>
-                    <div className="p-3 bg-blue-50 rounded border border-blue-100">
-                        <FiLayers className="text-blue-500 text-lg" />
+                    <div className="p-2 sm:p-3 bg-blue-50 rounded border border-blue-100">
+                        <FiLayers className="text-blue-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Failed SMS</h3>
-                        <p className="text-2xl font-bold text-red-600 mt-1">0</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Failed SMS</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">0</p>
                     </div>
-                    <div className="p-3 bg-red-50 rounded border border-red-100">
-                        <FaBell className="text-red-500 text-lg" />
+                    <div className="p-2 sm:p-3 bg-red-50 rounded border border-red-100">
+                        <FaBell className="text-red-500 text-base sm:text-lg" />
                     </div>
                 </div>
             </div>

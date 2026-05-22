@@ -72,48 +72,48 @@ export default function RegistrationsPage() {
     };
 
     return (
-        <div className="p-6">
-            <div className="flex items-center gap-2 mb-6">
+        <div className="p-3 sm:p-6">
+            <div className="flex items-center gap-2 mb-4 sm:mb-6">
                 <FaFileSignature className="text-xl md:text-2xl text-zinc-700 -mt-0.5" />
-                <h1 className="text-2xl font-bold text-gray-800">Movie Script Registrations</h1>
+                <h1 className="text-lg sm:text-2xl font-bold text-gray-800">Movie Script Registrations</h1>
             </div>
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Total Scripts</h3>
-                        <p className="text-2xl font-bold text-zinc-800 mt-1">{totalScripts}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Scripts</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-zinc-800 mt-1">{totalScripts}</p>
                     </div>
-                    <div className="p-3 bg-zinc-50 rounded border border-zinc-100">
-                        <FaFileSignature className="text-zinc-500 text-lg" />
+                    <div className="p-2 sm:p-3 bg-zinc-50 rounded border border-zinc-100">
+                        <FaFileSignature className="text-zinc-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Pending Approval</h3>
-                        <p className="text-2xl font-bold text-amber-600 mt-1">{pendingCount}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pending Approval</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">{pendingCount}</p>
                     </div>
-                    <div className="p-3 bg-amber-50 rounded border border-amber-100">
-                        <FiTrendingUp className="text-amber-500 text-lg" />
+                    <div className="p-2 sm:p-3 bg-amber-50 rounded border border-amber-100">
+                        <FiTrendingUp className="text-amber-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Approved</h3>
-                        <p className="text-2xl font-bold text-green-600 mt-1">{approvedCount}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Approved</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">{approvedCount}</p>
                     </div>
-                    <div className="p-3 bg-green-50 rounded border border-green-100">
-                        <FiCheckCircle className="text-green-500 text-lg" />
+                    <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
+                        <FiCheckCircle className="text-green-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-xs font-bold uppercase tracking-wider">Rejected</h3>
-                        <p className="text-2xl font-bold text-red-600 mt-1">{rejectedCount}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Rejected</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">{rejectedCount}</p>
                     </div>
-                    <div className="p-3 bg-red-50 rounded border border-red-100">
-                        <FiXCircle className="text-red-500 text-lg" />
+                    <div className="p-2 sm:p-3 bg-red-50 rounded border border-red-100">
+                        <FiXCircle className="text-red-500 text-base sm:text-lg" />
                     </div>
                 </div>
             </div>

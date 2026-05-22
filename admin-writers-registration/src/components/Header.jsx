@@ -29,8 +29,12 @@ export function Header({ user, mobileNavOpen, setMobileNavOpen }) {
                 </button>
 
                 {/* Logo */}
-                <div className='flex items-center font-semibold'>
-                    <img src='/Logo.png' alt="TCWA logo" className='w-4' />
+                <div className='flex items-center gap-3 font-semibold'>
+                    <img src='/Logo.png' alt="TCWA logo" className='h-6 md:h-8 object-contain' />
+                    <div className='hidden md:flex flex-col justify-center'>
+                        <span className="text-sm font-bold text-white leading-tight">Telugu Cine Writers</span>
+                        <span className="text-[10px] text-zinc-400 font-medium leading-none mt-0.5">Association</span>
+                    </div>
                 </div>
             </div>
 
