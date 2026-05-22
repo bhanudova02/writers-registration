@@ -68,6 +68,7 @@ export default function App() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [isCalculatingPages, setIsCalculatingPages] = useState(false);
   const [successRegistration, setSuccessRegistration] = useState(null);
+  const [receiptModal, setReceiptModal] = useState({ type: null, registration: null });
 
   // Function to calculate PDF pages
   const calculatePdfPages = async (file) => {
@@ -78,7 +79,7 @@ export default function App() {
       setPageCount(pdf.numPages);
     } catch (error) {
       console.error("Error calculating PDF pages:", error);
-      alert("Could not read PDF page count. Please ensure it's a valid PDF.");
+      toast.error("Could not read PDF page count. Please ensure it is a valid PDF.");
       setPageCount(0);
     } finally {
       setIsCalculatingPages(false);
@@ -199,22 +200,6 @@ export default function App() {
       }
 
       const memberData = docSnap.data();
-
-      // LOCAL TESTING BYPASS: If in dev mode and using specific numbers, skip OTP
-      if (import.meta.env.DEV && (phone === '7660952680' || phone === '1234567890')) {
-        setMember({
-          membershipId: docId,
-          name: memberData.name,
-          memberType: memberData.memberType,
-          status: memberData.status,
-          mobileNumber: memberData.mobileNumber,
-          email: memberData.email,
-          createdAt: memberData.createdAt
-        });
-        setIsLoggedIn(true);
-        setIsValidating(false);
-        return;
-      }
 
       // Normalize mobile number for Firebase Phone Auth.
       const enteredPhoneDigits = phone.replace(/\D/g, '').slice(-10);
@@ -347,7 +332,7 @@ export default function App() {
       return;
     }
     if (!razorpayKeyId) {
-      toast.error("Razorpay test key is missing. Please add VITE_RAZORPAY_KEY_ID in .env and restart the dev server.");
+      toast.error("Razorpay key is missing. Please configure VITE_RAZORPAY_KEY_ID and redeploy.");
       return;
     }
 
@@ -431,17 +416,29 @@ export default function App() {
     }
   };
 
-  // Stamped Receipt download triggers
-  const handleDownloadReceipt = async (reg) => {
-    // ONE-TIME DOWNLOAD RESTRICTION
+  const closeReceiptModal = () => {
+    if (!isDownloading) {
+      setReceiptModal({ type: null, registration: null });
+    }
+  };
+
+  const requestReceiptDownload = (reg) => {
     if (reg.downloadCount >= 1) {
-      alert("LOCKED: This receipt has already been downloaded once. As per TCWA policy, you must pay full amount again to unlock re-download.");
+      toast.error("This receipt is locked. Re-download requires Razorpay payment.");
+      setReceiptModal({ type: 'unlock', registration: reg });
       return;
     }
 
-    const confirmDownload = window.confirm("Warning: You can only download this stamped receipt ONCE. After downloading, this button will be LOCKED. Do you want to proceed?");
-    if (!confirmDownload) return;
+    setReceiptModal({ type: 'download', registration: reg });
+  };
 
+  const requestUnlockDownload = (reg) => {
+    setReceiptModal({ type: 'unlock', registration: reg });
+  };
+
+  // Stamped Receipt download triggers
+  const handleDownloadReceipt = async (reg) => {
+    setReceiptModal({ type: null, registration: null });
     setIsDownloading(true);
 
     try {
@@ -451,7 +448,7 @@ export default function App() {
         downloadCount: 1
       });
 
-      // Simulate dynamic PDF generation and download
+      // Generate the stamped receipt file for download.
       const element = document.createElement("a");
       const file = new Blob([
         `=============================================\n`,
@@ -486,7 +483,7 @@ export default function App() {
       }
     } catch (error) {
       console.error(error);
-      alert("Download failed. Please try again.");
+      toast.error("Download failed. Please try again.");
     } finally {
       setIsDownloading(false);
     }
@@ -494,27 +491,66 @@ export default function App() {
 
   // Re-purchase receipt download unlock
   const handleUnlockDownload = async (reg) => {
-    const confirmUnlock = window.confirm(`Re-download payment is required for receipt ${reg.registrationId}. Amount: ₹${reg.amount}. Would you like to proceed to payment?`);
-    if (!confirmUnlock) return;
+    setReceiptModal({ type: null, registration: null });
+
+    if (!razorpayKeyId) {
+      toast.error("Razorpay key is missing. Please configure VITE_RAZORPAY_KEY_ID and redeploy.");
+      return;
+    }
 
     setIsDownloading(true);
-    // Simulate Razorpay transaction success
-    setTimeout(async () => {
-      try {
-        const regRef = doc(db, 'registrations', reg.registrationId);
-        await updateDoc(regRef, {
-          downloadCount: 0
+    try {
+      await loadRazorpayCheckout();
+      const paymentResult = await new Promise((resolve, reject) => {
+        const checkout = new window.Razorpay({
+          key: razorpayKeyId,
+          amount: reg.amount * 100,
+          currency: 'INR',
+          name: 'TCWA Writer Registry',
+          description: `Receipt Re-download - ${reg.registrationId}`,
+          prefill: {
+            name: reg.writerName || member?.name || '',
+            email: member?.email || '',
+            contact: String(member?.mobileNumber || phone || '').replace(/\D/g, '').slice(-10),
+          },
+          notes: {
+            registrationId: reg.registrationId,
+            membershipId: reg.membershipId,
+            purpose: 'receipt_redownload',
+          },
+          theme: {
+            color: '#f59e0b',
+          },
+          handler: (response) => resolve(response),
+          modal: {
+            ondismiss: () => reject(new Error('Payment was cancelled. Receipt re-download was not unlocked.')),
+          },
         });
-        alert(`Payment successful! Receipt ${reg.registrationId} has been UNLOCKED.`);
-        if (successRegistration?.registrationId === reg.registrationId) {
-          setSuccessRegistration(prev => ({ ...prev, downloadCount: 0 }));
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setIsDownloading(false);
+
+        checkout.on('payment.failed', (response) => {
+          reject(new Error(response.error?.description || 'Razorpay payment failed.'));
+        });
+
+        checkout.open();
+      });
+
+      const regRef = doc(db, 'registrations', reg.registrationId);
+      await updateDoc(regRef, {
+        downloadCount: 0,
+        redownloadPaymentId: paymentResult.razorpay_payment_id,
+        redownloadPaymentStatus: 'Success',
+        redownloadUnlockedAt: new Date().toISOString(),
+      });
+      toast.success(`Payment successful. Receipt ${reg.registrationId} has been unlocked.`);
+      if (successRegistration?.registrationId === reg.registrationId) {
+        setSuccessRegistration(prev => ({ ...prev, downloadCount: 0 }));
       }
-    }, 1500);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Failed to unlock receipt download.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleLogout = () => {
@@ -856,7 +892,7 @@ export default function App() {
                     const file = e.target.files[0];
                     if (file) {
                       if (file.type !== 'application/pdf') {
-                        alert("Please upload a valid PDF file.");
+                        toast.error("Please upload a valid PDF file.");
                         return;
                       }
                       setPdfFile(file);
@@ -952,7 +988,7 @@ export default function App() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleUnlockDownload(successRegistration)}
+                      onClick={() => requestUnlockDownload(successRegistration)}
                       className="w-full text-center hover:underline text-[10px] text-amber-500 font-bold block cursor-pointer"
                     >
                       Unlock for Re-download (Pay ₹{successRegistration.amount})
@@ -961,7 +997,7 @@ export default function App() {
                 ) : (
                   <button
                     type="button"
-                    onClick={() => handleDownloadReceipt(successRegistration)}
+                    onClick={() => requestReceiptDownload(successRegistration)}
                     disabled={isDownloading}
                     className="w-full flex items-center justify-center gap-1.5 rounded bg-green-600 hover:bg-green-700 text-white px-3 py-2 text-xs font-bold active:scale-[0.98] transition cursor-pointer"
                   >
@@ -1040,7 +1076,7 @@ export default function App() {
                             </span>
                             <button
                               type="button"
-                              onClick={() => handleUnlockDownload(reg)}
+                              onClick={() => requestUnlockDownload(reg)}
                               className="text-[10px] text-amber-500 hover:underline font-extrabold cursor-pointer"
                             >
                               Unlock (₹{reg.amount})
@@ -1049,7 +1085,7 @@ export default function App() {
                         ) : (
                           <button
                             type="button"
-                            onClick={() => handleDownloadReceipt(reg)}
+                            onClick={() => requestReceiptDownload(reg)}
                             disabled={isDownloading}
                             className="inline-flex items-center gap-1 text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded border border-green-500/20 hover:bg-green-500/20 active:scale-[0.98] transition cursor-pointer"
                           >
@@ -1065,6 +1101,63 @@ export default function App() {
           )}
         </section>
       </div>
+
+      {receiptModal.type && receiptModal.registration && (
+        <div className="fixed inset-0 z-[60] bg-black/80 px-4 py-8 flex items-center justify-center">
+          <div className="w-full max-w-md rounded-lg border border-zinc-800 bg-zinc-950 shadow-2xl">
+            <div className="flex items-start justify-between border-b border-zinc-800 px-5 py-4">
+              <div>
+                <h3 className="text-base font-extrabold text-white">
+                  {receiptModal.type === 'download' ? 'One-Time Receipt Download' : 'Re-download Payment Required'}
+                </h3>
+                <p className="mt-1 text-xs font-semibold text-zinc-500">
+                  Receipt ID: {receiptModal.registration.registrationId}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={closeReceiptModal}
+                disabled={isDownloading}
+                className="rounded border border-zinc-800 px-2 py-1 text-xs font-bold text-zinc-400 hover:text-white disabled:opacity-50"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="space-y-4 px-5 py-5">
+              {receiptModal.type === 'download' ? (
+                <>
+                  <div className="rounded border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-semibold leading-relaxed text-amber-100">
+                    This stamped receipt can be downloaded only once. After download, the receipt will be locked automatically.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadReceipt(receiptModal.registration)}
+                    disabled={isDownloading}
+                    className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60"
+                  >
+                    {isDownloading ? 'Preparing Receipt...' : 'Download and Lock Receipt'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="rounded border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-semibold leading-relaxed text-amber-100">
+                    Re-download requires Razorpay payment of ₹{receiptModal.registration.amount}. After successful payment, the receipt download will unlock again.
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleUnlockDownload(receiptModal.registration)}
+                    disabled={isDownloading}
+                    className="w-full rounded bg-amber-500 px-4 py-3 text-sm font-extrabold text-zinc-950 hover:bg-amber-600 disabled:opacity-60"
+                  >
+                    {isDownloading ? 'Opening Razorpay...' : `Pay ₹${receiptModal.registration.amount} with Razorpay`}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </main>
   );
