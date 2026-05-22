@@ -27,8 +27,8 @@ export default function NotificationsPage() {
     return (
         <div className="p-3 sm:p-6">
             <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                <FaBell className="text-base text-zinc-700 -mt-0.5" />
-                <h1 className="text-base font-bold text-gray-800">Admin Activity Log</h1>
+                <FaBell className="text-lg md:text-xl text-zinc-700 -mt-0.5" />
+                <h1 className="text-base sm:text-xl font-bold text-gray-800">Admin Activity Log</h1>
             </div>
 
             {/* Metrics cards */}
