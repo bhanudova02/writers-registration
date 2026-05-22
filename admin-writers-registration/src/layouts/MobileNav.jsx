@@ -8,7 +8,6 @@ const allNavLinks = [
     { path: "/registrations", label: "Registrations", icon: FaFileInvoice, permission: "Registrations" },
     { path: "/renewals", label: "Renewals", icon: FaSync, permission: "Renewals" },
     { path: "/notifications", label: "Notifications", icon: FaBell, permission: "Notifications" },
-    { path: "/create-admin", label: "Create Admin", icon: FaUserPlus, permission: "Create Admin" },
 ];
 
 export function MobileNav({ user, onClose, open }) {

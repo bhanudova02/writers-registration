@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { FaUser } from 'react-icons/fa';
 import { MdLogout } from 'react-icons/md';
 import { LuCheck, LuMenu } from 'react-icons/lu';
+import { Link } from 'react-router-dom';
 import { auth } from '../firebase';
 
 export function Header({ user, mobileNavOpen, setMobileNavOpen }) {
@@ -29,13 +30,13 @@ export function Header({ user, mobileNavOpen, setMobileNavOpen }) {
                 </button>
 
                 {/* Logo */}
-                <div className='flex items-center gap-3 font-semibold'>
-                    <img src='/Logo.png' alt="TCWA logo" className='h-6 md:h-8 object-contain' />
+                <Link to="/" className='flex items-center gap-3 font-semibold'>
+                    <img src='/Logo.png' alt="TCWA logo" className='hidden md:block h-8 object-contain' />
                     <div className='hidden md:flex flex-col justify-center'>
                         <span className="text-sm font-bold text-white leading-tight">Telugu Cine Writers</span>
                         <span className="text-[10px] text-zinc-400 font-medium leading-none mt-0.5">Association</span>
                     </div>
-                </div>
+                </Link>
             </div>
 
             {/* Profile Button - Right always */}

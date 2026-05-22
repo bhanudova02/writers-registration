@@ -6,7 +6,6 @@ const ROUTE_PERMISSIONS = {
     '/registrations': 'Registrations',
     '/renewals': 'Renewals',
     '/notifications': 'Notifications',
-    '/create-admin': 'Create Admin',
 };
 
 const ProtectedRoute = ({ user, children }) => {

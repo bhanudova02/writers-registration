@@ -3,6 +3,5 @@ export const adminAccessPages = [
     { title: "Members", url: "/members" },
     { title: "Registrations", url: "/registrations" },
     { title: "Renewals", url: "/renewals" },
-    { title: "Notifications", url: "/notifications" },
-    { title: "Create Admin", url: "/create-admin" }
+    { title: "Notifications", url: "/notifications" }
 ];

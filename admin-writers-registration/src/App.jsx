@@ -13,9 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import AdminLoginPage from './pages/AdminLoginPage';
 import UnauthorizedPage from './pages/UnauthorizedPage';
-
 import DashboardHomePage from './pages/DashboardHomePage';
-import CreateAdminPage from './pages/CreateAdminPage';
 import MembersPage from './pages/members/MembersPage';
 import RegistrationsPage from './pages/registrations/RegistrationsPage';
 import RenewalsPage from './pages/renewals/RenewalsPage';
@@ -81,7 +79,6 @@ function App() {
           }
         >
           <Route index element={<DashboardHomePage />} />
-          <Route path="create-admin" element={<CreateAdminPage />} />
           <Route path="members" element={
             <ProtectedRoute user={user}>
               <MembersPage />
