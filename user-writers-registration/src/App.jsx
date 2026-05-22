@@ -181,19 +181,11 @@ export default function App() {
         }
       }
 
-      // Clear existing recaptcha to prevent "reCAPTCHA client element has been removed" errors on React re-renders
-      if (window.recaptchaVerifier) {
-        try {
-          window.recaptchaVerifier.clear();
-        } catch (e) {
-          console.warn("Recaptcha clear error", e);
-        }
-        window.recaptchaVerifier = null;
+      // Initialize Invisible RecaptchaVerifier only once to prevent connection errors
+      if (!window.recaptchaVerifier) {
+        window.recaptchaVerifier = setupRecaptcha('recaptcha-container');
       }
-      
-      // Initialize fresh Invisible RecaptchaVerifier on the new DOM node
-      const appVerifier = setupRecaptcha('recaptcha-container');
-      window.recaptchaVerifier = appVerifier;
+      const appVerifier = window.recaptchaVerifier;
 
       // Send the real SMS OTP via Firebase Phone Auth
       const confirmation = await sendOtp(formattedPhone, appVerifier);
@@ -456,6 +448,9 @@ export default function App() {
 
           {/* Login Form Card */}
           <div className="lg:col-span-5 w-full">
+            {/* Global invisible recaptcha container */}
+            <div id="recaptcha-container"></div>
+            
             {!showOtpScreen ? (
               <form onSubmit={handleVerifyDetails} className="bg-zinc-900/90 border border-zinc-800 p-6 sm:p-8 rounded-lg shadow-2xl space-y-5 backdrop-blur">
                 <div className="flex items-center gap-3">
@@ -518,7 +513,6 @@ export default function App() {
                     <span>Request OTP Code</span>
                   )}
                 </button>
-                <div id="recaptcha-container" className="mt-2"></div>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp} className="bg-zinc-900/90 border border-zinc-800 p-6 sm:p-8 rounded-lg shadow-2xl space-y-5 backdrop-blur">
