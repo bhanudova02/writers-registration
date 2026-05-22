@@ -30,7 +30,7 @@ export function Header({ user, mobileNavOpen, setMobileNavOpen }) {
 
                 {/* Logo */}
                 <div className='flex items-center font-semibold'>
-                    <img src='/logo.png' alt="Logo" className='w-16' />
+                    <img src='/Logo.png' alt="TCWA logo" className='w-4' />
                 </div>
             </div>
 

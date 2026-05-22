@@ -753,7 +753,9 @@ export default function App() {
       <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/70">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4">
           <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 bg-amber-500 rounded flex items-center justify-center text-zinc-950 font-black">W</div>
+            <div className="h-11 w-11 rounded bg-white/95 p-1 shadow-sm ring-1 ring-amber-500/20 flex items-center justify-center">
+              <img src="/Logo.png" alt="TCWA logo" className="h-full w-full object-contain" />
+            </div>
             <div>
               <h1 className="text-base font-black text-white tracking-wider uppercase">TCWA Writer Registry</h1>
               <p className="text-[10px] text-zinc-500 font-semibold tracking-wider">Member Self-Service Dashboard</p>
