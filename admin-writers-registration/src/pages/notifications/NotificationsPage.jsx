@@ -27,8 +27,8 @@ export default function NotificationsPage() {
     return (
         <div className="p-3 sm:p-6">
             <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                <FaBell className="text-lg md:text-xl text-zinc-700 -mt-0.5" />
-                <h1 className="text-base sm:text-xl font-bold text-gray-800">Admin Activity Log</h1>
+                <FaBell className="text-base text-zinc-700 -mt-0.5" />
+                <h1 className="text-base font-bold text-gray-800">Admin Activity Log</h1>
             </div>
 
             {/* Metrics cards */}
@@ -73,11 +73,11 @@ export default function NotificationsPage() {
 
             {/* Activity Log Table */}
             <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm">
-                <h3 className="text-lg font-bold text-zinc-800 mb-2 flex items-center gap-2">
+                <h3 className="text-base font-bold text-zinc-800 mb-2 flex items-center gap-2">
                     <FaHistory className="text-zinc-500 text-sm -mt-0.5" />
                     <span>Recent Admin Activities</span>
                 </h3>
-                <p className="text-sm text-zinc-500 mb-4">Monitor all administrative actions including logins, logouts, and data modifications.</p>
+                <p className="text-xs text-zinc-500 mb-4">Monitor all administrative actions including logins, logouts, and data modifications.</p>
 
                 {isLoading ? (
                     <div className="py-8 text-center text-zinc-400 text-xs font-bold">
