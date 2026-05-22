@@ -29,6 +29,21 @@ export default function Login({ setMember, setIsLoggedIn }) {
       return;
     }
 
+    // Developer Bypass for Local Testing
+    if (import.meta.env.DEV && membershipId.trim().toUpperCase() === 'TEST') {
+      setMember({
+        membershipId: 'TEST1001',
+        name: 'Test Developer',
+        memberType: 'Writer',
+        status: 'Active',
+        mobileNumber: phone,
+        email: 'test@tcwa.in',
+        createdAt: new Date().toISOString()
+      });
+      setIsLoggedIn(true);
+      return;
+    }
+
     try {
       const docId = membershipId.trim().toUpperCase();
       const memberRef = doc(db, 'members', docId);

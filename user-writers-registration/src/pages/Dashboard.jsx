@@ -12,6 +12,7 @@ import RegistrationForm from '../components/dashboard/RegistrationForm';
 import ReceiptSidebar from '../components/dashboard/ReceiptSidebar';
 import RegistrationsTable from '../components/dashboard/RegistrationsTable';
 import ReceiptModal from '../components/dashboard/ReceiptModal';
+import Footer from '../components/Footer';
 
 export default function Dashboard({ member, setMember, onLogout }) {
   const [scriptTitle, setScriptTitle] = useState('');
@@ -402,6 +403,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
         handleDownloadReceipt={handleDownloadReceipt}
         handleUnlockDownload={handleUnlockDownload}
       />
+      <Footer />
     </main>
   );
 }
