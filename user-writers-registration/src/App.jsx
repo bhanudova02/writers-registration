@@ -196,7 +196,17 @@ export default function App() {
       setOtpError('');
     } catch (error) {
       console.error("Firebase sendOtp failed:", error);
-      setLoginError(`Failed to send SMS OTP: ${error.message || error}`);
+      
+      const errorCode = error.code || '';
+      const errorMessage = error.message || String(error);
+      
+      if (errorCode === 'auth/too-many-requests' || errorMessage.includes('too-many-requests')) {
+        setLoginError('Security Alert: You have requested too many OTPs. Please wait 15-30 minutes before trying again.');
+      } else if (errorCode === 'auth/invalid-phone-number' || errorMessage.includes('invalid-phone-number')) {
+        setLoginError('Invalid mobile number format. Please check your number.');
+      } else {
+        setLoginError(`Failed to send SMS OTP. Please try again later.`);
+      }
     } finally {
       setIsValidating(false);
     }
