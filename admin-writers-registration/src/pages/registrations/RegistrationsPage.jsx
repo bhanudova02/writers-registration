@@ -77,8 +77,8 @@ export default function RegistrationsPage() {
     return (
         <div className="p-3 sm:p-6">
             <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                <FaFileSignature className="text-xl md:text-2xl text-zinc-700 -mt-0.5" />
-                <h1 className="text-lg sm:text-2xl font-bold text-gray-800">Movie Script Registrations</h1>
+                <FaFileSignature className="text-lg md:text-xl text-zinc-700 -mt-0.5" />
+                <h1 className="text-base sm:text-xl font-bold text-gray-800">Movie Script Registrations</h1>
             </div>
 
             {/* Metrics Row */}

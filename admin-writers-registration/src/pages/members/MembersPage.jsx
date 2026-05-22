@@ -223,8 +223,8 @@ export default function MembersPage() {
     return (
         <div className="p-3 sm:p-6">
             <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                <FaUsers className="text-xl md:text-2xl text-zinc-700 -mt-0.5" />
-                <h1 className="text-lg sm:text-2xl font-bold text-gray-800">TCWA Members Management</h1>
+                <FaUsers className="text-lg md:text-xl text-zinc-700 -mt-0.5" />
+                <h1 className="text-base sm:text-xl font-bold text-gray-800">TCWA Members Management</h1>
             </div>
 
             <div className="w-full mt-3">

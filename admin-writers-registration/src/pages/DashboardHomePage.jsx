@@ -103,8 +103,8 @@ export default function DashboardHomePage() {
         <div className="p-3 sm:p-6">
             <div className="mb-4 sm:mb-6">
                 <div className="flex items-center gap-2">
-                    <FiActivity className="text-xl md:text-2xl text-zinc-600 animate-pulse -mt-0.5" />
-                    <h1 className="text-lg sm:text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+                    <FiActivity className="text-lg md:text-xl text-zinc-600 animate-pulse -mt-0.5" />
+                    <h1 className="text-base sm:text-xl font-bold text-gray-800">Dashboard Overview</h1>
                 </div>
                 <p className="text-sm text-zinc-500 mt-1">Real-time summaries and database logs for TCWA Writer Registry.</p>
             </div>
