@@ -100,78 +100,66 @@ export default function DashboardHomePage() {
     }, []);
 
     return (
-        <div className="p-3 sm:p-6 space-y-4 sm:space-y-6">
-            <div>
-                <h1 className="text-lg sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <FiActivity className="text-zinc-600 animate-pulse" />
-                    <span>Dashboard Overview</span>
-                </h1>
+        <div className="p-3 sm:p-6">
+            <div className="mb-4 sm:mb-6">
+                <div className="flex items-center gap-2">
+                    <FiActivity className="text-xl md:text-2xl text-zinc-600 animate-pulse -mt-0.5" />
+                    <h1 className="text-lg sm:text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+                </div>
                 <p className="text-sm text-zinc-500 mt-1">Real-time summaries and database logs for TCWA Writer Registry.</p>
             </div>
 
             {/* Metrics cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 {/* Total Members */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-zinc-200 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Members</h3>
-                            <p className="text-xl sm:text-3xl font-black text-zinc-800 mt-1 sm:mt-2">{stats.totalMembers}</p>
-                        </div>
-                        <div className="p-2 sm:p-4 bg-zinc-50 rounded-lg border border-zinc-100 group-hover:bg-zinc-100 transition-colors">
-                            <FaUsers className="text-zinc-500 text-base sm:text-xl" />
-                        </div>
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Members</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-zinc-800 mt-1">{stats.totalMembers}</p>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-zinc-400" />
+                    <div className="p-2 sm:p-3 bg-zinc-50 rounded border border-zinc-100">
+                        <FaUsers className="text-zinc-500 text-base sm:text-lg" />
+                    </div>
                 </div>
 
                 {/* Total Scripts */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-zinc-200 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Registered Scripts</h3>
-                            <p className="text-xl sm:text-3xl font-black text-amber-600 mt-1 sm:mt-2">{stats.totalScripts}</p>
-                        </div>
-                        <div className="p-2 sm:p-4 bg-amber-50 rounded-lg border border-amber-100 group-hover:bg-amber-100 transition-colors">
-                            <FaFileAlt className="text-amber-500 text-base sm:text-xl" />
-                        </div>
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Registered Scripts</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">{stats.totalScripts}</p>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-amber-400" />
+                    <div className="p-2 sm:p-3 bg-amber-50 rounded border border-amber-100">
+                        <FaFileAlt className="text-amber-500 text-base sm:text-lg" />
+                    </div>
                 </div>
 
                 {/* Pending Renewals */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-zinc-200 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pending Renewals</h3>
-                            <p className="text-xl sm:text-3xl font-black text-red-600 mt-1 sm:mt-2">{stats.pendingRenewals}</p>
-                        </div>
-                        <div className="p-2 sm:p-4 bg-red-50 rounded-lg border border-red-100 group-hover:bg-red-100 transition-colors">
-                            <FaSyncAlt className="text-red-500 text-base sm:text-xl" />
-                        </div>
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pending Renewals</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">{stats.pendingRenewals}</p>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-400" />
+                    <div className="p-2 sm:p-3 bg-red-50 rounded border border-red-100">
+                        <FaSyncAlt className="text-red-500 text-base sm:text-lg" />
+                    </div>
                 </div>
 
                 {/* Total Revenue */}
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-zinc-200 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Revenue</h3>
-                            <p className="text-xl sm:text-3xl font-black text-green-600 mt-1 sm:mt-2">₹{stats.totalRevenue.toLocaleString()}</p>
-                        </div>
-                        <div className="p-2 sm:p-4 bg-green-50 rounded-lg border border-green-100 group-hover:bg-green-100 transition-colors">
-                            <FaRupeeSign className="text-green-500 text-base sm:text-xl" />
-                        </div>
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Revenue</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">₹{stats.totalRevenue.toLocaleString()}</p>
                     </div>
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-400" />
+                    <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
+                        <FaRupeeSign className="text-green-500 text-base sm:text-lg" />
+                    </div>
                 </div>
             </div>
 
             {/* Dashboard tables section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Recent Submissions */}
-                <div className="border border-zinc-200 bg-white p-5 rounded-lg shadow-sm space-y-4">
+                <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm space-y-4">
                     <div className="flex items-center gap-2 border-b border-zinc-100 pb-3">
                         <FiTrendingUp className="text-amber-500 text-lg" />
                         <div>
@@ -211,7 +199,7 @@ export default function DashboardHomePage() {
                 </div>
 
                 {/* Recent Member Uploads */}
-                <div className="border border-zinc-200 bg-white p-5 rounded-lg shadow-sm space-y-4">
+                <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm space-y-4">
                     <div className="flex items-center gap-2 border-b border-zinc-100 pb-3">
                         <FiCheckCircle className="text-green-500 text-lg" />
                         <div>

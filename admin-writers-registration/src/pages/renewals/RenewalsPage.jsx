@@ -226,40 +226,40 @@ export default function RenewalsPage() {
 
             {/* Metrics cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <div className="bg-white p-3 md:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">Associate Members</h3>
-                        <p className="text-xl md:text-2xl font-bold text-zinc-800 mt-1">{totalAssociates}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Associate Members</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-zinc-800 mt-1">{totalAssociates}</p>
                     </div>
-                    <div className="p-2 md:p-3 bg-zinc-50 rounded border border-zinc-100 hidden xs:block">
-                        <FaSyncAlt className="text-zinc-500 text-sm md:text-lg" />
+                    <div className="p-2 sm:p-3 bg-zinc-50 rounded border border-zinc-100">
+                        <FaSyncAlt className="text-zinc-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-3 md:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">Overdue Renewals</h3>
-                        <p className="text-xl md:text-2xl font-bold text-red-600 mt-1">{overdueCount}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Overdue Renewals</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">{overdueCount}</p>
                     </div>
-                    <div className="p-2 md:p-3 bg-red-50 rounded border border-red-100 hidden xs:block">
-                        <FiAlertTriangle className="text-red-500 text-sm md:text-lg" />
+                    <div className="p-2 sm:p-3 bg-red-50 rounded border border-red-100">
+                        <FiAlertTriangle className="text-red-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-3 md:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">Active Associates</h3>
-                        <p className="text-xl md:text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Active Associates</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">{activeCount}</p>
                     </div>
-                    <div className="p-2 md:p-3 bg-green-50 rounded border border-green-100 hidden xs:block">
-                        <FiCheck className="text-green-500 text-sm md:text-lg" />
+                    <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
+                        <FiCheck className="text-green-500 text-base sm:text-lg" />
                     </div>
                 </div>
-                <div className="bg-white p-3 md:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
-                        <h3 className="text-zinc-500 text-[10px] md:text-xs font-bold uppercase tracking-wider">Fees Collected (MTD)</h3>
-                        <p className="text-xl md:text-2xl font-bold text-blue-600 mt-1">₹{mtdCollected.toLocaleString()}</p>
+                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Fees Collected (MTD)</h3>
+                        <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">₹{mtdCollected.toLocaleString()}</p>
                     </div>
-                    <div className="p-2 md:p-3 bg-blue-50 rounded border border-blue-100 hidden xs:block">
-                        <FaRupeeSign className="text-blue-500 text-sm md:text-lg" />
+                    <div className="p-2 sm:p-3 bg-blue-50 rounded border border-blue-100">
+                        <FaRupeeSign className="text-blue-500 text-base sm:text-lg" />
                     </div>
                 </div>
             </div>
