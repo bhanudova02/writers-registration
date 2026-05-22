@@ -3,11 +3,12 @@ import { AlertTriangle } from 'lucide-react';
 import { doc, updateDoc, collection, query, where, onSnapshot, setDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { toast } from 'react-toastify';
 import { normalizeTitle, loadRazorpayCheckout } from '../lib/utils';
 
 // Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorker;
 
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import ProfileCard from '../components/dashboard/ProfileCard';
