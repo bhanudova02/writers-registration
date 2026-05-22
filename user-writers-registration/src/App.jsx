@@ -6,8 +6,24 @@ import { db, setupRecaptcha, sendOtp } from './firebase';
 const categories = ['Story', 'Screenplay', 'Songs', 'Dialogues'];
 
 export default function App() {
-  const [member, setMember] = useState(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [member, setMember] = useState(() => {
+    const saved = sessionStorage.getItem('tcwa_member');
+    return saved ? JSON.parse(saved) : null;
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return sessionStorage.getItem('tcwa_isLoggedIn') === 'true';
+  });
+
+  // Persist session to sessionStorage on login/logout
+  useEffect(() => {
+    if (isLoggedIn && member) {
+      sessionStorage.setItem('tcwa_member', JSON.stringify(member));
+      sessionStorage.setItem('tcwa_isLoggedIn', 'true');
+    } else {
+      sessionStorage.removeItem('tcwa_member');
+      sessionStorage.removeItem('tcwa_isLoggedIn');
+    }
+  }, [isLoggedIn, member]);
 
   // Login States
   const [membershipId, setMembershipId] = useState('');
