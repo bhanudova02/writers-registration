@@ -402,6 +402,7 @@ export default function App() {
 
       await setDoc(regRef, newRegData);
       setSuccessRegistration(newRegData);
+      setReceiptModal({ type: 'download', registration: newRegData, isPaymentSuccess: true });
 
       // Reset form fields
       setScriptTitle('');
@@ -749,7 +750,7 @@ export default function App() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-950/10 via-zinc-950 to-zinc-950 pointer-events-none" />
 
       {/* HEADER SECTION */}
-      <header className="border-b border-zinc-800/80 bg-zinc-950/50 backdrop-blur relative z-10">
+      <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/70">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4">
           <div className="flex items-center gap-2.5">
             <div className="h-9 w-9 bg-amber-500 rounded flex items-center justify-center text-zinc-950 font-black">W</div>
@@ -1108,7 +1109,7 @@ export default function App() {
             <div className="flex items-start justify-between border-b border-zinc-800 px-5 py-4">
               <div>
                 <h3 className="text-base font-extrabold text-white">
-                  {receiptModal.type === 'download' ? 'One-Time Receipt Download' : 'Re-download Payment Required'}
+                  {receiptModal.type === 'download' ? (receiptModal.isPaymentSuccess ? 'Payment Successful' : 'One-Time Receipt Download') : 'Re-download Payment Required'}
                 </h3>
                 <p className="mt-1 text-xs font-semibold text-zinc-500">
                   Receipt ID: {receiptModal.registration.registrationId}
@@ -1127,8 +1128,16 @@ export default function App() {
             <div className="space-y-4 px-5 py-5">
               {receiptModal.type === 'download' ? (
                 <>
+                  {receiptModal.isPaymentSuccess && (
+                    <div className="rounded border border-green-500/20 bg-green-500/10 p-3 text-sm font-extrabold text-green-300">
+                      Script registered and approved successfully.
+                    </div>
+                  )}
                   <div className="rounded border border-amber-500/20 bg-amber-500/10 p-4 text-sm font-semibold leading-relaxed text-amber-100">
-                    This stamped receipt can be downloaded only once. After download, the receipt will be locked automatically.
+                    Please download your stamped receipt now. This receipt can be downloaded only one time. Once you download it, the receipt will be locked automatically.
+                  </div>
+                  <div className="rounded border border-red-500/20 bg-red-500/10 p-3 text-xs font-bold leading-relaxed text-red-300">
+                    If you refresh this page or close this modal without downloading, you can still use the receipt log below, but after one successful download any future download requires Razorpay payment again.
                   </div>
                   <button
                     type="button"
@@ -1136,7 +1145,7 @@ export default function App() {
                     disabled={isDownloading}
                     className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60"
                   >
-                    {isDownloading ? 'Preparing Receipt...' : 'Download and Lock Receipt'}
+                    {isDownloading ? 'Preparing Receipt...' : 'Download Receipt Now'}
                   </button>
                 </>
               ) : (
