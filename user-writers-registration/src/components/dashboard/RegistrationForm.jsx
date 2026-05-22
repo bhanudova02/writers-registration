@@ -1,0 +1,134 @@
+import { FileText, UploadCloud, RefreshCw, Loader2 } from 'lucide-react';
+import { categories } from '../../data/constants';
+
+export default function RegistrationForm({ 
+  handleRegisterScript, 
+  scriptTitle, 
+  setScriptTitle, 
+  selectedCategory, 
+  setSelectedCategory, 
+  pdfFile, 
+  setPdfFile, 
+  calculatePdfPages, 
+  pageCount, 
+  isCalculatingPages, 
+  isRegistering 
+}) {
+  return (
+    <form onSubmit={handleRegisterScript} className="bg-white/40 border border-zinc-200/80 p-5 sm:p-6 rounded-lg space-y-5">
+      <div className="flex items-center gap-3 border-b border-zinc-200/60 pb-3">
+        <FileText className="text-amber-500" />
+        <div>
+          <h3 className="text-lg font-bold text-zinc-900">Register New Movie Script</h3>
+          <p className="text-xs text-zinc-500">Calculate page count and generate digital stamped receipt instantly.</p>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
+          Movie Script / Song Title *
+        </label>
+        <input
+          type="text"
+          value={scriptTitle}
+          onChange={(e) => setScriptTitle(e.target.value)}
+          placeholder="Enter script or song title"
+          className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors"
+          required
+        />
+      </div>
+
+      <div>
+        <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2.5">
+          Registration Category *
+        </label>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {categories.map((cat) => (
+            <button
+              type="button"
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`py-2 px-3 rounded border text-xs font-bold tracking-wide transition active:scale-[0.98] cursor-pointer ${
+                selectedCategory === cat
+                  ? 'border-amber-500 bg-amber-500 text-white font-black shadow-md'
+                  : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:text-zinc-900 hover:bg-white'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
+          Upload Movie Script PDF *
+        </label>
+        <label className="border border-dashed border-zinc-200 bg-zinc-50/50 hover:bg-white/60 hover:border-zinc-300 rounded-lg p-5 flex flex-col items-center justify-center text-center cursor-pointer transition relative group">
+          <UploadCloud className="text-zinc-500 group-hover:text-amber-500 mb-2 transition-colors" size={28} />
+          <span className="text-xs font-bold text-zinc-700">
+            {pdfFile ? pdfFile.name : 'Select or Drop Script PDF'}
+          </span>
+          <span className="text-[10px] text-zinc-500 mt-1">
+            {pdfFile ? `${(pdfFile.size / 1024 / 1024).toFixed(2)} MB` : 'PDF must remain private (100% Writer Privacy Shield)'}
+          </span>
+          <input
+            type="file"
+            accept="application/pdf"
+            onChange={async (e) => {
+              const file = e.target.files[0];
+              if (file) {
+                if (file.type !== 'application/pdf') {
+                  toast.error("Please upload a valid PDF file.");
+                  return;
+                }
+                setPdfFile(file);
+                await calculatePdfPages(file);
+              }
+            }}
+            className="sr-only"
+          />
+        </label>
+      </div>
+
+      <div className="max-w-xs">
+        <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
+          Document Pages Count *
+        </label>
+        <div className="relative">
+          <input
+            type="number"
+            min="0"
+            readOnly
+            value={pageCount}
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors font-bold cursor-not-allowed opacity-80"
+            required
+          />
+          {isCalculatingPages && (
+            <div className="absolute right-3 top-2.5">
+              <Loader2 className="animate-spin text-amber-500" size={18} />
+            </div>
+          )}
+        </div>
+        <p className="text-[10px] text-zinc-500 mt-1.5 font-medium italic">
+          * Pages are automatically calculated from the uploaded PDF.
+        </p>
+      </div>
+
+      <button
+        type="submit"
+        disabled={isRegistering}
+        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-3 px-4 rounded text-sm transition shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+      >
+        {isRegistering ? (
+          <>
+            <RefreshCw size={16} className="animate-spin" />
+            <span>Connecting to Razorpay Secure Gateway...</span>
+          </>
+        ) : (
+          <span>Pay with Razorpay (₹{pageCount * 10})</span>
+        )}
+      </button>
+    </form>
+  );
+}
