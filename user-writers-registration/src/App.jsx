@@ -151,12 +151,19 @@ export default function App() {
         }
       }
 
-      // Initialize/reuse Invisible RecaptchaVerifier
-      let appVerifier = window.recaptchaVerifier;
-      if (!appVerifier) {
-        appVerifier = setupRecaptcha('recaptcha-container');
-        window.recaptchaVerifier = appVerifier;
+      // Clear existing recaptcha to prevent "reCAPTCHA client element has been removed" errors on React re-renders
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (e) {
+          console.warn("Recaptcha clear error", e);
+        }
+        window.recaptchaVerifier = null;
       }
+      
+      // Initialize fresh Invisible RecaptchaVerifier on the new DOM node
+      const appVerifier = setupRecaptcha('recaptcha-container');
+      window.recaptchaVerifier = appVerifier;
 
       // Send the real SMS OTP via Firebase Phone Auth
       const confirmation = await sendOtp(formattedPhone, appVerifier);
@@ -188,12 +195,6 @@ export default function App() {
     e.preventDefault();
     setOtpError('');
     setIsValidating(true);
-
-    if (otpCode === '123456') { // Allow 123456 as universal bypass for testing
-      setIsLoggedIn(true);
-      setIsValidating(false);
-      return;
-    }
 
     try {
       if (!confirmationResult) {
@@ -474,8 +475,7 @@ export default function App() {
                 )}
 
                 <div className="bg-amber-500/10 border border-amber-500/20 text-amber-400 p-3 rounded text-xs font-semibold text-center leading-relaxed">
-                  Real OTP sent via SMS to <span className="font-extrabold text-white">{phone}</span>.<br />
-                  <span className="text-[10px] text-zinc-400 mt-1 block">(For offline testing/bypass, use code: <span className="font-bold text-amber-400">123456</span>)</span>
+                  Real OTP sent via SMS to <span className="font-extrabold text-white">{phone}</span>.
                 </div>
 
                 <div>
@@ -486,7 +486,7 @@ export default function App() {
                     type="text"
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
-                    placeholder="Enter OTP (or 123456)"
+                    placeholder="Enter 6-Digit OTP"
                     className="w-full bg-zinc-950 border border-zinc-800 rounded px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 tracking-[0.3em] text-center font-bold"
                     maxLength={6}
                     required
