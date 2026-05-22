@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, ShieldAlert, RefreshCw, Key, Loader2 } from 'lucide-react';
+import { User, ShieldAlert, RefreshCw, Key, Loader2, Users, Shield, ArrowRight, Smartphone, Mail, Lock, PhoneCall, MessageCircle, X } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db, setupRecaptcha, sendOtp } from '../firebase';
 import Header from '../components/Header';
@@ -16,6 +16,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
   const [otpError, setOtpError] = useState('');
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
 
   const handleVerifyDetails = async (e) => {
     e.preventDefault();
@@ -138,114 +139,183 @@ export default function Login({ setMember, setIsLoggedIn }) {
       <Header />
       <main className="flex-1 flex items-center justify-center px-4 py-12 relative overflow-hidden bg-white">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-50/50 via-white to-white pointer-events-none" />
-        <div className="w-full max-w-5xl grid lg:grid-cols-12 gap-8 items-center relative z-10">
-          <div className="lg:col-span-7 space-y-6 text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-amber-600 text-xs font-bold uppercase tracking-wider">
-              <ShieldAlert size={14} />
+        <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10 mx-auto">
+          <div className="space-y-5 text-left">
+            {/* SECURE WRITER PORTAL Badge */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-orange-50 rounded-full text-orange-500 text-[10px] font-bold uppercase tracking-widest">
+              <ShieldAlert size={12} />
               <span>Secure Writer Portal</span>
             </div>
-            <h1 className="text-4xl sm:text-5xl font-black leading-tight tracking-tight text-zinc-900">
-              Telugu Cine Writers <br/>
-              <span className="bg-gradient-to-r from-amber-400 to-amber-200 bg-clip-text text-transparent">
-                Association Portal
-              </span>
-            </h1>
-            <p className="text-zinc-600 text-base max-w-lg leading-relaxed">
-              Verify your Membership credentials to upload, secure, and register your scripts. Your scripts are private and protected with 100% encryption.
+            
+            {/* Main Heading */}
+            <div>
+              <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-slate-900">
+                Telugu Cine Writers<br />
+                <span className="text-orange-500">Association Portal</span>
+              </h1>
+              {/* Orange Line */}
+              <div className="w-16 h-1 bg-orange-500 mt-4 rounded-full"></div>
+            </div>
+
+            {/* Paragraph */}
+            <p className="text-slate-600 text-sm max-w-md leading-relaxed pt-1">
+              A secure and dedicated platform for our writers to register, protect, and manage their scripts with complete confidentiality.
             </p>
-            <div className="grid grid-cols-2 gap-4 max-w-md pt-4">
-              <div className="p-4 bg-white/40 border border-zinc-200 rounded">
-                <p className="text-amber-600 font-black text-xl">2,600+</p>
-                <p className="text-zinc-500 text-xs font-semibold mt-1">Active Members</p>
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-2 gap-4 max-w-[420px] pt-2">
+              <div className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm text-center flex flex-col items-center">
+                <div className="size-11 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mb-3">
+                  <Users size={22} />
+                </div>
+                <p className="text-orange-500 font-bold text-xl">2,600+</p>
+                <p className="text-slate-900 text-[11px] font-bold mt-1">Active Members</p>
+                <p className="text-slate-500 text-[10px] font-medium mt-1.5 leading-relaxed">Growing community of<br/>creative writers</p>
               </div>
-              <div className="p-4 bg-white/40 border border-zinc-200 rounded">
-                <p className="text-amber-600 font-black text-xl">100%</p>
-                <p className="text-zinc-500 text-xs font-semibold mt-1">Script Privacy</p>
+              <div className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm text-center flex flex-col items-center">
+                <div className="size-11 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 mb-3">
+                  <Shield size={22} />
+                </div>
+                <p className="text-purple-600 font-bold text-xl">100%</p>
+                <p className="text-slate-900 text-[11px] font-bold mt-1">Script Privacy</p>
+                <p className="text-slate-500 text-[10px] font-medium mt-1.5 leading-relaxed">End-to-end encryption<br/>for total protection</p>
               </div>
             </div>
+
+            {/* Alert Box */}
+            <div className="flex items-center gap-4 p-4 bg-[#eff6ff] border border-blue-100/50 rounded-xl max-w-[420px] mt-2">
+              <div className="shrink-0 size-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
+                <Shield size={14} />
+              </div>
+              <p className="text-[10px] text-slate-600 font-medium leading-relaxed">
+                Your data is protected with industry-standard encryption. We never share your information with anyone.
+              </p>
+            </div>
           </div>
-          <div className="lg:col-span-5 w-full">
+          <div className="w-full max-w-[480px] justify-self-end">
             <div id="recaptcha-container"></div>
             {!showOtpScreen ? (
-              <form onSubmit={handleVerifyDetails} className="bg-white/90 border border-zinc-200 p-6 sm:p-8 rounded-lg shadow-2xl space-y-5 backdrop-blur">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-11 place-items-center rounded bg-amber-500 text-white shadow-md">
-                    <User size={20} />
+              <form onSubmit={handleVerifyDetails} className="bg-white border-2 border-slate-100 px-10 py-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="size-14 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-sm">
+                    <User size={26} strokeWidth={1.5} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-zinc-900">Member Sign In</h2>
-                    <p className="text-xs text-zinc-500">Strict Database Validation</p>
+                    <h2 className="text-xl font-bold text-slate-900">Member Verification</h2>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Strict Database Validation</p>
+                    <div className="w-10 h-0.5 bg-orange-500 mt-2 rounded-full"></div>
                   </div>
                 </div>
                 {loginError && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded text-xs font-semibold">
+                  <div className="bg-red-50 border border-red-100 text-red-600 p-3 rounded-xl text-xs font-medium">
                     {loginError}
                   </div>
                 )}
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div>
-                    <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-bold text-slate-900 mb-2">
                       Membership ID
                     </label>
-                    <input
-                      type="text"
-                      value={membershipId}
-                      onChange={(e) => setMembershipId(e.target.value)}
-                      placeholder="e.g. TCWA1001"
-                      className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors"
-                      required
-                    />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <User className="text-slate-400" size={18} strokeWidth={1.5} />
+                      </div>
+                      <input
+                        type="text"
+                        value={membershipId}
+                        onChange={(e) => setMembershipId(e.target.value)}
+                        placeholder="e.g. TCWA1001"
+                        className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
+                        required
+                      />
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
+                    <label className="block text-xs font-bold text-slate-900 mb-2">
                       Registered Mobile Number
                     </label>
-                    <input
-                      type="text"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="e.g. 9876543210"
-                      className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-amber-500 transition-colors"
-                      required
-                    />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <Smartphone className="text-slate-400" size={18} strokeWidth={1.5} />
+                      </div>
+                      <input
+                        type="text"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="e.g. 9876543210"
+                        className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
+                        required
+                      />
+                    </div>
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  disabled={isValidating}
-                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold py-3 px-4 rounded text-sm transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isValidating ? (
-                    <>
-                      <RefreshCw size={16} className="animate-spin" />
-                      <span>Validating Account...</span>
-                    </>
-                  ) : (
-                    <span>Request OTP Code</span>
-                  )}
-                </button>
+
+                <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-xl border border-orange-100/50">
+                  <Lock className="text-orange-500 mt-0.5 shrink-0" size={16} strokeWidth={1.5} />
+                  <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                    We will send a one-time password (OTP) to your registered mobile number.
+                  </p>
+                </div>
+
+                <div className="space-y-4 pt-1">
+                  <button
+                    type="submit"
+                    disabled={isValidating}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all shadow-[0_4px_14px_0_rgb(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {isValidating ? (
+                      <>
+                        <RefreshCw size={18} className="animate-spin" />
+                        <span>Validating Account...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send OTP</span>
+                        <ArrowRight size={18} className="ml-1" strokeWidth={2} />
+                      </>
+                    )}
+                  </button>
+
+                  <div className="relative flex items-center">
+                    <div className="flex-grow border-t border-slate-100"></div>
+                    <span className="flex-shrink-0 mx-4 text-slate-400 text-xs font-medium">or</span>
+                    <div className="flex-grow border-t border-slate-100"></div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowSupportModal(true)}
+                    className="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-semibold py-3 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Mail size={16} strokeWidth={1.5} />
+                    <span>Contact Admin for Support</span>
+                  </button>
+                </div>
               </form>
             ) : (
-              <form onSubmit={handleVerifyOtp} className="bg-white/90 border border-zinc-200 p-6 sm:p-8 rounded-lg shadow-2xl space-y-5 backdrop-blur">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-11 place-items-center rounded bg-amber-500 text-white shadow-md">
-                    <Key size={20} />
+              <form onSubmit={handleVerifyOtp} className="bg-white border-2 border-slate-100 px-10 py-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
+                <div className="flex items-center gap-4">
+                  <div className="size-14 rounded-full bg-orange-500 text-white flex items-center justify-center shadow-sm">
+                    <Key size={26} strokeWidth={1.5} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-zinc-900">Enter OTP Code</h2>
-                    <p className="text-xs text-zinc-500">Code sent to: {phone}</p>
+                    <h2 className="text-xl font-bold text-slate-900">Enter OTP Code</h2>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">Code sent to: {phone}</p>
+                    <div className="w-10 h-0.5 bg-orange-500 mt-2 rounded-full"></div>
                   </div>
                 </div>
                 {otpError && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded text-xs font-semibold">
+                  <div className="bg-red-50 border border-red-100 text-red-600 p-3 rounded-xl text-xs font-medium">
                     {otpError}
                   </div>
                 )}
-                <div className="bg-amber-500/10 border border-amber-500/20 text-amber-600 p-3 rounded text-xs font-semibold text-center leading-relaxed">
-                  Real OTP sent via SMS to <span className="font-extrabold text-zinc-900">{phone}</span>.
+                <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-xl border border-orange-100/50">
+                  <p className="text-xs text-slate-700 font-medium leading-relaxed">
+                    Real OTP sent via SMS to <span className="font-extrabold text-slate-900">{phone}</span>.
+                  </p>
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-slate-900 mb-2">
                     6-Digit Verification Code
                   </label>
                   <input
@@ -253,7 +323,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
                     value={otpCode}
                     onChange={(e) => setOtpCode(e.target.value)}
                     placeholder="Enter 6-Digit OTP"
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-amber-500 tracking-[0.3em] text-center font-bold"
+                    className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 tracking-[0.3em] text-center font-bold transition-all"
                     maxLength={6}
                     required
                   />
@@ -264,37 +334,89 @@ export default function Login({ setMember, setIsLoggedIn }) {
                       type="button"
                       onClick={handleResendOtp}
                       disabled={isValidating}
-                      className="text-xs font-bold text-amber-500 hover:text-amber-600 underline transition disabled:opacity-50"
+                      className="text-xs font-bold text-orange-500 hover:text-orange-600 underline transition disabled:opacity-50"
                     >
                       Resend OTP
                     </button>
                   ) : (
-                    <p className="text-xs text-zinc-500 font-semibold">
-                      Resend OTP in <span className="text-amber-600">{resendTimer}s</span>
+                    <p className="text-xs text-slate-500 font-semibold">
+                      Resend OTP in <span className="text-orange-600">{resendTimer}s</span>
                     </p>
                   )}
                 </div>
-                <div className="flex gap-2.5">
+                <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => setShowOtpScreen(false)}
-                    className="flex-1 bg-zinc-100 hover:bg-zinc-200 text-zinc-700 font-bold py-2.5 px-4 rounded text-xs transition cursor-pointer"
+                    className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold py-3.5 px-4 rounded-xl text-sm transition cursor-pointer"
                   >
                     Back
                   </button>
                   <button
                     type="submit"
                     disabled={isValidating}
-                    className="flex-1 flex items-center justify-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 px-4 rounded text-xs transition active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                    className="flex-[2] flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 px-4 rounded-xl text-sm transition shadow-[0_4px_14px_0_rgb(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    {isValidating && <Loader2 size={14} className="animate-spin" />}
-                    Confirm Login
+                    {isValidating ? <Loader2 size={18} className="animate-spin" /> : <Shield size={18} strokeWidth={2} />}
+                    <span>Confirm Login</span>
                   </button>
                 </div>
               </form>
             )}
           </div>
         </div>
+
+        {/* Support Modal */}
+        {showSupportModal && (
+          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+              <div className="px-5 py-4 flex items-center justify-between bg-slate-50 border-b border-slate-100">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Contact Support</h3>
+                </div>
+                <button 
+                  onClick={() => setShowSupportModal(false)}
+                  className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  <X size={20} strokeWidth={2} />
+                </button>
+              </div>
+              <div className="flex flex-col">
+                <a 
+                  href="mailto:support@tcwa.in" 
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group"
+                >
+                  <Mail size={20} className="text-slate-400 group-hover:text-orange-500 transition-colors" strokeWidth={1.5} />
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Email Address</p>
+                    <p className="text-xs text-slate-500">support@tcwa.in</p>
+                  </div>
+                </a>
+                <a 
+                  href="https://wa.me/919876543210" 
+                  target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group"
+                >
+                  <MessageCircle size={20} className="text-slate-400 group-hover:text-green-500 transition-colors" strokeWidth={1.5} />
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">WhatsApp Chat</p>
+                    <p className="text-xs text-slate-500">+91 98765 43210</p>
+                  </div>
+                </a>
+                <a 
+                  href="tel:+919876543210" 
+                  className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors group"
+                >
+                  <PhoneCall size={20} className="text-slate-400 group-hover:text-blue-500 transition-colors" strokeWidth={1.5} />
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Call Admin</p>
+                    <p className="text-xs text-slate-500">+91 98765 43210</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
       <Footer />
     </div>
