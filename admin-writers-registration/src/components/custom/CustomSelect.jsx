@@ -8,6 +8,8 @@ export function CustomSelect({
   onChange = () => { },
   onBlur,
   error,
+  className = "",
+  buttonClassName = "",
 }) {
   const [open, setOpen] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState(-1);
@@ -117,7 +119,7 @@ export function CustomSelect({
   const selectedLabel = selectedItem?.label || "Select";
 
   return (
-    <div className="w-full relative" ref={dropdownRef}>
+    <div className={`w-full relative ${className}`} ref={dropdownRef}>
       {label && (
         <h5 className="text-[13.5px] font-semibold text-zinc-800/90 mb-0.5">
           {label}
@@ -129,7 +131,7 @@ export function CustomSelect({
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className={`flex justify-between items-center border rounded-md py-1.5 px-2 w-full text-[13px] md:text-[14px] focus:outline-gray-400
-        ${open ? "border-gray-400 ring-1 ring-gray-300" : "border-gray-300"}`}
+        ${open ? "border-gray-400 ring-1 ring-gray-300" : "border-gray-300"} ${buttonClassName}`}
       >
         <span className="truncate text-gray-600 capitalize font-semibold text-[14px]">
           {selectedLabel}
