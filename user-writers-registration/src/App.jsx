@@ -105,6 +105,18 @@ export default function App() {
     return () => unsubscribe();
   }, [member?.membershipId, isLoggedIn]);
 
+  // Prevent body scrolling when expired modal is open
+  useEffect(() => {
+    if (expiryDetails.isExpired) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [expiryDetails.isExpired]);
+
   // Verify Member details in Firestore and send real SMS OTP
   const handleVerifyDetails = async (e) => {
     e.preventDefault();
@@ -574,8 +586,8 @@ export default function App() {
 
         {/* ASSOCIATE EXPIRED UN-CLOSEABLE MODAL BLOCK */}
         {expiryDetails.isExpired && (
-          <section className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4">
-            <div className="bg-zinc-900 border border-red-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5">
+          <section className="fixed inset-0 z-50 bg-black/95 overflow-y-auto py-12 px-4 flex items-start justify-center">
+            <div className="bg-zinc-900 border border-red-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5 my-auto">
               <div className="mx-auto size-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-2">
                 <AlertTriangle size={36} />
               </div>
