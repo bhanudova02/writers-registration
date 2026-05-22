@@ -6,6 +6,9 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'react-toastify';
 import { normalizeTitle, loadRazorpayCheckout } from '../lib/utils';
 
+// Configure PDF.js worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+
 import DashboardHeader from '../components/dashboard/DashboardHeader';
 import ProfileCard from '../components/dashboard/ProfileCard';
 import RegistrationForm from '../components/dashboard/RegistrationForm';
