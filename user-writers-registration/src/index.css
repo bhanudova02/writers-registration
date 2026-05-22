@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+/* Hide visible Google reCAPTCHA Badge entirely on user portal screen */
+.grecaptcha-badge {
+  visibility: hidden !important;
+}

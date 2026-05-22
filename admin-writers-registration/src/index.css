@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+.title-1 {
+  @apply text-[15.5px] md:text-[16px] font-bold text-zinc-700 capitalize;
+}
+
+.title-2 {
+  @apply text-[14.5px] font-bold text-zinc-700 capitalize;
+}
+
+.custom-input {
+  @apply border border-gray-300 w-full py-1.5 px-2 focus:outline-gray-400 rounded-sm text-[14px] font-semibold text-zinc-700;
+}
+
+.custom-label {
+  @apply text-[13.5px] font-semibold text-zinc-800/90 mb-0.5 block;
+}
+
+.only-scroll-width {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+}
+
+.only-scroll-width::-webkit-scrollbar {
+  width: 5px;
+}
+
+.hover-scrollbar {
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.hover-scrollbar::-webkit-scrollbar {
+  width: 0px;
+}
+
+.hover-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hover-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+}
+
+.hover-scrollbar:hover {
+  scrollbar-color: #9ca3af transparent;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+}
+
+.hover-scrollbar:hover::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}

@@ -1,0 +1,30 @@
+# Ignore dependencies
+node_modules/
+**/node_modules/
+
+# Ignore production builds
+dist/
+**/dist/
+
+# Ignore local environment files (contains secret Firebase keys)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/.env.local
+
+# Ignore OS logs and system files
+.DS_Store
+Thumbs.db
+**/.DS_Store
+
+# Ignore IDE settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
