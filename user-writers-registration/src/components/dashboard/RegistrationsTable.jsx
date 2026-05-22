@@ -2,7 +2,7 @@ import { ReceiptText, RefreshCw, Lock, Check } from 'lucide-react';
 
 export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, requestUnlockDownload, requestReceiptDownload, isDownloading }) {
   return (
-    <section className="bg-white/40 border border-zinc-200/80 p-5 rounded-lg space-y-4">
+    <section className="bg-white border border-slate-200 p-5 rounded-lg space-y-4">
       <div className="flex items-center gap-2 border-b border-zinc-200/60 pb-3">
         <ReceiptText className="text-amber-500" />
         <div>

@@ -9,7 +9,7 @@ export default function ReceiptSidebar({
   isDownloading 
 }) {
   return (
-    <aside className="bg-white/40 border border-zinc-200/80 p-5 rounded-lg h-fit space-y-4">
+    <aside className="bg-white border border-slate-200 p-5 rounded-lg h-fit space-y-4">
       <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-200/60 pb-2">Active Checkout Summary</h3>
       <div className="space-y-2 text-xs font-semibold text-zinc-600">
         <div className="flex justify-between">
@@ -73,7 +73,7 @@ export default function ReceiptSidebar({
         <div className="bg-zinc-50/40 p-5 border border-dashed border-zinc-200 rounded text-center py-8">
           <Lock className="text-zinc-600 mx-auto mb-2" size={24} />
           <p className="text-xs font-bold text-zinc-500">Receipt Auto Approval Lock</p>
-          <p className="text-[10px] text-zinc-600 mt-1">Receipt unlocks automatically after completing secure Razorpay Checkout.</p>
+          <p className="text-[10px] text-zinc-600 mt-1">Receipt unlocks automatically after completing secure payment checkout.</p>
         </div>
       )}
     </aside>

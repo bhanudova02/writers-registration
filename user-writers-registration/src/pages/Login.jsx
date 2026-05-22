@@ -4,6 +4,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { db, setupRecaptcha, sendOtp } from '../firebase';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import SupportModal from '../components/SupportModal';
 
 export default function Login({ setMember, setIsLoggedIn }) {
   const [membershipId, setMembershipId] = useState('');
@@ -150,10 +151,9 @@ export default function Login({ setMember, setIsLoggedIn }) {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col font-sans text-zinc-900">
+    <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-zinc-900">
       <Header />
-      <main className="flex-1 flex items-center justify-center px-4 py-12 relative overflow-hidden bg-white">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-amber-50/50 via-white to-white pointer-events-none" />
+      <main className="flex-1 flex items-center justify-center px-4 py-12 relative overflow-hidden bg-gradient-to-br from-slate-200 via-slate-100 to-slate-50">
         <div className="w-full max-w-[1000px] grid lg:grid-cols-2 gap-12 lg:gap-16 items-center relative z-10 mx-auto">
           <div className="space-y-5 text-left">
             {/* SECURE WRITER PORTAL Badge */}
@@ -256,9 +256,13 @@ export default function Login({ setMember, setIsLoggedIn }) {
                       <input
                         type="text"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => {
+                          const onlyNums = e.target.value.replace(/\D/g, '');
+                          if (onlyNums.length <= 10) setPhone(onlyNums);
+                        }}
                         placeholder="e.g. 9876543210"
                         className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
+                        maxLength={10}
                         required
                       />
                     </div>
@@ -382,56 +386,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
         </div>
 
         {/* Support Modal */}
-        {showSupportModal && (
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
-              <div className="px-5 py-4 flex items-center justify-between bg-slate-50 border-b border-slate-100">
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">Contact Support</h3>
-                </div>
-                <button 
-                  onClick={() => setShowSupportModal(false)}
-                  className="text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
-                >
-                  <X size={20} strokeWidth={2} />
-                </button>
-              </div>
-              <div className="flex flex-col">
-                <a 
-                  href="mailto:support@tcwa.in" 
-                  className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group"
-                >
-                  <Mail size={20} className="text-slate-400 group-hover:text-orange-500 transition-colors" strokeWidth={1.5} />
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Email Address</p>
-                    <p className="text-xs text-slate-500">support@tcwa.in</p>
-                  </div>
-                </a>
-                <a 
-                  href="https://wa.me/919876543210" 
-                  target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors border-b border-slate-100 group"
-                >
-                  <MessageCircle size={20} className="text-slate-400 group-hover:text-green-500 transition-colors" strokeWidth={1.5} />
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">WhatsApp Chat</p>
-                    <p className="text-xs text-slate-500">+91 98765 43210</p>
-                  </div>
-                </a>
-                <a 
-                  href="tel:+919876543210" 
-                  className="flex items-center gap-4 px-5 py-4 hover:bg-slate-50 transition-colors group"
-                >
-                  <PhoneCall size={20} className="text-slate-400 group-hover:text-blue-500 transition-colors" strokeWidth={1.5} />
-                  <div>
-                    <p className="text-sm font-semibold text-slate-900">Call Admin</p>
-                    <p className="text-xs text-slate-500">+91 98765 43210</p>
-                  </div>
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
+        {showSupportModal && <SupportModal onClose={() => setShowSupportModal(false)} />}
       </main>
       <Footer />
     </div>

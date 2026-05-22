@@ -2,8 +2,8 @@ import { User } from 'lucide-react';
 
 export default function ProfileCard({ member, expiryDetails }) {
   return (
-    <section className="bg-white/50 border border-zinc-200 p-5 rounded-lg grid gap-4 md:grid-cols-4 items-center">
-      <div className="md:col-span-1 border-r border-zinc-200 md:pr-4 flex items-center gap-3.5">
+    <section className="bg-white border border-slate-200 p-5 rounded-lg grid gap-4 md:grid-cols-4 items-center">
+      <div className="md:col-span-1 border-r border-slate-200 md:pr-4 flex items-center gap-3.5">
         <div className="h-12 w-12 bg-amber-500/10 border border-amber-500/20 rounded-full flex items-center justify-center text-amber-600">
           <User size={22} />
         </div>

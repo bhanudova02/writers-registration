@@ -15,7 +15,7 @@ export default function RegistrationForm({
   isRegistering 
 }) {
   return (
-    <form onSubmit={handleRegisterScript} className="bg-white/40 border border-zinc-200/80 p-5 sm:p-6 rounded-lg space-y-5">
+    <form onSubmit={handleRegisterScript} className="bg-white border border-slate-200 p-5 sm:p-6 rounded-lg space-y-5">
       <div className="flex items-center gap-3 border-b border-zinc-200/60 pb-3">
         <FileText className="text-amber-500" />
         <div>
@@ -123,10 +123,10 @@ export default function RegistrationForm({
         {isRegistering ? (
           <>
             <RefreshCw size={16} className="animate-spin" />
-            <span>Connecting to Razorpay Secure Gateway...</span>
+            <span>Initializing Secure Payment...</span>
           </>
         ) : (
-          <span>Pay with Razorpay (₹{pageCount * 10})</span>
+          <span>Proceed to Payment (₹{pageCount * 10})</span>
         )}
       </button>
     </form>

@@ -1,6 +1,10 @@
 import { Lock } from 'lucide-react';
+import { useState } from 'react';
+import SupportModal from './SupportModal';
 
 export default function Footer() {
+  const [showSupport, setShowSupport] = useState(false);
+
   return (
     <footer className="border-t border-zinc-200 bg-white py-5 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -13,9 +17,15 @@ export default function Footer() {
           <span className="text-zinc-300">|</span>
           <a href="#" className="hover:text-zinc-900 transition-colors">Terms of Use</a>
           <span className="text-zinc-300">|</span>
-          <a href="#" className="hover:text-zinc-900 transition-colors">Contact Us</a>
+          <button 
+            onClick={() => setShowSupport(true)} 
+            className="hover:text-zinc-900 transition-colors cursor-pointer"
+          >
+            Contact Us
+          </button>
         </div>
       </div>
+      {showSupport && <SupportModal onClose={() => setShowSupport(false)} />}
     </footer>
   );
 }

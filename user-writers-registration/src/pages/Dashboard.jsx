@@ -330,8 +330,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
   };
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-zinc-50 text-zinc-900 flex flex-col font-sans relative">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-100/50 via-zinc-50 to-zinc-50 pointer-events-none" />
+    <main className="min-h-screen overflow-x-hidden bg-slate-100 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-50 text-zinc-900 flex flex-col font-sans relative">
 
       <DashboardHeader onLogout={onLogout} />
 
