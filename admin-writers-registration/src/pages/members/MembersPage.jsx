@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import { FaUserPlus, FaUsers, FaSearch } from "react-icons/fa";
-import { FiCheckCircle, FiDownload, FiFileText, FiList, FiTrash2, FiUpload, FiEdit } from "react-icons/fi";
+import { FiEdit, FiList } from "react-icons/fi";
 import CustomInput from "../../components/custom/CustomInput";
 import { CustomSelect } from "../../components/custom/CustomSelect";
 import CustomButton from "../../components/custom/CustomButton";
 import { collection, onSnapshot, doc, setDoc, query, orderBy } from 'firebase/firestore';
 import { db } from '../../firebase';
-import * as XLSX from 'xlsx';
 import EditMemberModal from "../../components/members/EditMemberModal";
 
 const memberTypeOptions = [
@@ -22,6 +21,7 @@ const initialFormData = {
     mobileNumber: "",
     memberType: "",
     email: "",
+    validityYears: "",
 };
 
 const savedMemberPageSizeOptions = [5, 10, 25, 50, 100];
@@ -35,11 +35,7 @@ export default function MembersPage() {
     const [isLoadingSavedMembers, setIsLoadingSavedMembers] = useState(false);
     const [savedMembersPage, setSavedMembersPage] = useState(1);
     const [savedMembersPageSize, setSavedMembersPageSize] = useState(10);
-    const [uploadFile, setUploadFile] = useState(null);
-    const [isUploading, setIsUploading] = useState(false);
-    const [uploadSummary, setUploadSummary] = useState(null);
     const [activeTab, setActiveTab] = useState("normal");
-    const fileInputRef = useRef(null);
     
     // Edit Member Modal States
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -51,6 +47,7 @@ export default function MembersPage() {
             || !formData.name.trim()
             || formData.mobileNumber.length !== 10
             || !formData.memberType
+            || (formData.memberType === "Associate Member" && !formData.validityYears)
             || Object.values(errors).some(Boolean);
     }, [errors, formData]);
 
@@ -94,6 +91,12 @@ export default function MembersPage() {
             case "name":
             case "memberType":
                 return trimmedValue ? "" : "Field is required.";
+            case "validityYears":
+                if (formData.memberType !== "Associate Member") return "";
+                if (!trimmedValue) return "Field is required.";
+                if (!/^\d+$/.test(String(trimmedValue))) return "Validity years must be a number.";
+                if (Number(trimmedValue) < 1 || Number(trimmedValue) > 5) return "Validity years must be between 1 and 5.";
+                return "";
             case "mobileNumber":
                 if (!trimmedValue) return "Field is required.";
                 if (!/^\d{10}$/.test(trimmedValue)) return "Mobile number must be exactly 10 digits.";
@@ -107,8 +110,18 @@ export default function MembersPage() {
     };
 
     const handleTextChange = (field, value) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        setErrors((prev) => ({ ...prev, [field]: validateField(field, value) }));
+        setFormData((prev) => {
+            const nextData = { ...prev, [field]: value };
+            if (field === "memberType" && value !== "Associate Member") {
+                nextData.validityYears = "";
+            }
+            return nextData;
+        });
+        setErrors((prev) => ({
+            ...prev,
+            [field]: validateField(field, value),
+            ...(field === "memberType" && value !== "Associate Member" ? { validityYears: "" } : {}),
+        }));
     };
 
     const handleNumberChange = (field, value, maxLength) => {
@@ -123,6 +136,7 @@ export default function MembersPage() {
             mobileNumber: validateField("mobileNumber", formData.mobileNumber),
             memberType: validateField("memberType", formData.memberType),
             email: validateField("email", formData.email),
+            validityYears: validateField("validityYears", formData.validityYears),
         };
 
         setErrors(nextErrors);
@@ -149,6 +163,9 @@ export default function MembersPage() {
 
             const docId = formData.membershipId.trim().toUpperCase();
             const memberRef = doc(db, 'members', docId);
+            const createdAt = new Date();
+            const validityYears = formData.memberType === "Associate Member" ? Number(formData.validityYears) : null;
+            const validityExpiresAt = validityYears ? new Date(new Date(createdAt).setFullYear(createdAt.getFullYear() + validityYears)).toISOString() : null;
             
             await setDoc(memberRef, {
                 membershipId: docId,
@@ -156,8 +173,10 @@ export default function MembersPage() {
                 mobileNumber: formData.mobileNumber,
                 memberType: formData.memberType,
                 email: formData.email.trim(),
+                validityYears,
+                validityExpiresAt,
                 status: "Active",
-                createdAt: new Date().toISOString()
+                createdAt: createdAt.toISOString()
             });
 
             toast.success("Member added successfully!");
@@ -169,138 +188,6 @@ export default function MembersPage() {
             toast.error(`Failed to create member: ${error.message || error}`);
         } finally {
             setIsSubmitting(false);
-        }
-    };
-
-    const handleDownloadDemo = () => {
-        const worksheetData = [
-            ["Membership ID", "Name", "Member Type", "Mobile Number", "Email"],
-            ["TCWA1001", "John Doe", "Life Time Member", "9876543210", "john@example.com"],
-            ["TCWA1002", "Jane Smith", "Associate Member", "9876543211", "jane@example.com"],
-        ];
-
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-        
-        const wscols = [
-            { wch: 15 }, // Membership ID
-            { wch: 20 }, // Name
-            { wch: 20 }, // Member Type
-            { wch: 15 }, // Mobile Number
-            { wch: 25 }, // Email
-        ];
-        worksheet['!cols'] = wscols;
-
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Members_Demo");
-
-        XLSX.writeFile(workbook, "TCWA_Members_Bulk_Upload_Demo.xlsx");
-    };
-
-    const handleBulkUpload = async () => {
-        if (!uploadFile) {
-            toast.info("Please choose an Excel file first.");
-            return;
-        }
-        setIsUploading(true);
-
-        try {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    
-                    let insertedCount = 0;
-                    let failedCount = 0;
-                    let errorsList = [];
-                    
-                    // Keep track of IDs processed in this batch to prevent duplicates
-                    const processedIds = new Set();
-
-                    for (let i = 0; i < jsonData.length; i++) {
-                        const row = jsonData[i];
-                        const rowNum = i + 2; // +1 for 0-index, +1 for header
-                        
-                        try {
-                            const membershipId = (row["Membership ID"] || "").toString().trim().toUpperCase();
-                            const name = (row["Name"] || "").toString().trim();
-                            const memberType = (row["Member Type"] || "").toString().trim();
-                            const mobileNumber = (row["Mobile Number"] || "").toString().trim().replace(/\D/g, "");
-                            const email = (row["Email"] || "").toString().trim();
-
-                            if (!membershipId || !name || !memberType || !mobileNumber) {
-                                throw new Error("Missing required fields (Membership ID, Name, Member Type, or Mobile Number)");
-                            }
-                            if (mobileNumber.length !== 10) {
-                                throw new Error("Mobile Number must be 10 digits");
-                            }
-                            if (memberType !== "Life Time Member" && memberType !== "Associate Member") {
-                                throw new Error("Invalid Member Type (Must be 'Life Time Member' or 'Associate Member')");
-                            }
-
-                            if (processedIds.has(membershipId)) {
-                                throw new Error(`Duplicate Membership ID ${membershipId} in the Excel file`);
-                            }
-
-                            if (savedMembers.some(m => m.membershipId === membershipId)) {
-                                throw new Error(`Membership ID ${membershipId} already exists in database`);
-                            }
-
-                            processedIds.add(membershipId);
-
-                            const memberRef = doc(db, 'members', membershipId);
-                            await setDoc(memberRef, {
-                                membershipId,
-                                name,
-                                mobileNumber,
-                                memberType,
-                                email,
-                                status: "Active",
-                                createdAt: new Date().toISOString()
-                            });
-                            insertedCount++;
-                        } catch (err) {
-                            failedCount++;
-                            errorsList.push({ row: rowNum, reason: err.message });
-                        }
-                    }
-
-                    setUploadSummary({ insertedCount, failedCount, errors: errorsList });
-                    
-                    if (insertedCount > 0 && failedCount === 0) {
-                        toast.success(`Bulk upload completed. Inserted: ${insertedCount}`);
-                    } else if (insertedCount > 0 && failedCount > 0) {
-                        toast.warning(`Bulk upload partially completed. Inserted: ${insertedCount}, Failed: ${failedCount}`);
-                    } else {
-                        toast.error(`Bulk upload failed. Failed rows: ${failedCount}`);
-                    }
-
-                    setUploadFile(null);
-                    if (fileInputRef.current) fileInputRef.current.value = "";
-                    if (insertedCount > 0) setActiveTab("saved");
-
-                } catch (err) {
-                    toast.error("Failed to parse Excel file. Ensure it is a valid format.");
-                    console.error(err);
-                } finally {
-                    setIsUploading(false);
-                }
-            };
-            reader.readAsArrayBuffer(uploadFile);
-        } catch (error) {
-            toast.error(`An error occurred during file upload: ${error.message || error}`);
-            setIsUploading(false);
-        }
-    };
-
-    const handleResetBulkUpload = () => {
-        setUploadFile(null);
-        setUploadSummary(null);
-        if (fileInputRef.current) {
-            fileInputRef.current.value = "";
         }
     };
 
@@ -333,7 +220,7 @@ export default function MembersPage() {
             </div>
 
             <div className="w-full mt-3">
-                <div className="flex overflow-x-auto only-scroll-width md:grid md:grid-cols-3 shadow-sm rounded-t-md">
+                <div className="flex overflow-x-auto only-scroll-width md:grid md:grid-cols-2 shadow-sm rounded-t-md">
                     <div className="min-w-36 flex-1 border-b border-zinc-200 md:min-w-0">
                         <button
                             type="button"
@@ -346,21 +233,6 @@ export default function MembersPage() {
                             <span className="inline-flex items-center gap-2">
                                 <FaUserPlus className="text-sm" />
                                 <span>Single Add</span>
-                            </span>
-                        </button>
-                    </div>
-                    <div className="min-w-36 flex-1 border-b border-zinc-200 md:min-w-0">
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab("bulk")}
-                            className={`w-full px-4 py-3 text-sm font-semibold transition text-center cursor-pointer whitespace-nowrap ${activeTab === "bulk"
-                                ? "bg-white text-zinc-900 border border-zinc-300 border-b-white -mb-px"
-                                : "bg-zinc-50 text-zinc-500 border border-transparent hover:text-zinc-700"
-                                }`}
-                        >
-                            <span className="inline-flex items-center gap-2">
-                                <FiUpload className="text-sm" />
-                                <span>Bulk Import</span>
                             </span>
                         </button>
                     </div>
@@ -430,6 +302,20 @@ export default function MembersPage() {
                                         error={errors.email}
                                     />
                                 </div>
+                                {formData.memberType === "Associate Member" && (
+                                    <div>
+                                        <CustomInput
+                                            label="Validity Years *"
+                                            type="number"
+                                            min="1"
+                                            max="5"
+                                            value={formData.validityYears}
+                                            onChange={(e) => handleNumberChange("validityYears", e.target.value, 1)}
+                                            placeholder="Enter 1 to 5 years"
+                                            error={errors.validityYears}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex justify-end mt-8 border-t border-gray-100 pt-5">
@@ -442,134 +328,6 @@ export default function MembersPage() {
                             </div>
                         </div>
                     </form>
-                ) : activeTab === "bulk" ? (
-                    <div className="border border-zinc-200 border-t-0 bg-white px-6 md:px-10 pt-6 md:pt-8 pb-7 md:pb-10 rounded-b-md shadow-sm">
-                        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-                            <div>
-                                <h3 className="text-lg font-bold">Bulk Members Import</h3>
-                                <p className="text-sm text-zinc-500 mt-1">Upload `.xlsx`, `.xls`, or `.csv` file using the exact template columns.</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={handleDownloadDemo}
-                                className="inline-flex items-center justify-center gap-2 rounded-md bg-zinc-100 px-3 py-2 text-sm font-semibold text-zinc-700 border border-zinc-300 hover:bg-zinc-200 transition-colors w-fit"
-                            >
-                                <FiDownload className="text-lg" />
-                                <span className="hidden sm:inline">Download Demo</span>
-                            </button>
-                        </div>
-
-                        <div className="mt-4 rounded-md border border-dashed border-zinc-300 bg-zinc-50 px-4 py-6">
-                            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                                <div>
-                                    <p className="text-sm font-semibold text-zinc-700">Select your bulk upload file</p>
-                                    <p className="text-xs text-zinc-500 mt-1">Accepted formats: `.xlsx`, `.xls`, `.csv`</p>
-                                </div>
-                                <label className="inline-flex items-center justify-center gap-2 cursor-pointer rounded-md bg-white px-4 py-2 text-sm font-semibold text-zinc-700 border border-zinc-300 hover:bg-zinc-100">
-                                    <FiUpload className="text-sm" />
-                                    <span>Choose File</span>
-                                    <input
-                                        ref={fileInputRef}
-                                        type="file"
-                                        accept=".xlsx,.xls,.csv"
-                                        className="hidden"
-                                        onChange={(e) => {
-                                            setUploadFile(e.target.files?.[0] || null);
-                                            setUploadSummary(null);
-                                        }}
-                                    />
-                                </label>
-                            </div>
-
-                            {uploadFile ? (
-                                <div className="mt-5 rounded-md border border-green-200 bg-green-50 px-4 py-4">
-                                    <div className="flex items-start gap-3">
-                                        <FiCheckCircle className="mt-0.5 text-lg text-green-600" />
-                                        <div>
-                                            <p className="text-sm font-semibold text-green-800">File ready for upload</p>
-                                            <p className="text-sm text-zinc-700">{uploadFile.name}</p>
-                                            <p className="text-xs text-zinc-500 mt-1">
-                                                {(uploadFile.size / 1024).toFixed(1)} KB
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                                        <CustomButton
-                                            label={(
-                                                <span className="inline-flex items-center gap-2">
-                                                    <FiUpload className="text-sm" />
-                                                    <span>{isUploading ? "Uploading..." : "Upload File"}</span>
-                                                </span>
-                                            )}
-                                            onClick={handleBulkUpload}
-                                            disabled={!uploadFile || isUploading}
-                                        />
-                                        <CustomButton
-                                            label={(
-                                                <span className="inline-flex items-center gap-2">
-                                                    <FiTrash2 className="text-sm" />
-                                                    <span>Remove</span>
-                                                </span>
-                                            )}
-                                            onClick={() => {
-                                                setUploadFile(null);
-                                                setUploadSummary(null);
-                                            }}
-                                            bgColor="bg-white"
-                                            textColor="text-zinc-700"
-                                            className="border border-zinc-300"
-                                        />
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="mt-5 rounded-md border border-zinc-200 bg-white px-4 py-3">
-                                    <p className="text-sm text-zinc-500">No file selected yet. Choose a file to continue bulk upload.</p>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="mt-4 text-sm text-zinc-600">
-                            <p className="font-semibold">Required columns:</p>
-                            <p className="bg-zinc-100 p-2 rounded mt-1 border border-zinc-200">Membership ID, Name, Member Type, Mobile Number, Email</p>
-                        </div>
-
-                        {uploadSummary && (
-                            <div className="mt-5 rounded-md border border-zinc-200 bg-white p-4">
-                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-zinc-100 pb-3">
-                                    <p className="text-sm font-bold text-zinc-800">Upload Results Summary</p>
-                                    <CustomButton
-                                        label="Reset Upload"
-                                        onClick={handleResetBulkUpload}
-                                        bgColor="bg-white"
-                                        textColor="text-zinc-700"
-                                        className="border border-zinc-300"
-                                    />
-                                </div>
-                                <div className="mt-3 grid grid-cols-2 gap-3 max-w-md">
-                                    <div className="rounded-md bg-green-50 px-4 py-3 border border-green-200">
-                                        <p className="text-xs font-semibold text-green-700">Inserted</p>
-                                        <p className="text-xl font-bold text-green-800 mt-1">{uploadSummary.insertedCount}</p>
-                                    </div>
-                                    <div className="rounded-md bg-red-50 px-4 py-3 border border-red-200">
-                                        <p className="text-xs font-semibold text-red-700">Failed</p>
-                                        <p className="text-xl font-bold text-red-800 mt-1">{uploadSummary.failedCount}</p>
-                                    </div>
-                                </div>
-                                {uploadSummary.errors?.length > 0 && (
-                                    <div className="mt-4 max-h-60 overflow-y-auto rounded-md border border-red-100 bg-red-50 p-3.5">
-                                        <p className="text-sm font-bold text-red-800 mb-2">Failed Rows & Error Details</p>
-                                        <div className="space-y-1.5">
-                                            {uploadSummary.errors.map((item, idx) => (
-                                                <p key={`${item.row}-${idx}`} className="text-xs font-medium text-red-600">
-                                                    Row {item.row}: {item.reason}
-                                                </p>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
                 ) : (
                     <div className="border border-zinc-200 border-t-0 bg-white px-3 md:px-6 pt-5 pb-6 rounded-b-md shadow-sm">
                         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
