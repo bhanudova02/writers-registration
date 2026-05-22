@@ -6,7 +6,8 @@ import CustomInput from "../../components/custom/CustomInput";
 import { CustomSelect } from "../../components/custom/CustomSelect";
 import CustomButton from "../../components/custom/CustomButton";
 import { collection, onSnapshot, doc, setDoc, query, orderBy } from 'firebase/firestore';
-import { db } from '../../firebase';
+import { db, auth } from '../../firebase';
+import { logAdminActivity } from '../../lib/logger';
 import EditMemberModal from "../../components/members/EditMemberModal";
 
 const memberTypeOptions = [
@@ -179,6 +180,9 @@ export default function MembersPage() {
                 createdAt: createdAt.toISOString()
             });
 
+            const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
+            await logAdminActivity(adminEmail, "Add Member", `Added new member: ${docId} - ${formData.name.trim()}`);
+
             toast.success("Member added successfully!");
             setFormData(initialFormData);
             setErrors({});
@@ -201,6 +205,10 @@ export default function MembersPage() {
         try {
             const memberRef = doc(db, 'members', membershipId);
             await setDoc(memberRef, updatedFields, { merge: true });
+            
+            const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
+            await logAdminActivity(adminEmail, "Edit Member", `Updated member profile: ${membershipId}`);
+
             toast.success(`Member ${membershipId} updated successfully!`);
             setIsEditModalOpen(false);
             setSelectedMember(null);

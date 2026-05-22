@@ -4,11 +4,13 @@ import { MdLogout } from 'react-icons/md';
 import { LuCheck, LuMenu } from 'react-icons/lu';
 import { Link } from 'react-router-dom';
 import { auth } from '../firebase';
+import { logAdminActivity } from '../lib/logger';
 
 export function Header({ user, mobileNavOpen, setMobileNavOpen }) {
     const [profileOpen, setProfileOpen] = useState(false);
 
     const handleLogout = async () => {
+        await logAdminActivity(user.email || user.displayName, "Logout", "User logged out of admin dashboard");
         if (user?.isEmployee) {
             sessionStorage.removeItem('employee_admin');
         } else {

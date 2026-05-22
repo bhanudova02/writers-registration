@@ -7,6 +7,7 @@ import CustomButton from '../components/custom/CustomButton'
 import CustomInput from '../components/custom/CustomInput'
 import { isAllowedAdmin } from '../App'
 import { useNavigate } from 'react-router-dom'
+import { logAdminActivity } from '../lib/logger'
 
 const bootstrapAdminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '')
   .split(',')
@@ -53,6 +54,7 @@ export default function AdminLoginPage({ onLogin }) {
       }
       sessionStorage.setItem('employee_admin', JSON.stringify(employee))
       onLogin(employee)
+      await logAdminActivity(employee.email || employee.username, "Login", "User logged into admin dashboard via credentials")
       navigate('/')
     } catch (loginError) {
       setError(loginError.message || 'Employee login failed.')
@@ -75,6 +77,7 @@ export default function AdminLoginPage({ onLogin }) {
       }
 
       onLogin(result.user)
+      await logAdminActivity(result.user.email, "Login", "User logged into admin dashboard via Google SSO")
       navigate('/')
     } catch (loginError) {
       setError(loginError.message || 'Google login failed.')

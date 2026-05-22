@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { FaFileSignature, FaSearch } from "react-icons/fa";
 import { FiCheckCircle, FiXCircle, FiEye, FiTrendingUp } from "react-icons/fi";
 import { collection, onSnapshot, doc, updateDoc, query, orderBy } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db, auth } from "../../firebase";
 import CustomButton from "../../components/custom/CustomButton";
 import { toast } from "react-toastify";
+import { logAdminActivity } from "../../lib/logger";
 
 export default function RegistrationsPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -58,12 +59,14 @@ export default function RegistrationsPage() {
     const rejectedCount = registrations.filter(r => r.status === "Rejected").length;
 
     // Approve handler
-    const handleApprove = async (regId) => {
+    const handleApprove = async (reg) => {
         try {
-            const regRef = doc(db, "registrations", regId);
+            const regRef = doc(db, "registrations", reg.id);
             await updateDoc(regRef, {
                 status: "Approved"
             });
+            const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
+            await logAdminActivity(adminEmail, "Approve Script", `Approved script registration: ${reg.registrationId || reg.id} by ${reg.writerName}`);
             toast.success("Script registration approved successfully!");
         } catch (error) {
             console.error(error);
@@ -213,7 +216,7 @@ export default function RegistrationsPage() {
                                                         bgColor="bg-green-600 hover:bg-green-700"
                                                         textColor="text-white"
                                                         className="py-1 px-2.5 text-xs font-semibold"
-                                                        onClick={() => handleApprove(reg.id)}
+                                                        onClick={() => handleApprove(reg)}
                                                     />
                                                 )}
                                             </div>
