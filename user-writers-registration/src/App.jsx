@@ -750,7 +750,7 @@ export default function App() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-950/10 via-zinc-950 to-zinc-950 pointer-events-none" />
 
       {/* HEADER SECTION */}
-      <header className="sticky top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/70">
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-zinc-800/80 bg-zinc-950/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-950/80">
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 py-4">
           <div className="flex items-center gap-2.5">
             <div className="h-11 w-11 rounded bg-white/95 p-1 shadow-sm ring-1 ring-amber-500/20 flex items-center justify-center">
@@ -771,7 +771,7 @@ export default function App() {
       </header>
 
       {/* MAIN CONTAINER */}
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 relative z-10 space-y-6">
+      <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pt-28 pb-6 relative z-10 space-y-6">
 
         {/* MEMBERSHIP PROFILE CARD */}
         <section className="bg-zinc-900/50 border border-zinc-800 p-5 rounded-lg grid gap-4 md:grid-cols-4 items-center">
