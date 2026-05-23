@@ -92,6 +92,16 @@ export default function Login({ setMember, setIsLoggedIn }) {
       setCanResend(false);
     } catch (error) {
       console.error("Firebase sendOtp failed:", error);
+      
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (e) {
+          console.error("Error clearing recaptcha", e);
+        }
+        window.recaptchaVerifier = null;
+      }
+      
       const errorCode = error.code || '';
       const errorMessage = error.message || String(error);
 
@@ -119,12 +129,36 @@ export default function Login({ setMember, setIsLoggedIn }) {
     return () => clearInterval(interval);
   }, [showOtpScreen, resendTimer]);
 
+  useEffect(() => {
+    return () => {
+      if (window.recaptchaVerifier) {
+        try {
+          window.recaptchaVerifier.clear();
+        } catch (e) {
+          console.error("Error clearing recaptcha on unmount", e);
+        }
+        window.recaptchaVerifier = null;
+      }
+    };
+  }, []);
+
   const handleResendOtp = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (!canResend) return;
+    
+    setOtpCode('');
+    setOtpError('');
     setResendTimer(60);
     setCanResend(false);
-    setOtpError('');
+    
+    // Clear old recaptcha to force a fresh one for resend and avoid errors
+    if (window.recaptchaVerifier) {
+      try {
+        window.recaptchaVerifier.clear();
+      } catch (err) {}
+      window.recaptchaVerifier = null;
+    }
+    
     await handleVerifyDetails(e || new Event('submit'));
   };
 
@@ -161,7 +195,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
               <ShieldAlert size={12} />
               <span>Secure Writer Portal</span>
             </div>
-            
+
             {/* Main Heading */}
             <div>
               <h1 className="text-3xl sm:text-4xl font-extrabold leading-tight tracking-tight text-slate-900">
@@ -185,7 +219,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
                 </div>
                 <p className="text-orange-500 font-bold text-xl">2,600+</p>
                 <p className="text-slate-900 text-[11px] font-bold mt-1">Active Members</p>
-                <p className="text-slate-500 text-[10px] font-medium mt-1.5 leading-relaxed">Growing community of<br/>creative writers</p>
+                <p className="text-slate-500 text-[10px] font-medium mt-1.5 leading-relaxed">Growing community of<br />creative writers</p>
               </div>
               <div className="p-5 bg-white border border-slate-100 rounded-2xl shadow-sm text-center flex flex-col items-center">
                 <div className="size-11 bg-purple-50 rounded-full flex items-center justify-center text-purple-600 mb-3">
@@ -193,7 +227,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
                 </div>
                 <p className="text-purple-600 font-bold text-xl">100%</p>
                 <p className="text-slate-900 text-[11px] font-bold mt-1">Script Privacy</p>
-                <p className="text-slate-500 text-[10px] font-medium mt-1.5 leading-relaxed">End-to-end encryption<br/>for total protection</p>
+                <p className="text-slate-500 text-[10px] font-medium mt-1.5 leading-relaxed">End-to-end encryption<br />for total protection</p>
               </div>
             </div>
 
@@ -330,7 +364,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
                 )}
                 <div className="flex items-start gap-3 p-4 bg-orange-50 rounded-xl border border-orange-100/50">
                   <p className="text-xs text-slate-700 font-medium leading-relaxed">
-                    Real OTP sent via SMS to <span className="font-extrabold text-slate-900">{phone}</span>.
+                    OTP sent via SMS to <span className="font-extrabold text-slate-900">{phone}</span>.
                   </p>
                 </div>
                 <div>
