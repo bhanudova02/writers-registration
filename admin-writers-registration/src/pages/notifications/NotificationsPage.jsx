@@ -7,6 +7,8 @@ export default function NotificationsPage() {
     const [logs, setLogs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [errorMsg, setErrorMsg] = useState(null);
+
     useEffect(() => {
         const q = query(collection(db, "admin_logs"), orderBy("timestamp", "desc"), limit(100));
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -15,6 +17,11 @@ export default function NotificationsPage() {
                 list.push({ id: docSnap.id, ...docSnap.data() });
             });
             setLogs(list);
+            setIsLoading(false);
+            setErrorMsg(null);
+        }, (error) => {
+            console.error("Error fetching admin logs:", error);
+            setErrorMsg(error.message);
             setIsLoading(false);
         });
         return () => unsubscribe();
@@ -82,6 +89,11 @@ export default function NotificationsPage() {
                 {isLoading ? (
                     <div className="py-8 text-center text-zinc-400 text-xs font-bold">
                         Loading activity logs...
+                    </div>
+                ) : errorMsg ? (
+                    <div className="py-8 px-4 text-center text-red-500 text-xs font-bold border border-red-200 bg-red-50 rounded">
+                        Error loading logs: {errorMsg}
+                        <div className="text-[10px] text-red-400 mt-2">Please check Firebase Rules for 'admin_logs' collection or Index requirements.</div>
                     </div>
                 ) : logs.length === 0 ? (
                     <div className="py-8 text-center text-zinc-400 text-xs font-bold border border-dashed border-zinc-200 rounded">
