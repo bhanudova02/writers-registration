@@ -338,9 +338,22 @@ export default function Dashboard({ member, setMember, onLogout }) {
         
         // Add signature image to bottom right
         docPdf.addImage(signImg, 'PNG', 145, startY + lineHeight * 11, 40, 15);
+        
+        // Add bordered text container below the signature
+        docPdf.setDrawColor(180, 180, 180); // gray border
+        docPdf.rect(125, startY + lineHeight * 11 + 16, 80, 18);
+        
+        docPdf.setTextColor(1, 10, 80); // Dark blue text
         docPdf.setFontSize(10);
-        docPdf.setTextColor(0, 0, 0);
-        docPdf.text("Authorized Signatory", 165, startY + lineHeight * 11 + 20, null, null, "center");
+        docPdf.setFont("helvetica", "bold");
+        docPdf.text("UMARJI ANURADHA", 165, startY + lineHeight * 11 + 21, null, null, "center");
+        
+        docPdf.setTextColor(1, 10, 80);
+        docPdf.setFontSize(9);
+        docPdf.setFont("helvetica", "bold");
+        docPdf.text("General Secretary", 165, startY + lineHeight * 11 + 26, null, null, "center");
+        docPdf.text("Telugu Cine Writers Association", 165, startY + lineHeight * 11 + 31, null, null, "center");
+        
       } catch (e) {
         console.error("Could not load signature image", e);
       }
