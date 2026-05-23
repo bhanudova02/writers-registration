@@ -16,6 +16,26 @@ export function Header({ user, mobileNavOpen, setMobileNavOpen }) {
         } else {
             await auth.signOut();
         }
+
+        // Completely clear all caches to fix stale deployment issues
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        // Clear all cookies
+        document.cookie.split(";").forEach((c) => {
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        // Clear service worker caches
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                names.forEach(name => {
+                    caches.delete(name);
+                });
+            });
+        }
+
+        // Hard reload to flush SPA state
         window.location.href = "/admin-login";
     };
 

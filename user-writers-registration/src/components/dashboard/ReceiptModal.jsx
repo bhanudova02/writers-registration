@@ -35,7 +35,7 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                 Please download your stamped receipt now. This receipt can be downloaded only one time. Once you download it, the receipt will be locked automatically.
               </div>
               <div className="rounded border border-red-200 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">
-                If you refresh this page or close this modal without downloading, you can still use the receipt log below, but after one successful download any future download requires Razorpay payment again.
+                If you refresh this page or close this modal without downloading, you can still use the receipt log below, but after one successful download, any future download will require a new payment.
               </div>
               <button
                 type="button"
@@ -49,7 +49,7 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
           ) : (
             <>
               <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950">
-                Re-download requires Razorpay payment of ₹{receiptModal.registration.amount}. After successful payment, the receipt download will unlock again.
+                Re-download requires a payment of ₹{receiptModal.registration.amount}. After successful payment, the receipt download will unlock again.
               </div>
               <button
                 type="button"
