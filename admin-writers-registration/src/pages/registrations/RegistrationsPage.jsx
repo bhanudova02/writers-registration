@@ -100,7 +100,7 @@ export default function RegistrationsPage() {
             </div>
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
                         <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Scripts</h3>
@@ -126,15 +126,6 @@ export default function RegistrationsPage() {
                     </div>
                     <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
                         <FiCheckCircle className="text-green-500 text-base sm:text-lg" />
-                    </div>
-                </div>
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Rejected</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">{rejectedCount}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-red-50 rounded border border-red-100">
-                        <FiXCircle className="text-red-500 text-base sm:text-lg" />
                     </div>
                 </div>
             </div>
@@ -164,8 +155,7 @@ export default function RegistrationsPage() {
                                 dropdownData={[
                                     { value: "All", label: "All Statuses" },
                                     { value: "Pending", label: "Pending" },
-                                    { value: "Approved", label: "Approved" },
-                                    { value: "Rejected", label: "Rejected" }
+                                    { value: "Approved", label: "Approved" }
                                 ]}
                                 value={selectedStatus}
                                 onChange={setSelectedStatus}
