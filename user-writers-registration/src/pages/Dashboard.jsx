@@ -4,6 +4,7 @@ import { doc, updateDoc, collection, query, where, onSnapshot, setDoc } from 'fi
 import { db } from '../firebase';
 import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'react-toastify';
+import { jsPDF } from 'jspdf';
 import { normalizeTitle, loadRazorpayCheckout } from '../lib/utils';
 
 // Use locally hosted worker from the public directory.
@@ -238,34 +239,82 @@ export default function Dashboard({ member, setMember, onLogout }) {
       const regRef = doc(db, 'registrations', reg.registrationId);
       await updateDoc(regRef, { downloadCount: 1 });
 
-      const element = document.createElement("a");
-      const file = new Blob([
-        `=============================================\n`,
-        `         TELUGU CINE WRITERS ASSOCIATION     \n`,
-        `             OFFICIAL STAMPED RECEIPT        \n`,
-        `=============================================\n\n`,
-        `REGISTRATION ID : ${reg.registrationId}\n`,
-        `SUBMISSION DATE : ${new Date(reg.createdAt).toLocaleString()}\n\n`,
-        `WRITER NAME     : ${reg.writerName}\n`,
-        `MEMBERSHIP ID   : ${reg.membershipId}\n`,
-        `SCRIPT TITLE    : ${reg.title}\n`,
-        `CATEGORY        : ${reg.category}\n`,
-        `PAGES COUNT     : ${reg.pageCount} Pages\n`,
-        `FEE CHARGED     : ₹${reg.amount}\n`,
-        `PAYMENT STATUS  : SUCCESSFUL (Razorpay Verified)\n\n`,
-        `---------------------------------------------\n`,
-        `VERIFICATION STATUS: APPROVED AUTOMATICALLY  \n`,
-        `SECURITY SHIELD    : 100% WRITER PRIVACY ACTIVE\n`,
-        `---------------------------------------------\n\n`,
-        `* This is a computer generated stamped document.\n`,
-        `* One-time download restriction policy is applied.\n`,
-        `* Re-download requires fresh payment as per SOP.\n`
-      ], {type: 'text/plain'});
-      element.href = URL.createObjectURL(file);
-      element.download = `TCWA_Receipt_${reg.registrationId}.txt`;
-      document.body.appendChild(element);
-      element.click();
-      document.body.removeChild(element);
+      const docPdf = new jsPDF();
+      docPdf.setFontSize(16);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text("TELUGU CINE WRITERS ASSOCIATION", 105, 20, null, null, "center");
+      docPdf.setFontSize(14);
+      docPdf.text("OFFICIAL STAMPED RECEIPT", 105, 30, null, null, "center");
+      
+      docPdf.setLineWidth(0.5);
+      docPdf.line(20, 35, 190, 35);
+      
+      docPdf.setFontSize(11);
+      docPdf.setFont("helvetica", "normal");
+      
+      const startY = 45;
+      const lineHeight = 8;
+      
+      docPdf.text(`Name of the Member:`, 20, startY);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text(`${reg.writerName}`, 70, startY);
+      docPdf.setFont("helvetica", "normal");
+
+      docPdf.text(`Working Title:`, 20, startY + lineHeight * 1);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text(`${reg.title}`, 70, startY + lineHeight * 1);
+      docPdf.setFont("helvetica", "normal");
+      
+      docPdf.text(`Category:`, 20, startY + lineHeight * 2);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text(`${reg.category}`, 70, startY + lineHeight * 2);
+      docPdf.setFont("helvetica", "normal");
+      
+      docPdf.text(`Total Pages:`, 20, startY + lineHeight * 3);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text(`${reg.pageCount}`, 70, startY + lineHeight * 3);
+      docPdf.setFont("helvetica", "normal");
+      
+      docPdf.text(`Membership Id No.:`, 20, startY + lineHeight * 4);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text(`${reg.membershipId}`, 70, startY + lineHeight * 4);
+      docPdf.setFont("helvetica", "normal");
+      
+      docPdf.text(`Receipt No.:`, 20, startY + lineHeight * 5);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text(`${reg.registrationId}`, 70, startY + lineHeight * 5);
+      docPdf.setFont("helvetica", "normal");
+      
+      docPdf.text(`Time:`, 20, startY + lineHeight * 6);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text(`${new Date(reg.createdAt).toLocaleString()}`, 70, startY + lineHeight * 6);
+      docPdf.setFont("helvetica", "normal");
+      
+      docPdf.text(`Amount:`, 20, startY + lineHeight * 7);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text(`Rs. ${reg.amount}`, 70, startY + lineHeight * 7);
+      docPdf.setFont("helvetica", "normal");
+      
+      docPdf.text(`Payment Status:`, 20, startY + lineHeight * 8);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.setTextColor(0, 150, 0); // Green color for success
+      docPdf.text(`SUCCESSFUL`, 70, startY + lineHeight * 8);
+      docPdf.setTextColor(0, 0, 0); // Reset to black
+      docPdf.setFont("helvetica", "normal");
+
+      docPdf.line(20, startY + lineHeight * 9, 190, startY + lineHeight * 9);
+      
+      docPdf.setFontSize(10);
+      docPdf.setTextColor(100, 100, 100);
+      docPdf.text(`VERIFICATION STATUS: APPROVED AUTOMATICALLY`, 20, startY + lineHeight * 10.5);
+      docPdf.text(`SECURITY SHIELD: 100% WRITER PRIVACY ACTIVE`, 20, startY + lineHeight * 11.5);
+      
+      docPdf.setFontSize(9);
+      docPdf.text(`* This is a computer generated stamped document.`, 20, startY + lineHeight * 13.5);
+      docPdf.text(`* One-time download restriction policy is applied.`, 20, startY + lineHeight * 14.5);
+      docPdf.text(`* Re-download requires fresh payment as per SOP.`, 20, startY + lineHeight * 15.5);
+      
+      docPdf.save(`TCWA_Receipt_${reg.registrationId}.pdf`);
 
       if (successRegistration?.registrationId === reg.registrationId) {
         setSuccessRegistration(prev => ({ ...prev, downloadCount: 1 }));

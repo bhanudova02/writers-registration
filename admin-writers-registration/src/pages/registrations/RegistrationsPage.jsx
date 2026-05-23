@@ -12,6 +12,7 @@ export default function RegistrationsPage() {
     const [selectedStatus, setSelectedStatus] = useState("All");
     const [registrations, setRegistrations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [viewReceipt, setViewReceipt] = useState(null);
 
     // Fetch registrations in real-time from Firestore
     useEffect(() => {
@@ -203,6 +204,13 @@ export default function RegistrationsPage() {
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 w-48">
                                             <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => setViewReceipt(reg)}
+                                                    className="p-1.5 bg-blue-50 text-blue-600 rounded border border-blue-200 hover:bg-blue-100 transition cursor-pointer"
+                                                    title="View Receipt Details"
+                                                >
+                                                    <FiEye size={14} />
+                                                </button>
                                                 <CustomButton
                                                     label="Privacy Shielded"
                                                     bgColor="bg-zinc-100"
@@ -228,6 +236,35 @@ export default function RegistrationsPage() {
                     </div>
                 )}
             </div>
+
+            {/* View Receipt Modal */}
+            {viewReceipt && (
+                <div className="fixed inset-0 z-[60] bg-black/60 px-4 flex items-center justify-center">
+                    <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white shadow-2xl">
+                        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg">
+                            <h3 className="text-base font-bold text-zinc-800">Receipt Details</h3>
+                            <button
+                                onClick={() => setViewReceipt(null)}
+                                className="text-zinc-500 hover:text-zinc-800 transition cursor-pointer"
+                            >
+                                <FiXCircle size={20} />
+                            </button>
+                        </div>
+                        <div className="p-5 space-y-3 text-sm font-medium text-zinc-700">
+                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Name of the Member:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.writerName}</span></div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Working Title:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.title}</span></div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Total Pages:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.pageCount}</span></div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Membership Id No.:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.membershipId}</span></div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Receipt No.:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.registrationId || viewReceipt.id}</span></div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Time:</span> <span className="font-bold text-zinc-900 text-right">{new Date(viewReceipt.createdAt).toLocaleString()}</span></div>
+                            <div className="flex justify-between"><span className="text-zinc-500">Amount:</span> <span className="font-bold text-green-600 text-right">₹{viewReceipt.amount}</span></div>
+                        </div>
+                        <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-end">
+                            <button onClick={() => setViewReceipt(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
