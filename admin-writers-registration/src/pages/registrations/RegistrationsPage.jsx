@@ -10,7 +10,6 @@ import { logAdminActivity } from "../../lib/logger";
 
 export default function RegistrationsPage() {
     const [searchQuery, setSearchQuery] = useState("");
-    const [selectedStatus, setSelectedStatus] = useState("All");
     const [registrations, setRegistrations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [viewReceipt, setViewReceipt] = useState(null);
@@ -20,10 +19,10 @@ export default function RegistrationsPage() {
     const [pageSize, setPageSize] = useState(10);
     const pageSizeOptions = [10, 20, 50, 100];
 
-    // Reset page to 1 on search or status filter
+    // Reset page to 1 on search filter
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, selectedStatus]);
+    }, [searchQuery]);
 
     // Fetch registrations in real-time from Firestore
     useEffect(() => {
@@ -60,8 +59,7 @@ export default function RegistrationsPage() {
                               writer.toLowerCase().includes(searchQuery.toLowerCase()) ||
                               regId.toLowerCase().includes(searchQuery.toLowerCase());
         
-        const matchesStatus = selectedStatus === "All" || reg.status === selectedStatus;
-        return matchesSearch && matchesStatus;
+        return matchesSearch;
     });
 
     // Pagination logic
@@ -70,64 +68,11 @@ export default function RegistrationsPage() {
     const fromIndex = (currentPage - 1) * pageSize + 1;
     const toIndex = Math.min(currentPage * pageSize, filteredRegs.length);
 
-    // Dynamic metrics
-    const totalScripts = registrations.length;
-    const pendingCount = registrations.filter(r => r.status === "Pending").length;
-    const approvedCount = registrations.filter(r => r.status === "Approved").length;
-    const rejectedCount = registrations.filter(r => r.status === "Rejected").length;
-
-    // Approve handler
-    const handleApprove = async (reg) => {
-        try {
-            const regRef = doc(db, "registrations", reg.id);
-            await updateDoc(regRef, {
-                status: "Approved"
-            });
-            const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
-            await logAdminActivity(adminEmail, "Approve Script", `Approved script registration: ${reg.registrationId || reg.id} by ${reg.writerName}`);
-            toast.success("Script registration approved successfully!");
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to update status.");
-        }
-    };
-
     return (
         <div className="p-3 sm:p-6">
             <div className="flex items-center gap-2 mb-4 sm:mb-6">
                 <FaFileSignature className="text-lg md:text-xl text-zinc-700 -mt-0.5" />
                 <h1 className="text-base sm:text-xl font-bold text-gray-800">Movie Script Registrations</h1>
-            </div>
-
-            {/* Metrics Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Scripts</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-zinc-800 mt-1">{totalScripts}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-zinc-50 rounded border border-zinc-100">
-                        <FaFileSignature className="text-zinc-500 text-base sm:text-lg" />
-                    </div>
-                </div>
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pending Approval</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">{pendingCount}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-amber-50 rounded border border-amber-100">
-                        <FiTrendingUp className="text-amber-500 text-base sm:text-lg" />
-                    </div>
-                </div>
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Approved</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">{approvedCount}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
-                        <FiCheckCircle className="text-green-500 text-base sm:text-lg" />
-                    </div>
-                </div>
             </div>
 
             {/* Main Action Card */}
@@ -148,19 +93,6 @@ export default function RegistrationsPage() {
                                 placeholder="Search script, writer..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                        <div className="w-full sm:w-40 z-10">
-                            <CustomSelect
-                                dropdownData={[
-                                    { value: "All", label: "All Statuses" },
-                                    { value: "Pending", label: "Pending" },
-                                    { value: "Approved", label: "Approved" }
-                                ]}
-                                value={selectedStatus}
-                                onChange={setSelectedStatus}
-                                buttonClassName="h-9 py-0"
-                                label={null}
                             />
                         </div>
                     </div>
@@ -223,15 +155,6 @@ export default function RegistrationsPage() {
                                                     <FiEye size={13} />
                                                     View
                                                 </button>
-                                                {reg.status === "Pending" && (
-                                                    <CustomButton
-                                                        label="Approve"
-                                                        bgColor="bg-green-600 hover:bg-green-700"
-                                                        textColor="text-white"
-                                                        className="py-1 px-2.5 text-[11px] font-semibold"
-                                                        onClick={() => handleApprove(reg)}
-                                                    />
-                                                )}
                                             </div>
                                         </td>
                                     </tr>
