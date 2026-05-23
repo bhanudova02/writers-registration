@@ -353,9 +353,9 @@ export default function RenewalsPage() {
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
                                                     <CustomButton
                                                         label="View"
-                                                        bgColor="bg-blue-600 hover:bg-blue-700"
+                                                        bgColor="bg-zinc-800 hover:bg-zinc-900"
                                                         textColor="text-white"
-                                                        className="py-1 px-2 text-xs font-semibold whitespace-nowrap inline-flex"
+                                                        className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm"
                                                         onClick={() => setViewModalData({ isOpen: true, member: renew })}
                                                     />
                                                 </td>
@@ -363,9 +363,9 @@ export default function RenewalsPage() {
                                                     {renew.memberType === "Associate Member" ? (
                                                         <CustomButton
                                                             label="Renew"
-                                                            bgColor="bg-green-600 hover:bg-green-700"
+                                                            bgColor="bg-zinc-800 hover:bg-zinc-900"
                                                             textColor="text-white"
-                                                            className="py-1 px-2 text-xs font-semibold whitespace-nowrap inline-flex"
+                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm"
                                                             onClick={() => triggerRenewModal(renew.id, renew.name)}
                                                         />
                                                     ) : (
@@ -377,18 +377,18 @@ export default function RenewalsPage() {
                                                         {renew.memberType === "Associate Member" ? (
                                                             <CustomButton
                                                                 label="Upgrade to Life"
-                                                                bgColor="bg-zinc-800 hover:bg-zinc-900"
+                                                                bgColor="bg-zinc-900 hover:bg-black"
                                                                 textColor="text-white"
-                                                                className="py-1 px-2 text-xs font-semibold whitespace-nowrap"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
                                                                 icon={FaUserGraduate}
                                                                 onClick={() => triggerUpgradeModal(renew.id, renew.name, "Life Time Member")}
                                                             />
                                                         ) : (
                                                             <CustomButton
                                                                 label="Make Associate"
-                                                                bgColor="bg-zinc-200 hover:bg-zinc-300"
-                                                                textColor="text-zinc-800"
-                                                                className="py-1 px-2 text-xs font-semibold whitespace-nowrap border border-zinc-300"
+                                                                bgColor="bg-zinc-700 hover:bg-zinc-800"
+                                                                textColor="text-white"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap border border-zinc-600 rounded-sm"
                                                                 onClick={() => triggerUpgradeModal(renew.id, renew.name, "Associate Member")}
                                                             />
                                                         )}
