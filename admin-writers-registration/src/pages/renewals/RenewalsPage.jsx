@@ -140,9 +140,7 @@ export default function RenewalsPage() {
     const totalAssociates = members.filter(m => m.memberType === "Associate Member").length;
     const overdueCount = members.filter(m => m.status === "Overdue").length;
     const activeCount = members.filter(m => m.status === "Active" && m.memberType === "Associate Member").length;
-    
-    // MTD Collected
-    const mtdCollected = recentTransactions.reduce((acc, curr) => acc + (parseFloat(curr.amount) || 0), 0);
+    // Removed MTD Collected
 
     // Record Offline Renewal
     const triggerRenewModal = (memberId, name) => {
@@ -154,12 +152,28 @@ export default function RenewalsPage() {
         setRenewModalData({ isOpen: false, memberId: '', name: '' });
 
         try {
-            const memberRef = doc(db, "members", memberId);
-            const nowStr = new Date().toISOString();
+            const memberToRenew = members.find(m => m.id === memberId);
+            const now = new Date();
+            let newCreatedAtDate = now;
+
+            if (memberToRenew && memberToRenew.createdAt) {
+                const currentCreatedDate = new Date(memberToRenew.createdAt);
+                const currentExpiryDate = new Date(currentCreatedDate);
+                currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
+
+                // If not expired yet, start the next year from the current expiry date
+                if (currentExpiryDate > now) {
+                    newCreatedAtDate = currentExpiryDate;
+                }
+            }
+
+            const nowStr = now.toISOString();
+            const newCreatedAtStr = newCreatedAtDate.toISOString();
             
-            // Extend the createdAt timestamp by 1 year from now
+            const memberRef = doc(db, "members", memberId);
+            
             await updateDoc(memberRef, {
-                createdAt: nowStr,
+                createdAt: newCreatedAtStr,
                 status: "Active"
             });
 
@@ -225,7 +239,7 @@ export default function RenewalsPage() {
             </div>
 
             {/* Metrics cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
                         <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Associate Members</h3>
@@ -251,15 +265,6 @@ export default function RenewalsPage() {
                     </div>
                     <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
                         <FiCheck className="text-green-500 text-base sm:text-lg" />
-                    </div>
-                </div>
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Fees Collected (MTD)</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">₹{mtdCollected.toLocaleString()}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-blue-50 rounded border border-blue-100">
-                        <FaRupeeSign className="text-blue-500 text-base sm:text-lg" />
                     </div>
                 </div>
             </div>
@@ -312,7 +317,7 @@ export default function RenewalsPage() {
                                 <table className="w-full min-w-[700px] border-collapse border border-zinc-200">
                                     <thead>
                                         <tr className="bg-zinc-100 border-b border-zinc-200">
-                                            {["Member ID", "Name", "Type", "Expires On", "Amount Due", "Status", "Actions"].map((head) => (
+                                            {["Member ID", "Name", "Type", "Expires On", "Amount Due", "Status", "Renew", "Actions"].map((head) => (
                                                 <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                                     {head}
                                                 </th>
@@ -344,17 +349,21 @@ export default function RenewalsPage() {
                                                         {renew.status}
                                                     </span>
                                                 </td>
-                                                <td className="border border-zinc-200 py-3 px-3 w-52 whitespace-nowrap">
-                                                    <div className="flex gap-2">
-                                                        {renew.memberType === "Associate Member" && renew.status !== "Active" && (
-                                                            <CustomButton
-                                                                label="Record & Renew"
-                                                                bgColor="bg-green-600 hover:bg-green-700"
-                                                                textColor="text-white"
-                                                                className="py-1 px-2 text-xs font-semibold whitespace-nowrap"
-                                                                onClick={() => triggerRenewModal(renew.id, renew.name)}
-                                                            />
-                                                        )}
+                                                <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
+                                                    {renew.memberType === "Associate Member" ? (
+                                                        <CustomButton
+                                                            label="Renew"
+                                                            bgColor="bg-green-600 hover:bg-green-700"
+                                                            textColor="text-white"
+                                                            className="py-1 px-2 text-xs font-semibold whitespace-nowrap inline-flex"
+                                                            onClick={() => triggerRenewModal(renew.id, renew.name)}
+                                                        />
+                                                    ) : (
+                                                        <span className="text-zinc-400 text-xs">-</span>
+                                                    )}
+                                                </td>
+                                                <td className="border border-zinc-200 py-3 px-3 w-40 whitespace-nowrap text-center">
+                                                    <div className="flex justify-center gap-2">
                                                         {renew.memberType === "Associate Member" ? (
                                                             <CustomButton
                                                                 label="Upgrade to Life"
@@ -495,9 +504,22 @@ export default function RenewalsPage() {
             </div>
 
             {/* Renew Modal */}
-            <Modal
-                isOpen={renewModalData.isOpen}
-                onClose={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
+            {(() => {
+                const modalMember = members.find(m => m.id === renewModalData.memberId);
+                let willExtendFrom = "today";
+                if (modalMember && modalMember.createdAt) {
+                    const currentCreatedDate = new Date(modalMember.createdAt);
+                    const currentExpiryDate = new Date(currentCreatedDate);
+                    currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
+                    if (currentExpiryDate > new Date()) {
+                        willExtendFrom = "their current expiry date";
+                    }
+                }
+                
+                return (
+                    <Modal
+                        isOpen={renewModalData.isOpen}
+                        onClose={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
                 title="Confirm Offline Renewal"
                 widthClass="max-w-md"
             >
@@ -506,7 +528,7 @@ export default function RenewalsPage() {
                         Please confirm that you have received an offline renewal payment of <span className="font-bold text-green-600">₹1,200</span> for <strong>{renewModalData.name}</strong> (ID: {renewModalData.memberId}).
                     </p>
                     <p className="mb-6 text-xs text-zinc-500 italic">
-                        This action will extend the membership by exactly 1 year from today and record a transaction in the database.
+                        This action will extend the membership by exactly 1 year from {willExtendFrom} and record a transaction in the database.
                     </p>
                     <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
                         <CustomButton
@@ -517,7 +539,7 @@ export default function RenewalsPage() {
                             className="border border-zinc-300"
                         />
                         <CustomButton
-                            label="Confirm Renewal"
+                            label="Update"
                             onClick={confirmRecordAndRenew}
                             bgColor="bg-green-600 hover:bg-green-700"
                             textColor="text-white"
@@ -525,6 +547,7 @@ export default function RenewalsPage() {
                     </div>
                 </div>
             </Modal>
+            );})()}
 
             {/* Upgrade to Life Time Modal */}
             <Modal
