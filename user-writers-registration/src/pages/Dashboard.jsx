@@ -233,7 +233,6 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const requestUnlockDownload = (reg) => setReceiptModal({ type: 'unlock', registration: reg });
 
   const handleDownloadReceipt = async (reg) => {
-    setReceiptModal({ type: null, registration: null });
     setIsDownloading(true);
     try {
       const regRef = doc(db, 'registrations', reg.registrationId);
@@ -363,6 +362,8 @@ export default function Dashboard({ member, setMember, onLogout }) {
       if (successRegistration?.registrationId === reg.registrationId) {
         setSuccessRegistration(prev => ({ ...prev, downloadCount: 1 }));
       }
+      
+      setReceiptModal({ type: null, registration: null });
     } catch (error) {
       console.error(error);
       toast.error("Download failed. Please try again.");
@@ -372,7 +373,6 @@ export default function Dashboard({ member, setMember, onLogout }) {
   };
 
   const handleUnlockDownload = async (reg) => {
-    setReceiptModal({ type: null, registration: null });
     if (!razorpayKeyId) {
       toast.error("Payment configuration is missing.");
       return;
@@ -423,6 +423,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
       toast.error(error.message || "Failed to unlock receipt download.");
     } finally {
       setIsDownloading(false);
+      setReceiptModal({ type: null, registration: null });
     }
   };
 
