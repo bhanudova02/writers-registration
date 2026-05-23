@@ -15,6 +15,10 @@ export default function DashboardHomePage() {
     const [recentMembers, setRecentMembers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [regsPage, setRegsPage] = useState(1);
+    const [membersPage, setMembersPage] = useState(1);
+    const PAGE_SIZE = 5;
+
     const [errorMsg, setErrorMsg] = useState(null);
 
     useEffect(() => {
@@ -52,7 +56,7 @@ export default function DashboardHomePage() {
 
             // Sort members by createdDate
             membersList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            setRecentMembers(membersList.slice(0, 5));
+            setRecentMembers(membersList);
 
             setStats(prev => ({
                 ...prev,
@@ -77,7 +81,7 @@ export default function DashboardHomePage() {
             });
 
             regsList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            setRecentRegs(regsList.slice(0, 5));
+            setRecentRegs(regsList);
 
             setStats(prev => ({
                 ...prev,
@@ -194,7 +198,7 @@ export default function DashboardHomePage() {
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {recentRegs.map((reg) => (
+                            {recentRegs.slice((regsPage - 1) * PAGE_SIZE, regsPage * PAGE_SIZE).map((reg) => (
                                 <div key={reg.id} className="flex justify-between items-center p-3 bg-zinc-50 rounded border border-zinc-100 text-xs">
                                     <div>
                                         <p className="font-extrabold text-zinc-800">{reg.title}</p>
@@ -210,6 +214,29 @@ export default function DashboardHomePage() {
                                     </div>
                                 </div>
                             ))}
+                            {recentRegs.length > PAGE_SIZE && (
+                                <div className="flex justify-between items-center pt-2 border-t border-zinc-100">
+                                    <span className="text-[10px] font-bold text-zinc-500">
+                                        Page {regsPage} of {Math.ceil(recentRegs.length / PAGE_SIZE)}
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <button
+                                            disabled={regsPage === 1}
+                                            onClick={() => setRegsPage(p => p - 1)}
+                                            className="px-2 py-1 bg-zinc-100 border border-zinc-200 rounded text-[10px] font-bold text-zinc-600 hover:bg-zinc-200 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                        >
+                                            Prev
+                                        </button>
+                                        <button
+                                            disabled={regsPage === Math.ceil(recentRegs.length / PAGE_SIZE)}
+                                            onClick={() => setRegsPage(p => p + 1)}
+                                            className="px-2 py-1 bg-zinc-100 border border-zinc-200 rounded text-[10px] font-bold text-zinc-600 hover:bg-zinc-200 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -238,7 +265,7 @@ export default function DashboardHomePage() {
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {recentMembers.map((member) => (
+                            {recentMembers.slice((membersPage - 1) * PAGE_SIZE, membersPage * PAGE_SIZE).map((member) => (
                                 <div key={member.id} className="flex justify-between items-center p-3 bg-zinc-50 rounded border border-zinc-100 text-xs">
                                     <div>
                                         <p className="font-extrabold text-zinc-800">{member.name}</p>
@@ -254,6 +281,29 @@ export default function DashboardHomePage() {
                                     </div>
                                 </div>
                             ))}
+                            {recentMembers.length > PAGE_SIZE && (
+                                <div className="flex justify-between items-center pt-2 border-t border-zinc-100">
+                                    <span className="text-[10px] font-bold text-zinc-500">
+                                        Page {membersPage} of {Math.ceil(recentMembers.length / PAGE_SIZE)}
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <button
+                                            disabled={membersPage === 1}
+                                            onClick={() => setMembersPage(p => p - 1)}
+                                            className="px-2 py-1 bg-zinc-100 border border-zinc-200 rounded text-[10px] font-bold text-zinc-600 hover:bg-zinc-200 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                        >
+                                            Prev
+                                        </button>
+                                        <button
+                                            disabled={membersPage === Math.ceil(recentMembers.length / PAGE_SIZE)}
+                                            onClick={() => setMembersPage(p => p + 1)}
+                                            className="px-2 py-1 bg-zinc-100 border border-zinc-200 rounded text-[10px] font-bold text-zinc-600 hover:bg-zinc-200 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

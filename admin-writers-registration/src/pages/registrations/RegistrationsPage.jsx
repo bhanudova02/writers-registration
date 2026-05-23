@@ -15,6 +15,16 @@ export default function RegistrationsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [viewReceipt, setViewReceipt] = useState(null);
 
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const pageSizeOptions = [10, 20, 50, 100];
+
+    // Reset page to 1 on search or status filter
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, selectedStatus]);
+
     // Fetch registrations in real-time from Firestore
     useEffect(() => {
         const regsRef = collection(db, "registrations");
@@ -53,6 +63,12 @@ export default function RegistrationsPage() {
         const matchesStatus = selectedStatus === "All" || reg.status === selectedStatus;
         return matchesSearch && matchesStatus;
     });
+
+    // Pagination logic
+    const totalPages = Math.ceil(filteredRegs.length / pageSize) || 1;
+    const paginatedRegs = filteredRegs.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    const fromIndex = (currentPage - 1) * pageSize + 1;
+    const toIndex = Math.min(currentPage * pageSize, filteredRegs.length);
 
     // Dynamic metrics
     const totalScripts = registrations.length;
@@ -137,7 +153,7 @@ export default function RegistrationsPage() {
                             </div>
                             <input
                                 type="text"
-                                className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 bg-zinc-50 text-zinc-800 placeholder-zinc-400"
+                                className="w-full pl-10 pr-3 py-1.5 border border-zinc-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 bg-zinc-50 text-zinc-800 placeholder-zinc-400"
                                 placeholder="Search script, writer..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -153,7 +169,7 @@ export default function RegistrationsPage() {
                                 ]}
                                 value={selectedStatus}
                                 onChange={setSelectedStatus}
-                                buttonClassName="h-10 py-0"
+                                buttonClassName="h-9 py-0"
                                 label={null}
                             />
                         </div>
@@ -175,22 +191,22 @@ export default function RegistrationsPage() {
                             <thead>
                                 <tr className="bg-zinc-100 border-b border-zinc-200">
                                     {["Reg ID", "Script Title", "Writer Name", "Category", "Pages Count", "Fee Paid", "Status", "Actions"].map((head) => (
-                                        <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
+                                        <th key={head} className={`border border-zinc-200 py-3 px-3 text-xs font-bold text-zinc-600 uppercase whitespace-nowrap ${head === 'Actions' || head === 'Status' ? 'text-center' : 'text-left'}`}>
                                             {head}
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredRegs.map((reg) => (
+                                {paginatedRegs.map((reg) => (
                                     <tr key={reg.id} className="hover:bg-zinc-50 transition-colors">
-                                        <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-700 w-36">
+                                        <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-700 w-44 whitespace-nowrap">
                                             {reg.registrationId || reg.id}
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-800">
                                             {reg.title}
                                         </td>
-                                        <td className="border border-zinc-200 py-3 px-3 text-[13px] font-semibold text-zinc-700 capitalize">
+                                        <td className="border border-zinc-200 py-3 px-3 text-[13px] font-semibold text-zinc-700 capitalize w-56 min-w-[180px]">
                                             {reg.writerName || "N/A"} (ID: {reg.membershipId})
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 text-[12px] font-semibold text-zinc-600">
@@ -207,28 +223,22 @@ export default function RegistrationsPage() {
                                                 {reg.status || 'Pending'}
                                             </span>
                                         </td>
-                                        <td className="border border-zinc-200 py-3 px-3 w-48">
-                                            <div className="flex items-center gap-2">
+                                        <td className="border border-zinc-200 py-3 px-3 w-32 text-center">
+                                            <div className="flex items-center justify-center gap-2">
                                                 <button
                                                     onClick={() => setViewReceipt(reg)}
-                                                    className="p-1.5 bg-blue-50 text-blue-600 rounded border border-blue-200 hover:bg-blue-100 transition cursor-pointer"
+                                                    className="flex items-center gap-1.5 py-1 px-2.5 bg-blue-50 text-blue-600 rounded border border-blue-200 hover:bg-blue-100 transition cursor-pointer text-[11px] font-bold"
                                                     title="View Receipt Details"
                                                 >
-                                                    <FiEye size={14} />
+                                                    <FiEye size={13} />
+                                                    View
                                                 </button>
-                                                <CustomButton
-                                                    label="Privacy Shielded"
-                                                    bgColor="bg-zinc-100"
-                                                    textColor="text-zinc-500"
-                                                    className="border border-zinc-200 py-1 px-2 text-[11px] font-bold cursor-not-allowed opacity-80"
-                                                    disabled={true}
-                                                />
                                                 {reg.status === "Pending" && (
                                                     <CustomButton
                                                         label="Approve"
                                                         bgColor="bg-green-600 hover:bg-green-700"
                                                         textColor="text-white"
-                                                        className="py-1 px-2.5 text-xs font-semibold"
+                                                        className="py-1 px-2.5 text-[11px] font-semibold"
                                                         onClick={() => handleApprove(reg)}
                                                     />
                                                 )}
@@ -238,6 +248,56 @@ export default function RegistrationsPage() {
                                 ))}
                             </tbody>
                         </table>
+                        
+                        {filteredRegs.length > 0 && (
+                            <div className="mt-4 rounded border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm md:flex md:items-center md:justify-between md:gap-3">
+                                <div className="flex items-center justify-between gap-2 md:flex-1">
+                                    <p className="font-semibold text-zinc-600">
+                                        <span className="hidden xl:inline">Showing </span>{fromIndex}-{toIndex} Of {filteredRegs.length}
+                                    </p>
+                                    <div className="flex shrink-0 items-center gap-2">
+                                        <div className="flex items-center gap-1">
+                                            <label className="text-xs font-bold uppercase text-zinc-500">
+                                                Rows
+                                            </label>
+                                            <CustomSelect
+                                                dropdownData={pageSizeOptions.map(size => ({ value: size, label: size }))}
+                                                value={pageSize}
+                                                onChange={(value) => {
+                                                    setPageSize(Number(value));
+                                                    setCurrentPage(1);
+                                                }}
+                                                buttonClassName="h-8 py-0 min-w-16 bg-white !text-xs"
+                                                label={null}
+                                            />
+                                        </div>
+                                        <span className="rounded-sm bg-white px-2 py-1.5 text-xs font-bold text-zinc-700 border border-zinc-200 sm:text-sm">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="mt-3 flex flex-col gap-3 md:mt-0 md:flex-row md:items-center md:justify-end">
+                                    <div className="grid grid-cols-2 gap-2 md:flex md:items-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                                            disabled={currentPage === 1}
+                                            className="h-10 rounded-sm border border-zinc-300 bg-white px-3 text-sm font-bold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 md:h-9 hover:bg-zinc-100 transition"
+                                        >
+                                            Previous
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                                            disabled={currentPage === totalPages}
+                                            className="h-10 rounded-sm border border-zinc-300 bg-white px-3 text-sm font-bold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 md:h-9 hover:bg-zinc-100 transition"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
