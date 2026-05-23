@@ -35,8 +35,10 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
             <tbody>
               {myRegistrations.map((reg) => (
                 <tr key={reg.registrationId} className="hover:bg-white/40 transition-colors border-b border-zinc-900">
-                  <td className="border border-zinc-200 py-3 px-3 text-xs font-bold text-amber-500">
-                    {reg.registrationId}
+                  <td className="border border-zinc-200 py-3 px-3">
+                    <span className="inline-block bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded text-[11px] font-extrabold tracking-wider">
+                      {reg.registrationId}
+                    </span>
                   </td>
                   <td className="border border-zinc-200 py-3 px-3 text-xs font-bold text-zinc-900">
                     {reg.title}
@@ -47,7 +49,7 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
                   <td className="border border-zinc-200 py-3 px-3 text-xs font-bold text-zinc-600">
                     {reg.pageCount} Pages
                   </td>
-                  <td className="border border-zinc-200 py-3 px-3 text-xs font-bold text-green-500">
+                  <td className="border border-zinc-200 py-3 px-3 text-xs font-bold text-green-600">
                     ₹{reg.amount}
                   </td>
                   <td className="border border-zinc-200 py-3 px-3 text-xs font-medium text-zinc-500">
@@ -56,13 +58,13 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
                   <td className="border border-zinc-200 py-3 px-3 w-48">
                     {reg.downloadCount >= 1 ? (
                       <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded border border-red-500/20">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
                           <Lock size={10} /> Locked
                         </span>
                         <button
                           type="button"
                           onClick={() => requestUnlockDownload(reg)}
-                          className="text-[10px] text-amber-500 hover:underline font-extrabold cursor-pointer"
+                          className="text-[10px] text-amber-600 hover:text-amber-700 hover:underline font-extrabold cursor-pointer"
                         >
                           Unlock (₹{reg.amount})
                         </button>
@@ -72,7 +74,7 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
                         type="button"
                         onClick={() => requestReceiptDownload(reg)}
                         disabled={isDownloading}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-green-400 bg-green-500/10 px-2 py-1 rounded border border-green-500/20 hover:bg-green-500/20 active:scale-[0.98] transition cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 hover:bg-green-100 active:scale-[0.98] transition cursor-pointer"
                       >
                         <Check size={10} /> Download Receipt
                       </button>
