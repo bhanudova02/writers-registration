@@ -269,9 +269,9 @@ export default function RenewalsPage() {
                 </div>
             </div>
 
-            {/* Renewals directory & right transactions panel */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div className="lg:col-span-2 border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm">
+            {/* Renewals directory */}
+            <div className="mb-6">
+                <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm">
                     <div className="mb-5 space-y-4">
                         <div>
                             <h3 className="text-lg font-bold text-zinc-800">Renewals Directory</h3>
@@ -440,66 +440,6 @@ export default function RenewalsPage() {
                             </div>
                         </>
                     )}
-                </div>
-
-                {/* Right widgets log */}
-                <div className="space-y-4">
-                    {/* Live offline transaction list */}
-                    <div className="border border-zinc-200 bg-white p-5 rounded-md shadow-sm">
-                        <h3 className="text-sm font-bold text-zinc-800 mb-3 flex items-center gap-1.5 border-b border-zinc-100 pb-2">
-                            <FiClock className="text-amber-500" />
-                            <span>Recent Payments (Live)</span>
-                        </h3>
-                        {recentTransactions.length === 0 ? (
-                            <div className="border border-dashed border-zinc-200 rounded-md py-8 px-4 text-center">
-                                <FaRegCreditCard className="text-zinc-300 text-3xl mx-auto mb-2" />
-                                <p className="text-xs font-semibold text-zinc-500">No payment logs in database.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3 max-h-[220px] overflow-y-auto pr-1">
-                                {recentTransactions.slice(0, 5).map((tx) => (
-                                    <div key={tx.id} className="text-xs p-2.5 bg-zinc-50 rounded border border-zinc-100 flex flex-col gap-1">
-                                        <div className="flex justify-between font-bold text-zinc-800">
-                                            <span>{tx.name}</span>
-                                            <span className="text-green-600">₹{tx.amount}</span>
-                                        </div>
-                                        <div className="flex justify-between text-zinc-500 font-semibold text-[10px]">
-                                            <span>{tx.type}</span>
-                                            <span>{new Date(tx.date).toLocaleDateString()}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Grace period alert widgets */}
-                    <div className="border border-zinc-200 bg-white p-5 rounded-md shadow-sm">
-                        <h3 className="text-sm font-bold text-zinc-800 mb-3 flex items-center gap-1.5 border-b border-zinc-100 pb-2">
-                            <FiAlertTriangle className="text-red-500" />
-                            <span>Grace Period Alerts</span>
-                        </h3>
-                        {graceAlerts.length === 0 ? (
-                            <div className="border border-dashed border-zinc-200 rounded-md py-8 px-4 text-center">
-                                <FiClock className="text-zinc-300 text-3xl mx-auto mb-2" />
-                                <p className="text-xs font-semibold text-zinc-500">No members in grace period.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-2">
-                                {graceAlerts.slice(0, 3).map((member) => (
-                                    <div key={member.id} className="p-2 bg-amber-50 border border-amber-200 rounded text-amber-900 text-xs flex justify-between items-center font-semibold">
-                                        <div>
-                                            <p className="font-extrabold">{member.name}</p>
-                                            <p className="text-[10px] text-amber-600 mt-0.5">Expires: {member.expiryDate}</p>
-                                        </div>
-                                        <span className="text-[10px] font-bold bg-amber-100 px-2 py-0.5 rounded">
-                                            {member.daysRemaining} days left
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
                 </div>
             </div>
 
