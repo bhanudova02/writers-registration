@@ -65,9 +65,9 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                 type="button"
                 onClick={() => handleUnlockDownload(receiptModal.registration)}
                 disabled={isDownloading}
-                className="w-full rounded bg-amber-500 px-4 py-3 text-sm font-extrabold text-white hover:bg-amber-600 disabled:opacity-60"
+                className="w-full rounded bg-amber-500 px-4 py-3 text-sm font-extrabold text-white hover:bg-amber-600 disabled:opacity-60 cursor-pointer"
               >
-                {isDownloading ? 'Opening Razorpay...' : `Pay ₹${receiptModal.registration.amount} with Razorpay`}
+                {isDownloading ? 'Opening Secure Payment...' : `Pay ₹${receiptModal.registration.amount} Securely`}
               </button>
             </>
           )}
