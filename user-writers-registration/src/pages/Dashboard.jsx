@@ -340,6 +340,23 @@ export default function Dashboard({ member, setMember, onLogout }) {
       docPdf.text(`* One-time download restriction policy is applied.`, 20, startY + lineHeight * 14.5);
       docPdf.text(`* Re-download requires fresh payment as per SOP.`, 20, startY + lineHeight * 15.5);
       
+      try {
+        const signImg = new Image();
+        signImg.src = '/signature.png';
+        await new Promise((resolve, reject) => {
+          signImg.onload = resolve;
+          signImg.onerror = reject;
+        });
+        
+        // Add signature image to bottom right
+        docPdf.addImage(signImg, 'PNG', 145, startY + lineHeight * 11, 40, 15);
+        docPdf.setFontSize(10);
+        docPdf.setTextColor(0, 0, 0);
+        docPdf.text("Authorized Signatory", 165, startY + lineHeight * 11 + 20, null, null, "center");
+      } catch (e) {
+        console.error("Could not load signature image", e);
+      }
+      
       docPdf.save(`TCWA_Receipt_${reg.registrationId}.pdf`);
 
       if (successRegistration?.registrationId === reg.registrationId) {
