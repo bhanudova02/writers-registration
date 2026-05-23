@@ -249,6 +249,32 @@ export default function Dashboard({ member, setMember, onLogout }) {
       docPdf.setLineWidth(0.5);
       docPdf.line(20, 35, 190, 35);
       
+      try {
+        const stampImg = new Image();
+        stampImg.src = '/stamp.png';
+        await new Promise((resolve, reject) => {
+          stampImg.onload = resolve;
+          stampImg.onerror = reject;
+        });
+        
+        // Add stamp image to top right corner
+        docPdf.addImage(stampImg, 'PNG', 145, 45, 45, 45);
+        
+        // Add dynamic text inside the stamp
+        docPdf.setFontSize(9);
+        docPdf.setTextColor(1, 10, 80); // Dark blue matching stamp
+        docPdf.setFont("helvetica", "bold");
+        docPdf.text("REGD.NO:", 167.5, 65, null, null, "center");
+        docPdf.setFontSize(10);
+        docPdf.text(`${reg.membershipId}`, 167.5, 70, null, null, "center");
+        
+        // Reset colors
+        docPdf.setTextColor(0, 0, 0);
+        docPdf.setFont("helvetica", "normal");
+      } catch (e) {
+        console.error("Could not load stamp image", e);
+      }
+      
       docPdf.setFontSize(11);
       docPdf.setFont("helvetica", "normal");
       
