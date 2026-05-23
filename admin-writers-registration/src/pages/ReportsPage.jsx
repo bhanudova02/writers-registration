@@ -6,6 +6,7 @@ import { HiDocumentReport } from "react-icons/hi";
 import { PortalSelect } from "../components/custom/PortalSelect";
 import { CustomFilterInput } from "../components/custom/CustomFilterInput";
 import CustomButton from "../components/custom/CustomButton";
+import { CustomSelect } from "../components/custom/CustomSelect";
 import { getLeads } from "../services/leadService";
 import { getAdmins } from "../services/adminService";
 
@@ -336,18 +337,16 @@ export default function ReportsPage() {
                                         <label className="text-xs font-bold uppercase text-zinc-500" htmlFor="lead-reports-page-size">
                                             Rows
                                         </label>
-                                        <select
-                                            id="lead-reports-page-size"
+                                        <CustomSelect
+                                            dropdownData={leadPageSizeOptions.map(size => ({ value: size, label: size }))}
                                             value={pageSize}
-                                            onChange={handlePageSizeChange}
-                                            className="h-8 rounded-sm border border-zinc-300 bg-white px-2 text-sm font-semibold text-zinc-700 outline-none"
-                                        >
-                                            {leadPageSizeOptions.map((size) => (
-                                                <option key={size} value={size}>
-                                                    {size}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            onChange={(val) => {
+                                                setPageSize(Number(val));
+                                                setCurrentPage(1);
+                                            }}
+                                            buttonClassName="h-8 py-0 min-w-16 bg-white !text-xs"
+                                            label={null}
+                                        />
                                     </div>
                                     <span className="rounded-sm bg-white px-2 py-1.5 text-xs font-bold text-zinc-700 border border-zinc-200 sm:text-sm">
                                         Page {currentPage} of {totalPages}

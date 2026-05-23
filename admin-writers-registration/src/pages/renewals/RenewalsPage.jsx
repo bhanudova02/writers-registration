@@ -392,21 +392,16 @@ export default function RenewalsPage() {
                                             <label className="text-xs font-bold uppercase text-zinc-500" htmlFor="page-size">
                                                 Rows
                                             </label>
-                                            <select
-                                                id="page-size"
+                                            <CustomSelect
+                                                dropdownData={pageSizeOptions.map(size => ({ value: size, label: size }))}
                                                 value={pageSize}
-                                                onChange={(e) => {
-                                                    setPageSize(Number(e.target.value));
+                                                onChange={(val) => {
+                                                    setPageSize(Number(val));
                                                     setCurrentPage(1);
                                                 }}
-                                                className="h-8 rounded-sm border border-zinc-300 bg-white px-2 text-sm font-semibold text-zinc-700 outline-none"
-                                            >
-                                                {pageSizeOptions.map((size) => (
-                                                    <option key={size} value={size}>
-                                                        {size}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                buttonClassName="h-8 py-0 min-w-16 bg-white !text-xs"
+                                                label={null}
+                                            />
                                         </div>
                                         <span className="rounded-sm bg-white px-2 py-1.5 text-xs font-bold text-zinc-700 border border-zinc-200 sm:text-sm">
                                             Page {currentPage} of {totalPages}

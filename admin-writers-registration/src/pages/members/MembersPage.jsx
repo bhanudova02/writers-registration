@@ -195,10 +195,7 @@ export default function MembersPage() {
         }
     };
 
-    const handleSavedMembersPageSizeChange = (e) => {
-        setSavedMembersPageSize(Number(e.target.value));
-        setSavedMembersPage(1);
-    };
+
 
     const handleSaveEdit = async (membershipId, updatedFields) => {
         setIsSavingEdit(true);
@@ -441,18 +438,16 @@ export default function MembersPage() {
                                                 <label className="text-xs font-bold uppercase text-zinc-500" htmlFor="saved-members-page-size">
                                                     Rows
                                                 </label>
-                                                <select
-                                                    id="saved-members-page-size"
+                                                <CustomSelect
+                                                    dropdownData={savedMemberPageSizeOptions.map(size => ({ value: size, label: size }))}
                                                     value={savedMembersPageSize}
-                                                    onChange={handleSavedMembersPageSizeChange}
-                                                    className="h-8 rounded-sm border border-zinc-300 bg-white px-2 text-sm font-semibold text-zinc-700 outline-none"
-                                                >
-                                                    {savedMemberPageSizeOptions.map((size) => (
-                                                        <option key={size} value={size}>
-                                                            {size}
-                                                        </option>
-                                                    ))}
-                                                </select>
+                                                    onChange={(value) => {
+                                                        setSavedMembersPageSize(Number(value));
+                                                        setSavedMembersPage(1);
+                                                    }}
+                                                    buttonClassName="h-8 py-0 min-w-16 bg-white !text-xs"
+                                                    label={null}
+                                                />
                                             </div>
                                             <span className="rounded-sm bg-white px-2 py-1.5 text-xs font-bold text-zinc-700 border border-zinc-200 sm:text-sm">
                                                 Page {savedMembersPage} of {savedMembersTotalPages}

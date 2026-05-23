@@ -1,5 +1,6 @@
 import { FileText, UploadCloud, RefreshCw, Loader2 } from 'lucide-react';
 import { categories } from '../../data/constants';
+import { CustomSelect } from '../custom/CustomSelect';
 
 export default function RegistrationForm({ 
   handleRegisterScript, 
@@ -39,25 +40,14 @@ export default function RegistrationForm({
       </div>
 
       <div>
-        <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2.5">
-          Registration Category *
-        </label>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {categories.map((cat) => (
-            <button
-              type="button"
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`py-2 px-3 rounded border text-xs font-bold tracking-wide transition active:scale-[0.98] cursor-pointer ${
-                selectedCategory === cat
-                  ? 'border-orange-500 bg-orange-500 text-white font-black shadow-md'
-                  : 'border-zinc-200 bg-zinc-50 text-zinc-600 hover:text-zinc-900 hover:bg-white'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
+        <CustomSelect
+          label="Registration Category *"
+          dropdownData={categories}
+          value={selectedCategory}
+          onChange={setSelectedCategory}
+          buttonClassName="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-orange-500 transition-colors h-auto min-h-[42px]"
+          className="z-50"
+        />
       </div>
 
       <div>

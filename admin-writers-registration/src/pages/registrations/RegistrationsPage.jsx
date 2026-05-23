@@ -4,6 +4,7 @@ import { FiCheckCircle, FiXCircle, FiEye, FiTrendingUp } from "react-icons/fi";
 import { collection, onSnapshot, doc, updateDoc, query, orderBy } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import CustomButton from "../../components/custom/CustomButton";
+import { CustomSelect } from "../../components/custom/CustomSelect";
 import { toast } from "react-toastify";
 import { logAdminActivity } from "../../lib/logger";
 
@@ -142,16 +143,20 @@ export default function RegistrationsPage() {
                                 onChange={(e) => setSearchQuery(e.target.value)}
                             />
                         </div>
-                        <select
-                            value={selectedStatus}
-                            onChange={(e) => setSelectedStatus(e.target.value)}
-                            className="w-full sm:w-40 h-10 border border-zinc-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 bg-white text-zinc-700 px-2 font-semibold"
-                        >
-                            <option value="All">All Statuses</option>
-                            <option value="Pending">Pending</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
+                        <div className="w-full sm:w-40 z-10">
+                            <CustomSelect
+                                dropdownData={[
+                                    { value: "All", label: "All Statuses" },
+                                    { value: "Pending", label: "Pending" },
+                                    { value: "Approved", label: "Approved" },
+                                    { value: "Rejected", label: "Rejected" }
+                                ]}
+                                value={selectedStatus}
+                                onChange={setSelectedStatus}
+                                buttonClassName="h-10 py-0"
+                                label={null}
+                            />
+                        </div>
                     </div>
                 </div>
 

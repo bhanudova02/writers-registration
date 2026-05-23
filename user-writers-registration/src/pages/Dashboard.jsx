@@ -21,7 +21,7 @@ import Footer from '../components/Footer';
 
 export default function Dashboard({ member, setMember, onLogout }) {
   const [scriptTitle, setScriptTitle] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Story');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [pageCount, setPageCount] = useState(1);
   const [pdfFile, setPdfFile] = useState(null);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -122,6 +122,11 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
     if (!normalizedScriptTitle) {
       toast.error("Please enter script title.");
+      return;
+    }
+
+    if (!selectedCategory) {
+      toast.error("Please select a registration category.");
       return;
     }
 

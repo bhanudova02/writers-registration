@@ -15,8 +15,17 @@ export default function DashboardHomePage() {
     const [recentMembers, setRecentMembers] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
+    const [errorMsg, setErrorMsg] = useState(null);
+
     useEffect(() => {
         setIsLoading(true);
+        setErrorMsg(null);
+
+        const handleError = (error) => {
+            console.error("Firebase listener error:", error);
+            setErrorMsg(error.message);
+            setIsLoading(false);
+        };
 
         // 1. Listen to members
         const unsubMembers = onSnapshot(collection(db, "members"), (snapshot) => {
@@ -50,7 +59,7 @@ export default function DashboardHomePage() {
                 totalMembers: membersCount,
                 pendingRenewals: pendingRenewalsCount
             }));
-        });
+        }, handleError);
 
         // 2. Listen to registrations
         const unsubRegs = onSnapshot(collection(db, "registrations"), (snapshot) => {
@@ -75,7 +84,10 @@ export default function DashboardHomePage() {
                 totalScripts: scriptsCount,
                 totalRevenue: prev.totalRevenue + regRevenue
             }));
-        });
+            
+            // To be safe, if we get data here, turn off loading
+            setIsLoading(false);
+        }, handleError);
 
         // 3. Listen to renewal transactions for revenue calculation
         const unsubTx = onSnapshot(collection(db, "renewal_transactions"), (snapshot) => {
@@ -90,7 +102,7 @@ export default function DashboardHomePage() {
                 totalRevenue: prev.totalRevenue + txRevenue
             }));
             setIsLoading(false);
-        });
+        }, handleError);
 
         return () => {
             unsubMembers();
@@ -168,7 +180,11 @@ export default function DashboardHomePage() {
                         </div>
                     </div>
 
-                    {isLoading ? (
+                    {errorMsg ? (
+                        <div className="py-8 text-center text-red-500 text-xs font-bold border border-red-200 bg-red-50 rounded">
+                            Error loading data: {errorMsg}
+                        </div>
+                    ) : isLoading ? (
                         <div className="py-8 text-center text-zinc-400 text-xs font-bold">
                             Loading activity logs...
                         </div>
@@ -208,7 +224,11 @@ export default function DashboardHomePage() {
                         </div>
                     </div>
 
-                    {isLoading ? (
+                    {errorMsg ? (
+                        <div className="py-8 text-center text-red-500 text-xs font-bold border border-red-200 bg-red-50 rounded">
+                            Error loading data: {errorMsg}
+                        </div>
+                    ) : isLoading ? (
                         <div className="py-8 text-center text-zinc-400 text-xs font-bold">
                             Loading member directory...
                         </div>
