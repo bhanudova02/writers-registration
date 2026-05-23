@@ -64,7 +64,7 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
                         <button
                           type="button"
                           onClick={() => requestUnlockDownload(reg)}
-                          className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-1 rounded border border-amber-200 hover:bg-amber-100 active:scale-[0.98] transition cursor-pointer"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-amber-500 px-3 py-1.5 rounded shadow-sm hover:bg-amber-600 active:scale-[0.98] transition cursor-pointer"
                         >
                           Unlock (₹{reg.amount})
                         </button>
