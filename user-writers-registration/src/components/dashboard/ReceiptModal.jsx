@@ -2,8 +2,8 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
   if (!receiptModal.type || !receiptModal.registration) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 px-4 py-8 flex items-center justify-center">
-      <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-zinc-50 shadow-2xl">
+    <div className="fixed inset-0 z-[60] bg-black/80 px-4 py-8 overflow-y-auto flex items-start justify-center">
+      <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-zinc-50 shadow-2xl my-auto shrink-0">
         <div className="flex items-start justify-between border-b border-zinc-200 px-5 py-4">
           <div>
             <h3 className="text-base font-extrabold text-zinc-900">

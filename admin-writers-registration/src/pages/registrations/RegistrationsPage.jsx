@@ -217,8 +217,8 @@ export default function RegistrationsPage() {
 
             {/* View Receipt Modal */}
             {viewReceipt && (
-                <div className="fixed inset-0 z-[60] bg-black/60 px-4 flex items-center justify-center">
-                    <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white shadow-2xl">
+                <div className="fixed inset-0 z-[60] bg-black/60 px-4 py-8 overflow-y-auto flex items-start justify-center">
+                    <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto shrink-0">
                         <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg">
                             <h3 className="text-base font-bold text-zinc-800">Receipt Details</h3>
                             <button
