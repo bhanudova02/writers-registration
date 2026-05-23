@@ -17,6 +17,7 @@ export default function RenewalsPage() {
 
     const [upgradeModalData, setUpgradeModalData] = useState({ isOpen: false, memberId: '', name: '', targetType: '' });
     const [renewModalData, setRenewModalData] = useState({ isOpen: false, memberId: '', name: '' });
+    const [viewModalData, setViewModalData] = useState({ isOpen: false, member: null });
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -317,7 +318,7 @@ export default function RenewalsPage() {
                                 <table className="w-full min-w-[700px] border-collapse border border-zinc-200">
                                     <thead>
                                         <tr className="bg-zinc-100 border-b border-zinc-200">
-                                            {["Member ID", "Name", "Type", "Expires On", "Amount Due", "Status", "Renew", "Actions"].map((head) => (
+                                            {["Member ID", "Name", "Type", "Expires On", "Amount Due", "Status", "View", "Renew", "Actions"].map((head) => (
                                                 <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                                     {head}
                                                 </th>
@@ -348,6 +349,15 @@ export default function RenewalsPage() {
                                                     <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${renew.status === 'Active' || renew.status === 'Life Member' ? 'bg-green-100 text-green-700' : renew.status === 'Grace Period' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                                                         {renew.status}
                                                     </span>
+                                                </td>
+                                                <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
+                                                    <CustomButton
+                                                        label="View"
+                                                        bgColor="bg-blue-600 hover:bg-blue-700"
+                                                        textColor="text-white"
+                                                        className="py-1 px-2 text-xs font-semibold whitespace-nowrap inline-flex"
+                                                        onClick={() => setViewModalData({ isOpen: true, member: renew })}
+                                                    />
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
                                                     {renew.memberType === "Associate Member" ? (
@@ -527,6 +537,70 @@ export default function RenewalsPage() {
                         />
                     </div>
                 </div>
+            </Modal>
+
+            {/* View Member Modal */}
+            <Modal
+                isOpen={viewModalData.isOpen}
+                onClose={() => setViewModalData({ isOpen: false, member: null })}
+                title="Member Details"
+                widthClass="max-w-lg"
+            >
+                {viewModalData.member && (
+                    <div className="text-zinc-700 text-sm space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Member Name</p>
+                                <p className="font-semibold">{viewModalData.member.name}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Member ID</p>
+                                <p className="font-semibold text-blue-700">{viewModalData.member.id}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Email</p>
+                                <p className="font-medium">{viewModalData.member.email}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Phone Number</p>
+                                <p className="font-medium">{viewModalData.member.mobileNumber}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Member Type</p>
+                                <p className="font-medium">{viewModalData.member.memberType}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Status</p>
+                                <span className={`px-2 py-0.5 rounded text-xs font-bold inline-block mt-0.5 ${viewModalData.member.status === 'Active' || viewModalData.member.status === 'Life Member' ? 'bg-green-100 text-green-700' : viewModalData.member.status === 'Grace Period' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                    {viewModalData.member.status}
+                                </span>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Created At / Last Renewed</p>
+                                <p className="font-medium">{viewModalData.member.createdAt ? new Date(viewModalData.member.createdAt).toLocaleDateString() : 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Expires On</p>
+                                <p className="font-medium">{viewModalData.member.expiryDate}</p>
+                            </div>
+                        </div>
+                        {viewModalData.member.memberType === "Associate Member" && (
+                            <div className="pt-4 border-t border-zinc-100">
+                                <p className="text-xs text-zinc-500 font-bold mb-1">Days Remaining</p>
+                                <p className="font-semibold text-lg">{viewModalData.member.daysRemaining} <span className="text-sm font-normal text-zinc-500">days</span></p>
+                            </div>
+                        )}
+                        <div className="flex justify-end pt-4 border-t border-zinc-100">
+                            <CustomButton
+                                label="Close"
+                                onClick={() => setViewModalData({ isOpen: false, member: null })}
+                                bgColor="bg-zinc-100 hover:bg-zinc-200"
+                                textColor="text-zinc-700"
+                                className="border border-zinc-300"
+                            />
+                        </div>
+                    </div>
+                )}
             </Modal>
         </div>
     );
