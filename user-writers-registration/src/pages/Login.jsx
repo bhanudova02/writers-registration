@@ -18,6 +18,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
   const [resendTimer, setResendTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [recaptchaKey, setRecaptchaKey] = useState(0);
 
   const handleVerifyDetails = async (e) => {
     e.preventDefault();
@@ -69,7 +70,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
       const formattedPhone = `+91${enteredPhoneDigits}`;
 
       if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = setupRecaptcha('recaptcha-container');
+        window.recaptchaVerifier = setupRecaptcha(`recaptcha-container-${recaptchaKey}`);
       }
       const appVerifier = window.recaptchaVerifier;
 
@@ -101,6 +102,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
         }
         window.recaptchaVerifier = null;
       }
+      setRecaptchaKey(prev => prev + 1);
       
       const errorCode = error.code || '';
       const errorMessage = error.message || String(error);
@@ -158,6 +160,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
       } catch (err) {}
       window.recaptchaVerifier = null;
     }
+    setRecaptchaKey(prev => prev + 1);
     
     await handleVerifyDetails(e || new Event('submit'));
   };
@@ -242,7 +245,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
             </div>
           </div>
           <div className="w-full max-w-[480px] justify-self-end">
-            <div id="recaptcha-container"></div>
+            <div id={`recaptcha-container-${recaptchaKey}`} key={recaptchaKey}></div>
             {!showOtpScreen ? (
               <form onSubmit={handleVerifyDetails} className="bg-white border-2 border-slate-100 px-10 py-8 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] space-y-6">
                 <div className="flex items-center gap-4">
