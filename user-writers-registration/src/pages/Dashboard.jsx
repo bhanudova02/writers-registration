@@ -76,6 +76,21 @@ export default function Dashboard({ member, setMember, onLogout }) {
   }, [member]);
 
   useEffect(() => {
+    if (expiryDetails.isExpired && member?.status === 'Active' && member?.membershipId) {
+      // Automatically update the status to 'Inactive' in Firestore when their validity expires
+      const autoDeactivate = async () => {
+        try {
+          const memberRef = doc(db, 'members', member.membershipId);
+          await updateDoc(memberRef, { status: 'Inactive' });
+        } catch (err) {
+          console.error("Failed to auto-update status to inactive:", err);
+        }
+      };
+      autoDeactivate();
+    }
+  }, [expiryDetails.isExpired, member?.status, member?.membershipId]);
+
+  useEffect(() => {
     if (!member?.membershipId) return;
     const memberRef = doc(db, 'members', member.membershipId);
     const unsubscribe = onSnapshot(memberRef, (docSnap) => {
