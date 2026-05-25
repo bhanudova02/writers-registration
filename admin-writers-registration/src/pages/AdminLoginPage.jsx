@@ -17,18 +17,24 @@ const bootstrapAdminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '')
 export default function AdminLoginPage({ onLogin }) {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  
+  // Modal state
+  const [errorModalOpen, setErrorModalOpen] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   async function handleGoogleLogin() {
     setLoading(true)
-    setError('')
+    setErrorModalOpen(false)
+    setErrorMessage('')
+    
     try {
       const result = await signInWithPopup(auth, googleProvider)
       const allowed = await isAllowedAdmin(result.user)
 
       if (!allowed) {
         await signOut(auth)
-        navigate('/unauthorized')
+        setErrorMessage('The email you used is not authorized to access the admin dashboard.')
+        setErrorModalOpen(true)
         return
       }
 
@@ -36,7 +42,15 @@ export default function AdminLoginPage({ onLogin }) {
       await logAdminActivity(result.user.email, "Login", "User logged into admin dashboard via Google SSO")
       navigate('/')
     } catch (loginError) {
-      setError(loginError.message || 'Google login failed.')
+      await signOut(auth).catch(() => {}) // Ensure signed out on error
+      
+      let msg = loginError.message || 'Google login failed.'
+      if (msg.includes('Missing or insufficient permissions') || msg.includes('permission-denied')) {
+        msg = 'The email you used is not authorized to access the admin dashboard.'
+      }
+      
+      setErrorMessage(msg)
+      setErrorModalOpen(true)
     } finally {
       setLoading(false)
     }
@@ -73,9 +87,33 @@ export default function AdminLoginPage({ onLogin }) {
           Secure login powered by Google
         </p>
 
-        {error && <p className="mt-5 text-center text-sm font-semibold text-red-600">{error}</p>}
         {bootstrapAdminEmails.length === 0 && <p className="mt-5 text-center text-xs font-semibold text-amber-700">Add VITE_ADMIN_EMAILS in .env to allow first admin login.</p>}
       </div>
+
+      {/* Error Modal */}
+      {errorModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all">
+            <div className="p-6 text-center">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Access Denied</h3>
+              <p className="text-sm text-gray-600 mb-6">
+                {errorMessage}
+              </p>
+              <button
+                onClick={() => setErrorModalOpen(false)}
+                className="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-200 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
