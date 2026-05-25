@@ -4,23 +4,25 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfUse from './pages/TermsOfUse';
 
 export default function App() {
   const [member, setMember] = useState(() => {
-    const saved = sessionStorage.getItem('tcwa_member');
+    const saved = localStorage.getItem('tcwa_member');
     return saved ? JSON.parse(saved) : null;
   });
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return sessionStorage.getItem('tcwa_isLoggedIn') === 'true';
+    return localStorage.getItem('tcwa_isLoggedIn') === 'true';
   });
 
   useEffect(() => {
     if (isLoggedIn && member) {
-      sessionStorage.setItem('tcwa_member', JSON.stringify(member));
-      sessionStorage.setItem('tcwa_isLoggedIn', 'true');
+      localStorage.setItem('tcwa_member', JSON.stringify(member));
+      localStorage.setItem('tcwa_isLoggedIn', 'true');
     } else {
-      sessionStorage.removeItem('tcwa_member');
-      sessionStorage.removeItem('tcwa_isLoggedIn');
+      localStorage.removeItem('tcwa_member');
+      localStorage.removeItem('tcwa_isLoggedIn');
     }
   }, [isLoggedIn, member]);
 
@@ -53,6 +55,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route 
           path="/login" 
           element={!isLoggedIn ? <Login setMember={setMember} setIsLoggedIn={setIsLoggedIn} /> : <Navigate to="/" />} 

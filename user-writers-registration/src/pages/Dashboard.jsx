@@ -18,6 +18,7 @@ import ReceiptSidebar from '../components/dashboard/ReceiptSidebar';
 import RegistrationsTable from '../components/dashboard/RegistrationsTable';
 import ReceiptModal from '../components/dashboard/ReceiptModal';
 import Footer from '../components/Footer';
+import SupportModal from '../components/SupportModal';
 
 export default function Dashboard({ member, setMember, onLogout }) {
   const [scriptTitle, setScriptTitle] = useState('');
@@ -31,6 +32,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const [myRegistrations, setMyRegistrations] = useState([]);
   const [isLoadingMyRegs, setIsLoadingMyRegs] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
 
   const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -437,6 +439,48 @@ export default function Dashboard({ member, setMember, onLogout }) {
     }
   };
 
+  if (expiryDetails.isExpired) {
+    return (
+      <main className="min-h-screen bg-[#111111] overflow-y-auto py-12 px-4 flex items-center justify-center font-sans">
+        <div className="bg-white border border-red-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5">
+          <div className="mx-auto size-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-2">
+            <AlertTriangle size={36} />
+          </div>
+          <h2 className="text-xl font-extrabold text-zinc-900 uppercase tracking-wider">Membership Renewal Required</h2>
+          <p className="text-sm text-zinc-600 leading-relaxed">
+            Dear <span className="text-zinc-900 font-bold">{member?.name}</span>, your Associate Membership has expired or renewals are overdue.
+            Under the <span className="text-red-400 font-bold">Strict 5-Years Rule</span>, you must pay your annual renewal fee offline to the TCWA Admin to restore active status.
+          </p>
+          <div className="bg-zinc-50 p-4 border border-zinc-200 text-left rounded text-xs space-y-1.5 text-zinc-600">
+            <p className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider">Account Metrics</p>
+            <p>• Membership ID: <span className="text-amber-600 font-bold">{member?.membershipId}</span></p>
+            <p>• Status: <span className="text-red-500 font-extrabold">{member?.status || "Expired"}</span></p>
+            <p>• Action: Contact TCWA Employee/Admin for payment registry.</p>
+          </div>
+          <p className="text-[10px] text-zinc-500 italic font-semibold">
+            * This page is locked. Dashboard access will restore automatically once admin records your payment.
+          </p>
+          <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
+            <button 
+              onClick={() => setShowSupportModal(true)}
+              className="text-xs font-bold text-orange-500 hover:text-orange-600 transition"
+            >
+              Contact Admin
+            </button>
+            <button 
+              onClick={onLogout}
+              className="text-xs font-bold text-zinc-500 hover:text-zinc-800 transition"
+            >
+              Logout from account
+            </button>
+          </div>
+        </div>
+
+        {showSupportModal && <SupportModal onClose={() => setShowSupportModal(false)} />}
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-slate-100 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-50 text-zinc-900 flex flex-col font-sans relative">
 
@@ -445,29 +489,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 pt-28 pb-6 relative z-10 space-y-6">
         <ProfileCard member={member} expiryDetails={expiryDetails} />
 
-        {expiryDetails.isExpired && (
-          <section className="fixed inset-0 z-50 bg-black/95 overflow-y-auto py-12 px-4 flex items-start justify-center">
-            <div className="bg-white border border-red-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5 my-auto">
-              <div className="mx-auto size-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-2">
-                <AlertTriangle size={36} />
-              </div>
-              <h2 className="text-xl font-extrabold text-zinc-900 uppercase tracking-wider">Membership Renewal Required</h2>
-              <p className="text-sm text-zinc-600 leading-relaxed">
-                Dear <span className="text-zinc-900 font-bold">{member?.name}</span>, your Associate Membership has expired or renewals are overdue.
-                Under the <span className="text-red-400 font-bold">Strict 5-Years Rule</span>, you must pay your annual renewal fee offline to the TCWA Admin to restore active status.
-              </p>
-              <div className="bg-zinc-50 p-4 border border-zinc-200 text-left rounded text-xs space-y-1.5 text-zinc-600">
-                <p className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider">Account Metrics</p>
-                <p>• Membership ID: <span className="text-amber-600 font-bold">{member?.membershipId}</span></p>
-                <p>• Status: <span className="text-red-500 font-extrabold">{member?.status || "Expired"}</span></p>
-                <p>• Action: Contact TCWA Employee/Admin for payment registry.</p>
-              </div>
-              <p className="text-[10px] text-zinc-500 italic font-semibold">
-                * This page is locked. Dashboard access will restore automatically once admin records your payment.
-              </p>
-            </div>
-          </section>
-        )}
+
 
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
           <RegistrationForm 

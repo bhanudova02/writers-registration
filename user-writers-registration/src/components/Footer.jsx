@@ -2,6 +2,8 @@ import { Lock } from 'lucide-react';
 import { useState } from 'react';
 import SupportModal from './SupportModal';
 
+import { Link } from 'react-router-dom';
+
 export default function Footer() {
   const [showSupport, setShowSupport] = useState(false);
 
@@ -13,9 +15,9 @@ export default function Footer() {
           <span>© {new Date().getFullYear()} Telugu Cine Writers Association. All rights reserved.</span>
         </div>
         <div className="flex items-center gap-4 text-zinc-500 text-[11px] font-medium">
-          <a href="#" className="hover:text-zinc-900 transition-colors">Privacy Policy</a>
+          <Link to="/privacy-policy" className="hover:text-zinc-900 transition-colors">Privacy Policy</Link>
           <span className="text-zinc-300">|</span>
-          <a href="#" className="hover:text-zinc-900 transition-colors">Terms of Use</a>
+          <Link to="/terms-of-use" className="hover:text-zinc-900 transition-colors">Terms of Use</Link>
           <span className="text-zinc-300">|</span>
           <button 
             onClick={() => setShowSupport(true)} 

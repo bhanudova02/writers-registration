@@ -55,8 +55,9 @@ export default function Login({ setMember, setIsLoggedIn }) {
         setLoginError('Membership ID not found in database. Please contact Admin.');
         setIsValidating(false);
         return;
-      const memberData = docSnap.data();
+      }
 
+      const memberData = docSnap.data();
       const enteredPhoneDigits = phone.replace(/\D/g, '').slice(-10);
       const registeredPhoneDigits = String(memberData.mobileNumber || '').replace(/\D/g, '').slice(-10);
 
@@ -64,7 +65,6 @@ export default function Login({ setMember, setIsLoggedIn }) {
         setLoginError('Mobile number does not match this Membership ID.');
         setIsValidating(false);
         return;
-      }
       }
 
       const formattedPhone = `+91${enteredPhoneDigits}`;
