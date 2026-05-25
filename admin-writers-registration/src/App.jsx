@@ -39,13 +39,6 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const employeeSession = sessionStorage.getItem('employee_admin');
-    if (employeeSession) {
-      setUser(JSON.parse(employeeSession));
-      setLoading(false);
-      return undefined;
-    }
-
     return onAuthStateChanged(auth, async (currentUser) => {
       if (!currentUser) {
         setUser(null);

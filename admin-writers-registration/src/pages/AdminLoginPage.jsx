@@ -16,52 +16,8 @@ const bootstrapAdminEmails = (import.meta.env.VITE_ADMIN_EMAILS || '')
 
 export default function AdminLoginPage({ onLogin }) {
   const navigate = useNavigate()
-  const [mode, setMode] = useState('google')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-
-  async function handleEmployeeLogin(event) {
-    event.preventDefault()
-    if (!username || !password) {
-      setError('Please enter both username and password.')
-      return
-    }
-    setLoading(true)
-    setError('')
-
-    try {
-      const adminsQuery = query(
-        collection(db, 'admins'),
-        where('username', '==', username.trim()),
-        where('active', '==', true),
-      )
-      const snapshot = await getDocs(adminsQuery)
-      const adminDoc = snapshot.docs.find((item) => item.data().password === password)
-
-      if (!adminDoc) {
-        setError('Invalid username or password.')
-        return
-      }
-
-      const employee = {
-        uid: adminDoc.id,
-        isEmployee: true,
-        displayName: adminDoc.data().displayName || adminDoc.data().username,
-        email: adminDoc.data().email,
-        permissions: adminDoc.data().permissions || ['Dashboard'],
-      }
-      sessionStorage.setItem('employee_admin', JSON.stringify(employee))
-      onLogin(employee)
-      await logAdminActivity(employee.email || employee.username, "Login", "User logged into admin dashboard via credentials")
-      navigate('/')
-    } catch (loginError) {
-      setError(loginError.message || 'Employee login failed.')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   async function handleGoogleLogin() {
     setLoading(true)
@@ -88,84 +44,35 @@ export default function AdminLoginPage({ onLogin }) {
 
   return (
     <div className="flex justify-center items-center h-screen p-4 bg-linear-to-r from-indigo-900 to-zinc-900">
-      <div className="w-full md:w-[60%] lg:max-w-md bg-white border border-gray-300 rounded-md p-8">
-        {mode === 'google' ? (
-          <>
-            <div className="text-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-800">
-                Welcome Back 👋
-              </h1>
-              <p className="text-gray-500 mt-2">
-                Sign in to continue
-              </p>
-            </div>
+      <div className="w-full md:w-[60%] lg:max-w-md bg-white border border-gray-300 rounded-xl px-8 py-10 shadow-2xl flex flex-col justify-center">
+        <div className="flex flex-col items-center mb-6">
+          <img src="/Logo.png" alt="TCWA Logo" className="h-16 object-contain mb-3" />
+          <h2 className="text-lg font-bold text-gray-800 text-center leading-tight">Telugu Cine Writers Association</h2>
+          <span className="text-[11px] text-indigo-600 font-bold uppercase tracking-wider mt-1 bg-indigo-50 px-2 py-0.5 rounded-full">Admin Dashboard</span>
+        </div>
 
-            <button
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-lg py-3 font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
-            >
-              <FcGoogle size={22} />
-              {loading ? 'Checking...' : 'Continue with Google'}
-            </button>
+        <div className="text-center mb-6">
+          <h1 className="text-xl font-bold text-gray-800">
+            Welcome Back 👋
+          </h1>
+          <p className="text-sm text-gray-500 mt-2">
+            Sign in to continue
+          </p>
+        </div>
 
-            <div className="flex items-center my-6">
-              <div className="flex-1 h-px bg-gray-200" />
-              <span className="px-3 text-sm text-gray-400">OR</span>
-              <div className="flex-1 h-px bg-gray-200" />
-            </div>
+        <button
+          onClick={handleGoogleLogin}
+          disabled={loading}
+          className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-lg py-3 font-medium text-gray-700 hover:bg-gray-50 transition cursor-pointer"
+        >
+          <FcGoogle size={22} />
+          {loading ? 'Checking...' : 'Continue with Google'}
+        </button>
 
-            <div className="text-center">
-              <button onClick={() => { setMode('employee'); setError('') }} className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer">
-                Login as User
-              </button>
-            </div>
+        <p className="text-xs text-center text-gray-500 mt-6">
+          Secure login powered by Google
+        </p>
 
-            <p className="text-xs text-center text-gray-500 mt-6">
-              Secure login powered by Google
-            </p>
-          </>
-        ) : (
-          <>
-            <h1 className="text-2xl font-bold text-center text-gray-800">Admin Login</h1>
-            <form className="space-y-6 mt-8" onSubmit={handleEmployeeLogin}>
-                <CustomInput
-                    label="Username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
-                    disabled={loading}
-                />
-                <CustomInput
-                    label="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    disabled={loading}
-                />
-                <div>
-                    <CustomButton
-                        type="submit"
-                        label={loading ? 'Logging in...' : 'Login'}
-                        className="w-full"
-                        disabled={loading}
-                    />
-                </div>
-            </form>
-            <div className="text-center mt-6">
-                <button 
-                  type="button" 
-                  onClick={() => { setMode('google'); setError('') }} 
-                  className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
-                  disabled={loading}
-                >
-                    Login with Google
-                </button>
-            </div>
-          </>
-        )}
         {error && <p className="mt-5 text-center text-sm font-semibold text-red-600">{error}</p>}
         {bootstrapAdminEmails.length === 0 && <p className="mt-5 text-center text-xs font-semibold text-amber-700">Add VITE_ADMIN_EMAILS in .env to allow first admin login.</p>}
       </div>

@@ -14,11 +14,7 @@ export const performLogout = async (user) => {
         }
 
         try {
-            if (user.isEmployee) {
-                sessionStorage.removeItem('employee_admin');
-            } else {
-                await auth.signOut();
-            }
+            await auth.signOut();
         } catch (error) {
             console.error("Failed to sign out from Firebase, proceeding with local logout", error);
         }
