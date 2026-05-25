@@ -23,10 +23,10 @@ export default function Modal({ isOpen, onClose, title, children, widthClass = "
       onClick={onClose}
     >
       <div
-        className={`bg-white rounded-lg shadow-xl w-[90%] ${widthClass} p-6 relative`}
+        className={`bg-white rounded-lg shadow-xl w-[90%] ${widthClass} p-6 relative flex flex-col max-h-[90vh]`}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-4">
+        <div className="flex justify-between items-center border-b border-gray-200 pb-3 mb-4 shrink-0">
           <h4 className="text-lg font-semibold text-zinc-800">{title}</h4>
           <button
             onClick={onClose}
@@ -35,7 +35,7 @@ export default function Modal({ isOpen, onClose, title, children, widthClass = "
             <X size={24} />
           </button>
         </div>
-        <div>{children}</div>
+        <div className="overflow-y-auto only-scroll-width pr-1">{children}</div>
       </div>
     </div>
   );

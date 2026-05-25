@@ -79,8 +79,8 @@ export default function RegistrationsPage() {
             <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-5">
                     <div>
-                        <h3 className="text-lg font-bold text-zinc-800">Live Database Registrations</h3>
-                        <p className="text-sm text-zinc-500 mt-1">Review, approve, and track real member movie script receipts.</p>
+                        <h3 className="text-lg font-bold text-zinc-800">Script Registration Receipts</h3>
+                        <p className="text-sm text-zinc-500 mt-1">Track and manage real member movie script registration receipts.</p>
                     </div>
                     <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
                         <div className="relative flex-1 sm:w-64 w-full">

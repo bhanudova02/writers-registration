@@ -51,6 +51,11 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
   const expiryDetails = useMemo(() => {
     if (!member) return { isExpired: false, daysRemaining: 365, expiryDateStr: '' };
+    
+    if (member.status === 'Inactive') {
+      return { isExpired: true, daysRemaining: 0, expiryDateStr: 'Inactive Account' };
+    }
+
     if (member.memberType === 'Life Time Member') {
       return { isExpired: false, daysRemaining: 9999, expiryDateStr: 'Never (Life Time)' };
     }
@@ -60,7 +65,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
     const now = new Date();
     const diffTime = expiryDate.getTime() - now.getTime();
     const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const isExpired = daysRemaining <= 0 || member.status === 'Inactive';
+    const isExpired = daysRemaining <= 0;
     return {
       isExpired,
       daysRemaining,
