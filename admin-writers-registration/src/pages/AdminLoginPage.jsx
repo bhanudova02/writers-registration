@@ -93,7 +93,7 @@ export default function AdminLoginPage({ onLogin }) {
       {/* Error Modal */}
       {errorModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all">
+          <div className="bg-white rounded-sm shadow-2xl w-full max-w-sm overflow-hidden transform transition-all">
             <div className="p-6 text-center">
               <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -101,12 +101,15 @@ export default function AdminLoginPage({ onLogin }) {
                 </svg>
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Access Denied</h3>
-              <p className="text-sm text-gray-600 mb-6">
+              <p className="text-sm text-gray-600 mb-2">
                 {errorMessage}
+              </p>
+              <p className="text-sm text-gray-500 mb-6 font-medium">
+                Please contact the admin if you want to access.
               </p>
               <button
                 onClick={() => setErrorModalOpen(false)}
-                className="w-full bg-indigo-600 text-white font-semibold py-2.5 rounded-xl hover:bg-indigo-700 transition shadow-md shadow-indigo-200 cursor-pointer"
+                className="w-full bg-red-600 text-white font-semibold py-2.5 rounded-sm hover:bg-red-700 transition shadow-md shadow-red-200 cursor-pointer"
               >
                 Close
               </button>
