@@ -5,38 +5,13 @@ import { LuCheck, LuMenu } from 'react-icons/lu';
 import { Link } from 'react-router-dom';
 import { auth } from '../firebase';
 import { logAdminActivity } from '../lib/logger';
+import { performLogout } from '../utils/authUtils';
 
 export function Header({ user, mobileNavOpen, setMobileNavOpen }) {
     const [profileOpen, setProfileOpen] = useState(false);
 
     const handleLogout = async () => {
-        await logAdminActivity(user.email || user.displayName, "Logout", "User logged out of admin dashboard");
-        if (user?.isEmployee) {
-            sessionStorage.removeItem('employee_admin');
-        } else {
-            await auth.signOut();
-        }
-
-        // Completely clear all caches to fix stale deployment issues
-        localStorage.clear();
-        sessionStorage.clear();
-        
-        // Clear all cookies
-        document.cookie.split(";").forEach((c) => {
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-        });
-
-        // Clear service worker caches
-        if ('caches' in window) {
-            caches.keys().then((names) => {
-                names.forEach(name => {
-                    caches.delete(name);
-                });
-            });
-        }
-
-        // Hard reload to flush SPA state
-        window.location.href = "/admin-login";
+        await performLogout(user);
     };
 
     if (!user) {

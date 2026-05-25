@@ -1,12 +1,45 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet } from 'react-router-dom';
 // Removed unused imports
 import { Header } from '../components/Header';
 import { AsideLayout } from './AsideLayout';
 import { MobileNav } from './MobileNav';
+import { performLogout } from '../utils/authUtils';
 
 const DashboardLayout = ({ user }) => {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const timeoutRef = useRef(null);
+
+  const resetTimer = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    // 30 minutes = 30 * 60 * 1000 = 1800000 ms
+    timeoutRef.current = setTimeout(async () => {
+      await performLogout(user);
+    }, 1800000);
+  };
+
+  useEffect(() => {
+    // Set initial timer
+    resetTimer();
+
+    const events = ['mousemove', 'mousedown', 'keypress', 'DOMMouseScroll', 'mousewheel', 'touchmove', 'MSPointerMove'];
+    
+    const handleUserActivity = () => {
+      resetTimer();
+    };
+
+    events.forEach(event => {
+      window.addEventListener(event, handleUserActivity);
+    });
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      events.forEach(event => {
+        window.removeEventListener(event, handleUserActivity);
+      });
+    };
+  }, [user]);
+
   return (
     <div className='bg-zinc-800 h-screen flex flex-col relative'>
       <Header
