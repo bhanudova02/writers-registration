@@ -108,7 +108,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
       const errorMessage = error.message || String(error);
 
       if (errorCode === 'auth/too-many-requests' || errorMessage.includes('too-many-requests')) {
-        setLoginError('Security Alert: You have requested too many OTPs. Please wait 15-30 minutes before trying again.');
+        setLoginError('Security Alert: You have requested too many OTPs. Please wait 3-4 hours before trying again.');
       } else if (errorCode === 'auth/invalid-phone-number' || errorMessage.includes('invalid-phone-number')) {
         setLoginError('Invalid mobile number format. Please check your number.');
       } else {

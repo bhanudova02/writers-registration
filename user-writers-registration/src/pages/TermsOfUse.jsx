@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 export default function TermsOfUse() {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-zinc-900">
       <Header />
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-12 md:py-20 mt-16">
-        <div className="bg-white p-8 md:p-12 rounded-2xl shadow-sm border border-slate-200">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 mt-6">
+        <div className="bg-white p-6 md:p-10 rounded-sm shadow-sm border border-slate-200">
           <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 mb-6">Terms of Use</h1>
           <p className="text-sm text-slate-500 mb-10">Last Updated: May 25, 2026</p>
 
