@@ -1,21 +1,13 @@
 import { useState } from 'react';
 
 export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload, handleDownloadStampedScript }) {
-  const [hasDownloaded, setHasDownloaded] = useState(false);
+  const [scriptDownloaded, setScriptDownloaded] = useState(false);
+  const [receiptDownloaded, setReceiptDownloaded] = useState(false);
 
   if (!receiptModal.type || !receiptModal.registration) return null;
 
   const requiresBothDownloads = receiptModal.isPaymentSuccess === true;
-  const canClose = !requiresBothDownloads || hasDownloaded;
-
-  const onDownloadBoth = async () => {
-    // Trigger both downloads concurrently
-    handleDownloadReceipt(receiptModal.registration);
-    if (requiresBothDownloads) {
-      handleDownloadStampedScript();
-    }
-    setHasDownloaded(true);
-  };
+  const canClose = !requiresBothDownloads || (scriptDownloaded && receiptDownloaded);
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/80 px-4 py-8 overflow-y-auto flex items-start justify-center">
@@ -44,17 +36,47 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
         <div className="space-y-4 px-5 py-5 flex flex-col">
           {receiptModal.type === 'download' ? (
             <>
-              <button
-                type="button"
-                onClick={requiresBothDownloads ? onDownloadBoth : () => handleDownloadReceipt(receiptModal.registration)}
-                disabled={isDownloading}
-                className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 order-1"
-              >
-                {isDownloading ? 'Preparing Download...' : (requiresBothDownloads ? 'Download Script and Receipt' : 'Download Receipt')}
-              </button>
+              {requiresBothDownloads ? (
+                <div className="flex gap-3 w-full order-1">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleDownloadStampedScript();
+                      setScriptDownloaded(true);
+                    }}
+                    disabled={isDownloading || scriptDownloaded}
+                    className="flex-1 rounded bg-blue-600 px-2 py-3 text-sm font-extrabold text-white hover:bg-blue-700 disabled:opacity-60 text-center"
+                  >
+                    {scriptDownloaded ? 'Script Downloaded ✓' : 'Download Script'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await handleDownloadReceipt(receiptModal.registration);
+                      setReceiptDownloaded(true);
+                    }}
+                    disabled={isDownloading || receiptDownloaded}
+                    className="flex-1 rounded bg-green-600 px-2 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 text-center"
+                  >
+                    {receiptDownloaded ? 'Receipt Downloaded ✓' : 'Download Receipt'}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await handleDownloadReceipt(receiptModal.registration);
+                    setReceiptDownloaded(true);
+                  }}
+                  disabled={isDownloading || receiptDownloaded}
+                  className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 order-1"
+                >
+                  {isDownloading ? 'Preparing Download...' : (receiptDownloaded ? 'Receipt Downloaded ✓' : 'Download Receipt')}
+                </button>
+              )}
               {requiresBothDownloads ? (
                 <div className="rounded border border-red-300 bg-red-50 p-4 text-sm font-bold leading-relaxed text-red-900 shadow-sm order-2">
-                  ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading, as your stamped script will be permanently lost and cannot be downloaded later. The Close button will appear after you download.
+                  ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading both, as your stamped script will be permanently lost and cannot be downloaded later. The Close button will appear after you download both.
                 </div>
               ) : (
                 <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950 order-2">
