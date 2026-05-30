@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload, handleDownloadStampedScript }) {
   const [scriptDownloaded, setScriptDownloaded] = useState(false);
   const [receiptDownloaded, setReceiptDownloaded] = useState(false);
+  const [isScriptProcessing, setIsScriptProcessing] = useState(false);
+  const [isReceiptProcessing, setIsReceiptProcessing] = useState(false);
 
   if (!receiptModal.type || !receiptModal.registration) return null;
 
@@ -41,37 +44,49 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                   <button
                     type="button"
                     onClick={async () => {
+                      setIsScriptProcessing(true);
                       await handleDownloadStampedScript();
                       setScriptDownloaded(true);
+                      setIsScriptProcessing(false);
                     }}
                     disabled={isDownloading}
-                    className="flex-1 rounded bg-blue-600 px-2 py-3 text-sm font-extrabold text-white hover:bg-blue-700 disabled:opacity-60 text-center"
+                    className="flex-1 rounded bg-blue-600 px-2 py-3 text-sm font-extrabold text-white hover:bg-blue-700 disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    {scriptDownloaded ? 'Download Script Again' : 'Download Script'}
+                    {isScriptProcessing ? (
+                      <><Loader2 className="animate-spin" size={16} /> Stamping...</>
+                    ) : scriptDownloaded ? 'Download Script Again' : 'Download Script'}
                   </button>
                   <button
                     type="button"
                     onClick={async () => {
+                      setIsReceiptProcessing(true);
                       await handleDownloadReceipt(receiptModal.registration);
                       setReceiptDownloaded(true);
+                      setIsReceiptProcessing(false);
                     }}
                     disabled={isDownloading}
-                    className="flex-1 rounded bg-green-600 px-2 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 text-center"
+                    className="flex-1 rounded bg-green-600 px-2 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 flex items-center justify-center gap-2"
                   >
-                    {receiptDownloaded ? 'Download Receipt Again' : 'Download Receipt'}
+                    {isReceiptProcessing ? (
+                      <><Loader2 className="animate-spin" size={16} /> Generating...</>
+                    ) : receiptDownloaded ? 'Download Receipt Again' : 'Download Receipt'}
                   </button>
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={async () => {
+                    setIsReceiptProcessing(true);
                     await handleDownloadReceipt(receiptModal.registration);
                     setReceiptDownloaded(true);
+                    setIsReceiptProcessing(false);
                   }}
                   disabled={isDownloading}
-                  className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 order-1"
+                  className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 order-1 flex items-center justify-center gap-2"
                 >
-                  {isDownloading ? 'Preparing Download...' : (receiptDownloaded ? 'Download Receipt Again' : 'Download Receipt')}
+                  {isReceiptProcessing ? (
+                    <><Loader2 className="animate-spin" size={18} /> Generating Receipt...</>
+                  ) : receiptDownloaded ? 'Download Receipt Again' : 'Download Receipt'}
                 </button>
               )}
               {requiresBothDownloads ? (
