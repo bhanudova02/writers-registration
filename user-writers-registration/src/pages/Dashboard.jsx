@@ -271,7 +271,8 @@ export default function Dashboard({ member, setMember, onLogout }) {
       const pdfDoc = await PDFDocument.load(arrayBuffer);
       const pages = pdfDoc.getPages();
       const regId = receiptModal.registration.registrationId;
-      const dateStr = new Date(receiptModal.registration.createdAt).toLocaleDateString();
+      const dateObj = new Date(receiptModal.registration.createdAt);
+      const dateStr = `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
       pages.forEach((page) => {
         const { width, height } = page.getSize();
@@ -432,8 +433,6 @@ export default function Dashboard({ member, setMember, onLogout }) {
       if (successRegistration?.registrationId === reg.registrationId) {
         setSuccessRegistration(prev => ({ ...prev, downloadCount: 1 }));
       }
-      
-      setReceiptModal({ type: null, registration: null });
     } catch (error) {
       console.error(error);
       toast.error("Download failed. Please try again.");
