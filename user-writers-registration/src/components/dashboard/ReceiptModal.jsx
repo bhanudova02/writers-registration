@@ -61,11 +61,8 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                   Script registered and approved successfully.
                 </div>
               )}
-              <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950">
-                Please download your stamped receipt now. This receipt can be downloaded only one time. Once you download it, the receipt will be locked automatically.
-              </div>
-              <div className="rounded border border-red-200 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">
-                If you refresh this page or close this modal without downloading, you can still use the receipt log below, but after one successful download, any future download will require a new payment.
+              <div className="rounded border border-red-300 bg-red-50 p-4 text-sm font-bold leading-relaxed text-red-900 shadow-sm">
+                ⚠️ CRITICAL WARNING: You must immediately download both your Receipt and Stamped Script. Do NOT refresh or close this page without downloading, otherwise your stamped script will be permanently lost. This modal cannot be closed until both files are downloaded successfully.
               </div>
               <div className="flex gap-3">
                 <button
