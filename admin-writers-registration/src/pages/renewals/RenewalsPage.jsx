@@ -26,12 +26,11 @@ export default function RenewalsPage() {
 
     const statusFilterOptions = [
         { value: "All", label: "All Statuses" },
-        { value: "Life Time Member", label: "Life Time" },
-        { value: "Associate Member", label: "Associate" },
         { value: "Active", label: "Active" },
-        { value: "Grace Period", label: "Grace Period" },
         { value: "Overdue", label: "Overdue" },
         { value: "Inactive", label: "Inactive" },
+        { value: "Associate Member", label: "Associate" },
+        { value: "Life Time Member", label: "Life Time" },
     ];
 
     // Fetch members real-time
@@ -309,7 +308,7 @@ export default function RenewalsPage() {
                         </div>
                     ) : filteredRenewals.length === 0 ? (
                         <div className="py-16 text-center border border-dashed border-zinc-200 rounded flex flex-col items-center justify-center">
-                            <FaSyncAlt className="text-zinc-300 text-4xl mb-3 animate-spin" />
+                            <FiLayers className="text-zinc-300 text-4xl mb-3" />
                             <p className="text-sm font-bold text-zinc-500">No members matching criteria.</p>
                         </div>
                     ) : (
