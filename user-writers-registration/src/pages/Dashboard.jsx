@@ -153,15 +153,6 @@ export default function Dashboard({ member, setMember, onLogout }) {
       return;
     }
 
-    const alreadyRegistered = myRegistrations.some((reg) => (
-      normalizeTitle(reg.title || '') === normalizedScriptTitle
-      && reg.category === selectedCategory
-    ));
-
-    if (alreadyRegistered) {
-      toast.error(`This ${selectedCategory} is already registered under the same title.`);
-      return;
-    }
 
     if (pageCount < 1) {
       toast.error("Page count must be 1 or more.");
