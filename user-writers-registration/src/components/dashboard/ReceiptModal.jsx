@@ -1,22 +1,20 @@
 import { useState } from 'react';
 
 export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload, handleDownloadStampedScript }) {
-  const [hasDownloadedReceipt, setHasDownloadedReceipt] = useState(false);
-  const [hasDownloadedScript, setHasDownloadedScript] = useState(false);
+  const [hasDownloaded, setHasDownloaded] = useState(false);
 
   if (!receiptModal.type || !receiptModal.registration) return null;
 
   const requiresBothDownloads = receiptModal.isPaymentSuccess === true;
-  const bothDownloaded = !requiresBothDownloads || (hasDownloadedReceipt && hasDownloadedScript);
+  const canClose = !requiresBothDownloads || hasDownloaded;
 
-  const onDownloadReceipt = async () => {
-    await handleDownloadReceipt(receiptModal.registration);
-    setHasDownloadedReceipt(true);
-  };
-
-  const onDownloadScript = async () => {
-    await handleDownloadStampedScript();
-    setHasDownloadedScript(true);
+  const onDownloadBoth = async () => {
+    // Trigger both downloads concurrently
+    handleDownloadReceipt(receiptModal.registration);
+    if (requiresBothDownloads) {
+      handleDownloadStampedScript();
+    }
+    setHasDownloaded(true);
   };
 
   return (
@@ -31,7 +29,7 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
               Receipt ID: {receiptModal.registration.registrationId}
             </p>
           </div>
-          {bothDownloaded && (
+          {canClose && (
             <button
               type="button"
               onClick={closeReceiptModal}
@@ -61,40 +59,23 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                   Script registered and approved successfully.
                 </div>
               )}
-              <div className="rounded border border-red-300 bg-red-50 p-4 text-sm font-bold leading-relaxed text-red-900 shadow-sm">
-                ⚠️ CRITICAL WARNING: You must immediately download both your Receipt and Stamped Script. Do NOT refresh or close this page without downloading, otherwise your stamped script will be permanently lost. This modal cannot be closed until both files are downloaded successfully.
-              </div>
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={onDownloadReceipt}
-                  disabled={isDownloading || hasDownloadedReceipt}
-                  className="w-full rounded bg-zinc-200 border border-zinc-300 px-4 py-3 text-sm font-extrabold text-zinc-800 hover:bg-zinc-300 disabled:opacity-60"
-                >
-                  {isDownloading ? 'Preparing...' : (hasDownloadedReceipt ? 'Downloaded' : 'Download Receipt')}
-                </button>
-                {requiresBothDownloads && (
-                  <button
-                    type="button"
-                    onClick={onDownloadScript}
-                    disabled={isDownloading || hasDownloadedScript}
-                    className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60"
-                  >
-                    {isDownloading ? 'Stamping...' : (hasDownloadedScript ? 'Downloaded' : 'Download Script')}
-                  </button>
-                )}
-              </div>
-              {bothDownloaded && (
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={closeReceiptModal}
-                    className="w-full rounded bg-zinc-800 px-4 py-3 text-sm font-extrabold text-white hover:bg-zinc-900 transition"
-                  >
-                    Close
-                  </button>
+              {requiresBothDownloads ? (
+                <div className="rounded border border-red-300 bg-red-50 p-4 text-sm font-bold leading-relaxed text-red-900 shadow-sm">
+                  ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading, as your stamped script will be permanently lost and cannot be downloaded later. The Close button will appear after you download.
+                </div>
+              ) : (
+                <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950">
+                  Please download your stamped receipt now. This receipt can be downloaded only one time. Once you download it, the receipt will be locked automatically.
                 </div>
               )}
+              <button
+                type="button"
+                onClick={requiresBothDownloads ? onDownloadBoth : () => handleDownloadReceipt(receiptModal.registration)}
+                disabled={isDownloading}
+                className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60"
+              >
+                {isDownloading ? 'Preparing Download...' : (requiresBothDownloads ? 'Download Script and Receipt' : 'Download Receipt')}
+              </button>
             </>
           ) : (
             <>
@@ -109,17 +90,6 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
               >
                 {isDownloading ? 'Opening Secure Payment...' : `Pay ₹${receiptModal.registration.amount} Securely`}
               </button>
-              {bothDownloaded && (
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={closeReceiptModal}
-                    className="w-full rounded bg-zinc-800 px-4 py-3 text-sm font-extrabold text-white hover:bg-zinc-900 transition"
-                  >
-                    Close
-                  </button>
-                </div>
-              )}
             </>
           )}
         </div>
