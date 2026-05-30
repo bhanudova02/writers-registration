@@ -26,7 +26,7 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
             <thead>
               <tr className="bg-zinc-50/80 border-b border-zinc-200 text-left">
                 {["Reg ID", "Script Title", "Category", "Pages", "Amount", "Date", "Download Status"].map((head) => (
-                  <th key={head} className="border border-zinc-200 py-2.5 px-3 text-[11px] font-bold text-zinc-600 uppercase tracking-wider">
+                  <th key={head} className={`border border-zinc-200 py-2.5 px-3 text-[11px] font-bold text-zinc-600 uppercase tracking-wider ${head === "Download Status" ? "text-center" : "text-left"}`}>
                     {head}
                   </th>
                 ))}
