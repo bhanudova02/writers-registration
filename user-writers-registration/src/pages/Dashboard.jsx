@@ -303,95 +303,139 @@ export default function Dashboard({ member, setMember, onLogout }) {
       const regRef = doc(db, 'registrations', reg.registrationId);
       await updateDoc(regRef, { downloadCount: 1 });
 
-      const docPdf = new jsPDF();
-      docPdf.setFontSize(16);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text("TELUGU CINE WRITERS ASSOCIATION", 105, 20, null, null, "center");
-      docPdf.setFontSize(14);
-      docPdf.text("OFFICIAL STAMPED RECEIPT", 105, 30, null, null, "center");
+      const docPdf = new jsPDF('p', 'mm', 'a4');
       
+      // Draw border (Blue)
+      docPdf.setDrawColor(0, 0, 150);
       docPdf.setLineWidth(0.5);
-      docPdf.line(20, 35, 190, 35);
+      docPdf.rect(10, 10, 190, 277);
       
       try {
-        const stampImg = new Image();
-        stampImg.src = '/stamp.png';
+        const logoImg = new Image();
+        logoImg.src = '/Logo.png';
         await new Promise((resolve, reject) => {
-          stampImg.onload = resolve;
-          stampImg.onerror = reject;
+          logoImg.onload = resolve;
+          logoImg.onerror = reject;
         });
-        
-        // Add stamp image to top right corner
-        docPdf.addImage(stampImg, 'PNG', 145, 45, 45, 45);
+        // Logo on top left
+        docPdf.addImage(logoImg, 'PNG', 15, 15, 25, 25);
+        // Hamsa Grandhalayam logo at bottom (using the same logo temporarily)
+        docPdf.addImage(logoImg, 'PNG', 95, 260, 15, 15);
       } catch (e) {
-        console.error("Could not load stamp image", e);
+        console.error("Could not load logo image", e);
       }
+
+      // Header Text
+      docPdf.setTextColor(0, 0, 150); // Dark Blue
+      docPdf.setFontSize(16);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text("TELUGU CINE WRITERS' ASSOCIATION", 45, 22);
       
+      docPdf.setFontSize(7);
+      docPdf.setFont("helvetica", "normal");
+      docPdf.text("(Regd.NO.A741) Registered under trade Union Act, 1926, Affiliated to T.S.F.I.E.F)", 45, 27);
+      
+      // Address Block (Right aligned)
+      docPdf.setFontSize(8);
+      docPdf.setFont("helvetica", "bold");
+      const addressLines = [
+        "H.No.8-3-720/9/2, Shalivahana Nagar",
+        "Yellareddy Guda, Srinagar Colony",
+        "Hyderabad - 500 073",
+        "Cell: 9989990229",
+        "e-mail: apcwa93@yahoo.co.in",
+        "tcwa93@gmail.com"
+      ];
+      addressLines.forEach((line, i) => {
+        const w = docPdf.getTextWidth(line);
+        docPdf.text(line, 195 - w, 15 + (i * 4));
+      });
+
+      // Horizontal line
+      docPdf.setDrawColor(0, 0, 150);
+      docPdf.line(10, 42, 200, 42);
+
+      // Receipt Title
+      const receiptTitle = `${reg.category || 'Story'} Registration Receipt`;
+      docPdf.setFontSize(14);
+      docPdf.setTextColor(0, 0, 150);
+      docPdf.text(receiptTitle, 105, 52, { align: "center" });
+      const titleWidth = docPdf.getTextWidth(receiptTitle);
+      docPdf.line(105 - (titleWidth/2), 53, 105 + (titleWidth/2), 53);
+
+      // No. & Date
       docPdf.setFontSize(11);
-      docPdf.setFont("helvetica", "normal");
+      docPdf.setTextColor(0, 0, 150); // Text color blue for labels
+      docPdf.text("No.", 15, 65);
       
-      const startY = 45;
-      const lineHeight = 8;
+      docPdf.setTextColor(200, 0, 0); // Red color for ID
+      docPdf.setFontSize(14);
+      docPdf.text(reg.registrationId, 25, 65);
       
-      docPdf.text(`Name of the Member:`, 20, startY);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text(`${reg.writerName}`, 70, startY);
-      docPdf.setFont("helvetica", "normal");
+      docPdf.setTextColor(0, 0, 150);
+      docPdf.setFontSize(11);
+      docPdf.text("Date: ....................................", 140, 65);
+      docPdf.setTextColor(0, 0, 0); // Date in black
+      docPdf.text(new Date(reg.createdAt).toLocaleDateString(), 152, 64);
 
-      docPdf.text(`Working Title:`, 20, startY + lineHeight * 1);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text(`${reg.title}`, 70, startY + lineHeight * 1);
-      docPdf.setFont("helvetica", "normal");
+      // Dynamic Fields Helper
+      const lineStartY = 80;
+      const lineGap = 15;
       
-      docPdf.text(`Category:`, 20, startY + lineHeight * 2);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text(`${reg.category}`, 70, startY + lineHeight * 2);
-      docPdf.setFont("helvetica", "normal");
-      
-      docPdf.text(`Total Pages:`, 20, startY + lineHeight * 3);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text(`${reg.pageCount}`, 70, startY + lineHeight * 3);
-      docPdf.setFont("helvetica", "normal");
-      
-      docPdf.text(`Membership Id No.:`, 20, startY + lineHeight * 4);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text(`${reg.membershipId}`, 70, startY + lineHeight * 4);
-      docPdf.setFont("helvetica", "normal");
-      
-      docPdf.text(`Receipt No.:`, 20, startY + lineHeight * 5);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text(`${reg.registrationId}`, 70, startY + lineHeight * 5);
-      docPdf.setFont("helvetica", "normal");
-      
-      docPdf.text(`Time:`, 20, startY + lineHeight * 6);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text(`${new Date(reg.createdAt).toLocaleString()}`, 70, startY + lineHeight * 6);
-      docPdf.setFont("helvetica", "normal");
-      
-      docPdf.text(`Amount:`, 20, startY + lineHeight * 7);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.text(`Rs. ${reg.amount}`, 70, startY + lineHeight * 7);
-      docPdf.setFont("helvetica", "normal");
-      
-      docPdf.text(`Payment Status:`, 20, startY + lineHeight * 8);
-      docPdf.setFont("helvetica", "bold");
-      docPdf.setTextColor(0, 150, 0); // Green color for success
-      docPdf.text(`SUCCESSFUL`, 70, startY + lineHeight * 8);
-      docPdf.setTextColor(0, 0, 0); // Reset to black
-      docPdf.setFont("helvetica", "normal");
+      const drawField = (label, value, y, dotStart) => {
+        docPdf.setTextColor(0, 0, 150);
+        docPdf.setFont("helvetica", "bold");
+        docPdf.text(label, 15, y);
+        
+        // Draw dotted line
+        docPdf.setDrawColor(0, 0, 150);
+        docPdf.setLineDash([1, 1], 0);
+        docPdf.line(dotStart, y, 195, y);
+        docPdf.setLineDash([], 0);
+        
+        // Write value above dotted line
+        docPdf.setTextColor(0, 0, 0);
+        docPdf.setFont("helvetica", "normal");
+        docPdf.text(String(value || ''), dotStart + 5, y - 2);
+      };
 
-      docPdf.line(20, startY + lineHeight * 9, 190, startY + lineHeight * 9);
+      drawField("Name of the Writer", reg.writerName, lineStartY, 55);
+      drawField("TCWA Membership No.", reg.membershipId, lineStartY + lineGap, 65);
+      drawField("Title of the Story:", reg.title, lineStartY + lineGap * 2, 50);
       
+      // Extra dotted line for story title
+      docPdf.setDrawColor(0, 0, 150);
+      docPdf.setLineDash([1, 1], 0);
+      docPdf.line(15, lineStartY + lineGap * 2 + 10, 195, lineStartY + lineGap * 2 + 10);
+      docPdf.setLineDash([], 0);
+
+      drawField("Pages:", reg.pageCount, lineStartY + lineGap * 3 + 5, 30);
+      drawField("Received the Sum of Rupees", reg.amount + " (Online Payment)", lineStartY + lineGap * 4 + 5, 75);
+      
+      // Extra dotted line for amount
+      docPdf.setDrawColor(0, 0, 150);
+      docPdf.setLineDash([1, 1], 0);
+      docPdf.line(15, lineStartY + lineGap * 4 + 15, 195, lineStartY + lineGap * 4 + 15);
+      docPdf.setLineDash([], 0);
+
+      docPdf.setTextColor(0, 0, 150);
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text("Cash / Card Swipe", 15, lineStartY + lineGap * 5 + 10);
+      
+      // Rs Box
+      docPdf.setDrawColor(0, 0, 150);
+      docPdf.rect(15, lineStartY + lineGap * 5 + 15, 35, 12);
+      docPdf.text("Rs.", 18, lineStartY + lineGap * 5 + 23);
+      docPdf.setTextColor(0, 0, 0);
+      docPdf.text(String(reg.amount), 28, lineStartY + lineGap * 5 + 23);
+
+      // Footer Signatures
+      docPdf.setTextColor(0, 0, 150);
       docPdf.setFontSize(10);
-      docPdf.setTextColor(100, 100, 100);
-      docPdf.text(`VERIFICATION STATUS: APPROVED AUTOMATICALLY`, 20, startY + lineHeight * 10.5);
-      docPdf.text(`SECURITY SHIELD: 100% WRITER PRIVACY ACTIVE`, 20, startY + lineHeight * 11.5);
-      
-      docPdf.setFontSize(9);
-      docPdf.text(`* This is a computer generated stamped document.`, 20, startY + lineHeight * 13.5);
-      docPdf.text(`* One-time download restriction policy is applied.`, 20, startY + lineHeight * 14.5);
-      docPdf.text(`* Re-download requires fresh payment as per SOP.`, 20, startY + lineHeight * 15.5);
-      
+      docPdf.setFont("helvetica", "bold");
+      docPdf.text("GENERAL SECRETARY / TREASURER", 125, 255);
+
+      // Try signature if available
       try {
         const signImg = new Image();
         signImg.src = '/signature.png';
@@ -399,28 +443,13 @@ export default function Dashboard({ member, setMember, onLogout }) {
           signImg.onload = resolve;
           signImg.onerror = reject;
         });
-        
-        // Add signature image to bottom right
-        docPdf.addImage(signImg, 'PNG', 145, startY + lineHeight * 11, 40, 15);
-        
-        // Add bordered text container below the signature
-        docPdf.setDrawColor(180, 180, 180); // gray border
-        docPdf.rect(125, startY + lineHeight * 11 + 16, 80, 18);
-        
-        docPdf.setTextColor(1, 10, 80); // Dark blue text
-        docPdf.setFontSize(10);
-        docPdf.setFont("helvetica", "bold");
-        docPdf.text("UMARJI ANURADHA", 165, startY + lineHeight * 11 + 21, null, null, "center");
-        
-        docPdf.setTextColor(1, 10, 80);
-        docPdf.setFontSize(9);
-        docPdf.setFont("helvetica", "bold");
-        docPdf.text("General Secretary", 165, startY + lineHeight * 11 + 26, null, null, "center");
-        docPdf.text("Telugu Cine Writers Association", 165, startY + lineHeight * 11 + 31, null, null, "center");
-        
-      } catch (e) {
-        console.error("Could not load signature image", e);
-      }
+        docPdf.addImage(signImg, 'PNG', 145, 235, 40, 15);
+      } catch (e) {}
+
+      // Footer bottom text
+      docPdf.setFont("times", "italic");
+      docPdf.text("Read the Great Books at our", 45, 270);
+      docPdf.text("Hamsa Grandhalayam", 115, 270);
       
       docPdf.save(`TCWA_Receipt_${reg.registrationId}.pdf`);
 
