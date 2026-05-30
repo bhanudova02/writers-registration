@@ -180,7 +180,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
     try {
       if (!member) throw new Error("User session not found. Please log in again.");
 
-      const regId = `REG-TCWA-${Math.floor(100000 + Math.random() * 900000)}`;
+      const regId = `REG-TCWA-${Date.now().toString().slice(-8)}${Math.floor(1000 + Math.random() * 9000)}`;
       const amount = pageCount * 10;
       await loadRazorpayCheckout();
 
