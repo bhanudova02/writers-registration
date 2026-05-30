@@ -58,7 +58,7 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
                   <td className="border border-zinc-200 py-3 px-3 w-48">
                     {reg.downloadCount >= 1 ? (
                       <span className="inline-flex items-center gap-1 text-[11px] font-bold text-zinc-700 bg-zinc-100 px-3 py-1 rounded border border-zinc-200">
-                        Done
+                        <Check size={12} /> Done
                       </span>
                     ) : (
                       <button
