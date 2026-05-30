@@ -41,8 +41,44 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
           )}
         </div>
 
-        <div className="space-y-4 px-5 py-5">
-          <div className="rounded border border-zinc-200 bg-white p-4 text-xs font-semibold text-zinc-700 space-y-2 shadow-sm">
+        <div className="space-y-4 px-5 py-5 flex flex-col">
+          {receiptModal.type === 'download' ? (
+            <>
+              <button
+                type="button"
+                onClick={requiresBothDownloads ? onDownloadBoth : () => handleDownloadReceipt(receiptModal.registration)}
+                disabled={isDownloading}
+                className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 order-1"
+              >
+                {isDownloading ? 'Preparing Download...' : (requiresBothDownloads ? 'Download Script and Receipt' : 'Download Receipt')}
+              </button>
+              {requiresBothDownloads ? (
+                <div className="rounded border border-red-300 bg-red-50 p-4 text-sm font-bold leading-relaxed text-red-900 shadow-sm order-2">
+                  ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading, as your stamped script will be permanently lost and cannot be downloaded later. The Close button will appear after you download.
+                </div>
+              ) : (
+                <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950 order-2">
+                  Please download your stamped receipt now. This receipt can be downloaded only one time. Once you download it, the receipt will be locked automatically.
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => handleUnlockDownload(receiptModal.registration)}
+                disabled={isDownloading}
+                className="w-full rounded bg-amber-500 px-4 py-3 text-sm font-extrabold text-white hover:bg-amber-600 disabled:opacity-60 cursor-pointer order-1"
+              >
+                {isDownloading ? 'Opening Secure Payment...' : `Pay ₹${receiptModal.registration.amount} Securely`}
+              </button>
+              <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950 order-2">
+                Re-download requires a payment of ₹{receiptModal.registration.amount}. After successful payment, the receipt download will unlock again.
+              </div>
+            </>
+          )}
+
+          <div className="rounded border border-zinc-200 bg-white p-4 text-xs font-semibold text-zinc-700 space-y-2 shadow-sm order-3">
             <div className="flex justify-between"><span className="text-zinc-500">Name of the Member:</span> <span className="font-bold text-zinc-900">{receiptModal.registration.writerName}</span></div>
             <div className="flex justify-between"><span className="text-zinc-500">Working Title:</span> <span className="font-bold text-zinc-900">{receiptModal.registration.title}</span></div>
             <div className="flex justify-between"><span className="text-zinc-500">Total Pages:</span> <span className="font-bold text-zinc-900">{receiptModal.registration.pageCount}</span></div>
@@ -51,47 +87,6 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
             <div className="flex justify-between"><span className="text-zinc-500">Time:</span> <span className="font-bold text-zinc-900">{new Date(receiptModal.registration.createdAt).toLocaleString()}</span></div>
             <div className="flex justify-between pt-1 border-t border-zinc-100"><span className="text-zinc-500">Amount:</span> <span className="font-bold text-green-600">₹{receiptModal.registration.amount}</span></div>
           </div>
-
-          {receiptModal.type === 'download' ? (
-            <>
-              {receiptModal.isPaymentSuccess && (
-                <div className="rounded border border-green-200 bg-green-50 p-3 text-sm font-extrabold text-green-900">
-                  Script registered and approved successfully.
-                </div>
-              )}
-              {requiresBothDownloads ? (
-                <div className="rounded border border-red-300 bg-red-50 p-4 text-sm font-bold leading-relaxed text-red-900 shadow-sm">
-                  ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading, as your stamped script will be permanently lost and cannot be downloaded later. The Close button will appear after you download.
-                </div>
-              ) : (
-                <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950">
-                  Please download your stamped receipt now. This receipt can be downloaded only one time. Once you download it, the receipt will be locked automatically.
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={requiresBothDownloads ? onDownloadBoth : () => handleDownloadReceipt(receiptModal.registration)}
-                disabled={isDownloading}
-                className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60"
-              >
-                {isDownloading ? 'Preparing Download...' : (requiresBothDownloads ? 'Download Script and Receipt' : 'Download Receipt')}
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950">
-                Re-download requires a payment of ₹{receiptModal.registration.amount}. After successful payment, the receipt download will unlock again.
-              </div>
-              <button
-                type="button"
-                onClick={() => handleUnlockDownload(receiptModal.registration)}
-                disabled={isDownloading}
-                className="w-full rounded bg-amber-500 px-4 py-3 text-sm font-extrabold text-white hover:bg-amber-600 disabled:opacity-60 cursor-pointer"
-              >
-                {isDownloading ? 'Opening Secure Payment...' : `Pay ₹${receiptModal.registration.amount} Securely`}
-              </button>
-            </>
-          )}
         </div>
       </div>
     </div>
