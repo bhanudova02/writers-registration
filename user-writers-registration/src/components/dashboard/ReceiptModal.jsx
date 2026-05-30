@@ -44,10 +44,10 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                       await handleDownloadStampedScript();
                       setScriptDownloaded(true);
                     }}
-                    disabled={isDownloading || scriptDownloaded}
+                    disabled={isDownloading}
                     className="flex-1 rounded bg-blue-600 px-2 py-3 text-sm font-extrabold text-white hover:bg-blue-700 disabled:opacity-60 text-center"
                   >
-                    {scriptDownloaded ? 'Script Downloaded ✓' : 'Download Script'}
+                    {scriptDownloaded ? 'Download Script Again' : 'Download Script'}
                   </button>
                   <button
                     type="button"
@@ -55,10 +55,10 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                       await handleDownloadReceipt(receiptModal.registration);
                       setReceiptDownloaded(true);
                     }}
-                    disabled={isDownloading || receiptDownloaded}
+                    disabled={isDownloading}
                     className="flex-1 rounded bg-green-600 px-2 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 text-center"
                   >
-                    {receiptDownloaded ? 'Receipt Downloaded ✓' : 'Download Receipt'}
+                    {receiptDownloaded ? 'Download Receipt Again' : 'Download Receipt'}
                   </button>
                 </div>
               ) : (
@@ -68,10 +68,10 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                     await handleDownloadReceipt(receiptModal.registration);
                     setReceiptDownloaded(true);
                   }}
-                  disabled={isDownloading || receiptDownloaded}
+                  disabled={isDownloading}
                   className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60 order-1"
                 >
-                  {isDownloading ? 'Preparing Download...' : (receiptDownloaded ? 'Receipt Downloaded ✓' : 'Download Receipt')}
+                  {isDownloading ? 'Preparing Download...' : (receiptDownloaded ? 'Download Receipt Again' : 'Download Receipt')}
                 </button>
               )}
               {requiresBothDownloads ? (
