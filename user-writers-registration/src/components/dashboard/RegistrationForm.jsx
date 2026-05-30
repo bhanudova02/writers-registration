@@ -107,13 +107,18 @@ export default function RegistrationForm({
 
       <button
         type="submit"
-        disabled={isRegistering}
+        disabled={isRegistering || isCalculatingPages}
         className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg text-sm transition shadow-[0_4px_14px_0_rgb(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
       >
         {isRegistering ? (
           <>
             <RefreshCw size={16} className="animate-spin" />
             <span>Initializing Secure Payment...</span>
+          </>
+        ) : isCalculatingPages ? (
+          <>
+            <RefreshCw size={16} className="animate-spin" />
+            <span>Calculating Pages...</span>
           </>
         ) : (
           <span>Proceed to Payment (₹{pageCount * 10})</span>
