@@ -5,6 +5,7 @@ import { db } from '../firebase';
 import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'react-toastify';
 import { jsPDF } from 'jspdf';
+import { PDFDocument, rgb } from 'pdf-lib';
 import { normalizeTitle, loadRazorpayCheckout } from '../lib/utils';
 
 // Use locally hosted worker from the public directory.
@@ -230,7 +231,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
       await setDoc(regRef, newRegData);
       setSuccessRegistration(newRegData);
-      setReceiptModal({ type: 'download', registration: newRegData, isPaymentSuccess: true });
+      setReceiptModal({ type: 'download', registration: newRegData, isPaymentSuccess: true, originalFile: pdfFile });
 
       setScriptTitle('');
       setPageCount(1);
@@ -258,6 +259,48 @@ export default function Dashboard({ member, setMember, onLogout }) {
   };
 
   const requestUnlockDownload = (reg) => setReceiptModal({ type: 'unlock', registration: reg });
+
+  const handleDownloadStampedScript = async () => {
+    if (!receiptModal.originalFile) {
+      toast.error("Original script file not found.");
+      return;
+    }
+    setIsDownloading(true);
+    try {
+      const arrayBuffer = await receiptModal.originalFile.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(arrayBuffer);
+      const pages = pdfDoc.getPages();
+      const regId = receiptModal.registration.registrationId;
+      const dateStr = new Date(receiptModal.registration.createdAt).toLocaleDateString();
+
+      pages.forEach((page) => {
+        const { width, height } = page.getSize();
+        page.drawText(`Registered with TCWA | ID: ${regId} | Date: ${dateStr}`, {
+          x: width / 2 - 150,
+          y: 20,
+          size: 10,
+          color: rgb(0.5, 0.5, 0.5),
+        });
+      });
+
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Stamped_Script_${regId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Stamped script downloaded successfully!");
+    } catch (error) {
+      console.error("Error stamping script:", error);
+      toast.error("Failed to stamp and download the script.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const handleDownloadReceipt = async (reg) => {
     setIsDownloading(true);
@@ -546,6 +589,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
         closeReceiptModal={closeReceiptModal}
         handleDownloadReceipt={handleDownloadReceipt}
         handleUnlockDownload={handleUnlockDownload}
+        handleDownloadStampedScript={handleDownloadStampedScript}
       />
       <Footer />
     </main>

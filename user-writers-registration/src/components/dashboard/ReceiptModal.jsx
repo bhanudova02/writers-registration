@@ -1,4 +1,4 @@
-export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload }) {
+export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload, handleDownloadStampedScript }) {
   if (!receiptModal.type || !receiptModal.registration) return null;
 
   return (
@@ -47,14 +47,24 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
               <div className="rounded border border-red-200 bg-red-50 p-3 text-xs font-bold leading-relaxed text-red-900">
                 If you refresh this page or close this modal without downloading, you can still use the receipt log below, but after one successful download, any future download will require a new payment.
               </div>
-              <button
-                type="button"
-                onClick={() => handleDownloadReceipt(receiptModal.registration)}
-                disabled={isDownloading}
-                className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-zinc-900 hover:bg-green-700 disabled:opacity-60"
-              >
-                {isDownloading ? 'Preparing Receipt...' : 'Download Receipt Now'}
-              </button>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadReceipt(receiptModal.registration)}
+                  disabled={isDownloading}
+                  className="w-full rounded bg-zinc-200 border border-zinc-300 px-4 py-3 text-sm font-extrabold text-zinc-800 hover:bg-zinc-300 disabled:opacity-60"
+                >
+                  {isDownloading ? 'Preparing...' : 'Download Receipt'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDownloadStampedScript}
+                  disabled={isDownloading}
+                  className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60"
+                >
+                  {isDownloading ? 'Stamping Script...' : 'Download Stamped Script'}
+                </button>
+              </div>
             </>
           ) : (
             <>
