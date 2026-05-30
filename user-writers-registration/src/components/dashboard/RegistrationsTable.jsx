@@ -57,18 +57,9 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
                   </td>
                   <td className="border border-zinc-200 py-3 px-3 w-48">
                     {reg.downloadCount >= 1 ? (
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">
-                          <Lock size={10} /> Locked
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => requestUnlockDownload(reg)}
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-amber-500 px-3 py-1.5 rounded shadow-sm hover:bg-amber-600 active:scale-[0.98] transition cursor-pointer"
-                        >
-                          Unlock (₹{reg.amount})
-                        </button>
-                      </div>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-zinc-700 bg-zinc-100 px-3 py-1 rounded border border-zinc-200">
+                        <Check size={12} /> Downloaded
+                      </span>
                     ) : (
                       <button
                         type="button"
