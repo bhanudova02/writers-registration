@@ -73,7 +73,15 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations })
           {totalPages > 1 && (
             <div className="flex items-center justify-between border-t border-zinc-200 mt-4 pt-4">
               <span className="text-xs text-zinc-500 font-medium">
-                Showing <span className="font-bold text-zinc-900">{startIndex + 1}</span> to <span className="font-bold text-zinc-900">{Math.min(startIndex + itemsPerPage, myRegistrations.length)}</span> of <span className="font-bold text-zinc-900">{myRegistrations.length}</span> results
+                <span className="hidden sm:inline">Showing </span>
+                <span className="font-bold text-zinc-900">{startIndex + 1}</span>
+                <span className="hidden sm:inline"> to </span>
+                <span className="inline sm:hidden">-</span>
+                <span className="font-bold text-zinc-900">{Math.min(startIndex + itemsPerPage, myRegistrations.length)}</span>
+                <span className="hidden sm:inline"> of </span>
+                <span className="inline sm:hidden"> / </span>
+                <span className="font-bold text-zinc-900">{myRegistrations.length}</span>
+                <span className="hidden sm:inline"> results</span>
               </span>
               <div className="flex items-center gap-1">
                 <button
