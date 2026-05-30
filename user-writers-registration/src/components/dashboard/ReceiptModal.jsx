@@ -1,5 +1,23 @@
+import { useState } from 'react';
+
 export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload, handleDownloadStampedScript }) {
+  const [hasDownloadedReceipt, setHasDownloadedReceipt] = useState(false);
+  const [hasDownloadedScript, setHasDownloadedScript] = useState(false);
+
   if (!receiptModal.type || !receiptModal.registration) return null;
+
+  const requiresBothDownloads = receiptModal.isPaymentSuccess === true;
+  const bothDownloaded = !requiresBothDownloads || (hasDownloadedReceipt && hasDownloadedScript);
+
+  const onDownloadReceipt = async () => {
+    await handleDownloadReceipt(receiptModal.registration);
+    setHasDownloadedReceipt(true);
+  };
+
+  const onDownloadScript = async () => {
+    await handleDownloadStampedScript();
+    setHasDownloadedScript(true);
+  };
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/80 px-4 py-8 overflow-y-auto flex items-start justify-center">
@@ -13,14 +31,16 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
               Receipt ID: {receiptModal.registration.registrationId}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={closeReceiptModal}
-            disabled={isDownloading}
-            className="rounded border border-zinc-200 px-2 py-1 text-xs font-bold text-zinc-600 hover:text-zinc-900 disabled:opacity-50"
-          >
-            Close
-          </button>
+          {bothDownloaded && (
+            <button
+              type="button"
+              onClick={closeReceiptModal}
+              disabled={isDownloading}
+              className="rounded border border-zinc-200 px-2 py-1 text-xs font-bold text-zinc-600 hover:text-zinc-900 disabled:opacity-50"
+            >
+              Close
+            </button>
+          )}
         </div>
 
         <div className="space-y-4 px-5 py-5">
@@ -50,21 +70,34 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => handleDownloadReceipt(receiptModal.registration)}
-                  disabled={isDownloading}
+                  onClick={onDownloadReceipt}
+                  disabled={isDownloading || hasDownloadedReceipt}
                   className="w-full rounded bg-zinc-200 border border-zinc-300 px-4 py-3 text-sm font-extrabold text-zinc-800 hover:bg-zinc-300 disabled:opacity-60"
                 >
-                  {isDownloading ? 'Preparing...' : 'Download Receipt'}
+                  {isDownloading ? 'Preparing...' : (hasDownloadedReceipt ? 'Downloaded' : 'Download Receipt')}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleDownloadStampedScript}
-                  disabled={isDownloading}
-                  className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60"
-                >
-                  {isDownloading ? 'Stamping Script...' : 'Download Stamped Script'}
-                </button>
+                {requiresBothDownloads && (
+                  <button
+                    type="button"
+                    onClick={onDownloadScript}
+                    disabled={isDownloading || hasDownloadedScript}
+                    className="w-full rounded bg-green-600 px-4 py-3 text-sm font-extrabold text-white hover:bg-green-700 disabled:opacity-60"
+                  >
+                    {isDownloading ? 'Stamping...' : (hasDownloadedScript ? 'Downloaded' : 'Download Script')}
+                  </button>
+                )}
               </div>
+              {bothDownloaded && (
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={closeReceiptModal}
+                    className="w-full rounded bg-zinc-800 px-4 py-3 text-sm font-extrabold text-white hover:bg-zinc-900 transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <>
@@ -79,6 +112,17 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
               >
                 {isDownloading ? 'Opening Secure Payment...' : `Pay ₹${receiptModal.registration.amount} Securely`}
               </button>
+              {bothDownloaded && (
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={closeReceiptModal}
+                    className="w-full rounded bg-zinc-800 px-4 py-3 text-sm font-extrabold text-white hover:bg-zinc-900 transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
