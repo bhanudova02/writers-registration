@@ -246,7 +246,10 @@ export default function Dashboard({ member, setMember, onLogout }) {
   };
 
   const closeReceiptModal = () => {
-    if (!isDownloading) setReceiptModal({ type: null, registration: null });
+    if (!isDownloading) {
+      setReceiptModal({ type: null, registration: null });
+      setSuccessRegistration(null);
+    }
   };
 
   const requestReceiptDownload = (reg) => {
