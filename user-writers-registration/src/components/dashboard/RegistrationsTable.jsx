@@ -7,7 +7,7 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
         <ReceiptText className="text-amber-500" />
         <div>
           <h3 className="text-lg font-bold text-zinc-900">My Script Registration Logs</h3>
-          <p className="text-xs text-zinc-500 font-semibold">View and track all registered documents and re-download locks.</p>
+          <p className="text-xs text-zinc-500 font-semibold">View and track all your previous script registration logs.</p>
         </div>
       </div>
 
@@ -25,8 +25,8 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
           <table className="w-full min-w-[700px] border-collapse border border-zinc-200">
             <thead>
               <tr className="bg-zinc-50/80 border-b border-zinc-200 text-left">
-                {["Reg ID", "Script Title", "Category", "Pages", "Amount", "Date", "Download Status"].map((head) => (
-                  <th key={head} className={`border border-zinc-200 py-2.5 px-3 text-[11px] font-bold text-zinc-600 uppercase tracking-wider ${head === "Download Status" ? "text-center" : "text-left"}`}>
+                {["Reg ID", "Script Title", "Category", "Pages", "Amount", "Date"].map((head) => (
+                  <th key={head} className={`border border-zinc-200 py-2.5 px-3 text-[11px] font-bold text-zinc-600 uppercase tracking-wider text-left`}>
                     {head}
                   </th>
                 ))}
@@ -54,22 +54,6 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations, r
                   </td>
                   <td className="border border-zinc-200 py-3 px-3 text-xs font-medium text-zinc-500 whitespace-nowrap">
                     {new Date(reg.createdAt).toLocaleDateString([], { dateStyle: 'medium' })}
-                  </td>
-                  <td className="border border-zinc-200 py-3 px-3 w-48 text-center">
-                    {reg.downloadCount >= 1 ? (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-zinc-700 bg-zinc-100 px-3 py-1 rounded border border-zinc-200">
-                        <Check size={12} /> Done
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => requestReceiptDownload(reg)}
-                        disabled={isDownloading}
-                        className="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 hover:bg-green-100 active:scale-[0.98] transition cursor-pointer"
-                      >
-                        <Check size={10} /> Download Receipt
-                      </button>
-                    )}
                   </td>
                 </tr>
               ))}
