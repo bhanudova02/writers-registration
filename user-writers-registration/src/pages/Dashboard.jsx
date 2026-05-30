@@ -313,27 +313,41 @@ export default function Dashboard({ member, setMember, onLogout }) {
       try {
         const logoImg = new Image();
         logoImg.src = '/Logo.png';
-        await new Promise((resolve, reject) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = reject;
-        });
-        // Logo on top left
-        docPdf.addImage(logoImg, 'PNG', 15, 15, 25, 25);
+        const stampImg = new Image();
+        stampImg.src = '/stamp.png';
+        
+        await Promise.all([
+          new Promise((resolve, reject) => {
+            logoImg.onload = resolve;
+            logoImg.onerror = reject;
+          }),
+          new Promise((resolve, reject) => {
+            stampImg.onload = resolve;
+            stampImg.onerror = reject;
+          })
+        ]);
+        
+        // Draw stamp first, then logo on top of it on the left
+        docPdf.addImage(stampImg, 'PNG', 12, 12, 32, 32);
+        docPdf.addImage(logoImg, 'PNG', 16, 16, 24, 24);
+        
         // Hamsa Grandhalayam logo at bottom (using the same logo temporarily)
         docPdf.addImage(logoImg, 'PNG', 95, 260, 15, 15);
       } catch (e) {
-        console.error("Could not load logo image", e);
+        console.error("Could not load logo/stamp images", e);
       }
 
       // Header Text
       docPdf.setTextColor(0, 0, 150); // Dark Blue
-      docPdf.setFontSize(16);
+      docPdf.setFontSize(18);
       docPdf.setFont("helvetica", "bold");
-      docPdf.text("TELUGU CINE WRITERS' ASSOCIATION", 45, 22);
+      docPdf.text("TELUGU", 50, 18);
+      docPdf.setFontSize(16);
+      docPdf.text("CINE WRITERS' ASSOCIATION", 50, 25);
       
       docPdf.setFontSize(7);
       docPdf.setFont("helvetica", "normal");
-      docPdf.text("(Regd.NO.A741) Registered under trade Union Act, 1926, Affiliated to T.S.F.I.E.F)", 45, 27);
+      docPdf.text("(Regd.NO.A741) Registered under trade Union Act, 1926, Affiliated to T.S.F.I.E.F)", 50, 30);
       
       // Address Block (Right aligned)
       docPdf.setFontSize(8);
