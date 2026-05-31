@@ -19,7 +19,7 @@ export default function RenewalsPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     const [upgradeModalData, setUpgradeModalData] = useState({ isOpen: false, memberId: '', name: '', targetType: '' });
-    const [renewModalData, setRenewModalData] = useState({ isOpen: false, memberId: '', name: '' });
+    const [renewModalData, setRenewModalData] = useState({ isOpen: false, memberId: '', name: '', years: 1 });
     const [viewModalData, setViewModalData] = useState({ isOpen: false, member: null });
     const [warningModalData, setWarningModalData] = useState({ isOpen: false, message: '' });
 
@@ -157,12 +157,12 @@ export default function RenewalsPage() {
 
     // Record Offline Renewal
     const triggerRenewModal = (memberId, name) => {
-        setRenewModalData({ isOpen: true, memberId, name });
+        setRenewModalData({ isOpen: true, memberId, name, years: 1 });
     };
 
     const confirmRecordAndRenew = async () => {
-        const { memberId, name } = renewModalData;
-        setRenewModalData({ isOpen: false, memberId: '', name: '' });
+        const { memberId, name, years } = renewModalData;
+        setRenewModalData({ isOpen: false, memberId: '', name: '', years: 1 });
 
         try {
             const memberToRenew = members.find(m => m.id === memberId);
@@ -174,10 +174,15 @@ export default function RenewalsPage() {
                 const currentExpiryDate = new Date(currentCreatedDate);
                 currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
 
-                // If not expired yet, start the next year from the current expiry date
+                // If not expired yet, start the new term from the current expiry date
                 if (currentExpiryDate > now) {
-                    newCreatedAtDate = currentExpiryDate;
+                    newCreatedAtDate = new Date(currentExpiryDate);
+                    newCreatedAtDate.setFullYear(newCreatedAtDate.getFullYear() + (years - 1));
+                } else {
+                    newCreatedAtDate.setFullYear(newCreatedAtDate.getFullYear() + (years - 1));
                 }
+            } else {
+                newCreatedAtDate.setFullYear(newCreatedAtDate.getFullYear() + (years - 1));
             }
 
             const nowStr = now.toISOString();
@@ -518,15 +523,29 @@ export default function RenewalsPage() {
                     >
                         <div className="text-zinc-700 text-sm">
                             <p className="mb-4">
-                                Please confirm that you have received an offline renewal payment of <span className="font-bold text-green-600">₹1,200</span> for <strong>{renewModalData.name}</strong> (ID: {renewModalData.memberId}).
+                                Please confirm that you have received an offline renewal payment for <strong>{renewModalData.name}</strong> (ID: {renewModalData.memberId}).
                             </p>
+                            
+                            <div className="mb-5 border border-zinc-200 rounded p-4 bg-zinc-50 flex flex-col gap-2">
+                                <label className="text-xs font-bold text-zinc-600 uppercase">Select Renewal Period</label>
+                                <select 
+                                    className="p-2 border border-zinc-300 rounded text-sm bg-white font-medium text-zinc-800 outline-none focus:border-zinc-500"
+                                    value={renewModalData.years}
+                                    onChange={(e) => setRenewModalData(prev => ({ ...prev, years: parseInt(e.target.value) }))}
+                                >
+                                    {[1, 2, 3, 4, 5].map(y => (
+                                        <option key={y} value={y}>{y} {y === 1 ? 'Year' : 'Years'}</option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <p className="mb-6 text-xs text-zinc-500 italic">
-                                This action will extend the membership by exactly 1 year from {willExtendFrom} and record a transaction in the database.
+                                This action will extend the membership by exactly {renewModalData.years} {renewModalData.years === 1 ? 'year' : 'years'} from {willExtendFrom} and record a transaction in the database.
                             </p>
                             <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
                                 <CustomButton
                                     label="Cancel"
-                                    onClick={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
+                                    onClick={() => setRenewModalData({ isOpen: false, memberId: '', name: '', years: 1 })}
                                     bgColor="bg-zinc-100 hover:bg-zinc-200"
                                     textColor="text-zinc-700"
                                     className="border border-zinc-300"
