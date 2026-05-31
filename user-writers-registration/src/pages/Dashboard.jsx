@@ -139,6 +139,24 @@ export default function Dashboard({ member, setMember, onLogout }) {
     };
   }, [expiryDetails.isExpired]);
 
+  useEffect(() => {
+    const handlePopState = (e) => {
+      if (receiptModal?.isPaymentSuccess) {
+        // user clicked back button
+        if (!isDownloading) {
+          setReceiptModal({ type: null, registration: null });
+          setSuccessRegistration(null);
+        } else {
+          // If downloading, prevent going back by pushing state again
+          window.history.pushState({ successPage: true }, '', '/success');
+          toast.warning("Please wait until the download finishes.");
+        }
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [receiptModal, isDownloading]);
+
   const handleRegisterScript = async (e) => {
     e.preventDefault();
     const normalizedScriptTitle = normalizeTitle(scriptTitle);
@@ -231,6 +249,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
       await setDoc(regRef, newRegData);
       setSuccessRegistration(newRegData);
       setReceiptModal({ type: 'download', registration: newRegData, isPaymentSuccess: true, originalFile: pdfFile });
+      window.history.pushState({ successPage: true }, '', '/success');
 
       setScriptTitle('');
       setPageCount(1);
@@ -248,6 +267,9 @@ export default function Dashboard({ member, setMember, onLogout }) {
     if (!isDownloading) {
       setReceiptModal({ type: null, registration: null });
       setSuccessRegistration(null);
+      if (window.location.pathname === '/success') {
+        window.history.replaceState(null, '', '/');
+      }
     }
   };
 
@@ -592,6 +614,20 @@ export default function Dashboard({ member, setMember, onLogout }) {
     );
   }
 
+  if (receiptModal?.type === 'download' && receiptModal?.isPaymentSuccess) {
+    return (
+      <ReceiptModal 
+        receiptModal={receiptModal}
+        isDownloading={isDownloading}
+        closeReceiptModal={closeReceiptModal}
+        handleDownloadReceipt={handleDownloadReceipt}
+        handleUnlockDownload={handleUnlockDownload}
+        handleDownloadStampedScript={handleDownloadStampedScript}
+        isFullScreen={true}
+      />
+    );
+  }
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-slate-100 bg-gradient-to-br from-slate-200 via-slate-100 to-slate-50 text-zinc-900 flex flex-col font-sans relative">
 
@@ -636,14 +672,17 @@ export default function Dashboard({ member, setMember, onLogout }) {
         />
       </div>
 
-      <ReceiptModal 
-        receiptModal={receiptModal}
-        isDownloading={isDownloading}
-        closeReceiptModal={closeReceiptModal}
-        handleDownloadReceipt={handleDownloadReceipt}
-        handleUnlockDownload={handleUnlockDownload}
-        handleDownloadStampedScript={handleDownloadStampedScript}
-      />
+      {receiptModal?.type && !receiptModal?.isPaymentSuccess && (
+        <ReceiptModal 
+          receiptModal={receiptModal}
+          isDownloading={isDownloading}
+          closeReceiptModal={closeReceiptModal}
+          handleDownloadReceipt={handleDownloadReceipt}
+          handleUnlockDownload={handleUnlockDownload}
+          handleDownloadStampedScript={handleDownloadStampedScript}
+          isFullScreen={false}
+        />
+      )}
       <Footer />
     </main>
   );

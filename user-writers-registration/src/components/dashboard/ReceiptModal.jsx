@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 
-export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload, handleDownloadStampedScript }) {
+export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload, handleDownloadStampedScript, isFullScreen }) {
   const [scriptDownloaded, setScriptDownloaded] = useState(false);
   const [receiptDownloaded, setReceiptDownloaded] = useState(false);
   const [isScriptProcessing, setIsScriptProcessing] = useState(false);
@@ -12,9 +12,13 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
   const requiresBothDownloads = receiptModal.isPaymentSuccess === true;
   const canClose = !requiresBothDownloads || (scriptDownloaded && receiptDownloaded);
 
+  const containerClasses = isFullScreen
+    ? "min-h-screen bg-slate-50 flex items-center justify-center px-4 py-8 overflow-y-auto w-full font-sans"
+    : "fixed inset-0 z-[60] bg-black/80 px-4 py-8 overflow-y-auto flex items-start justify-center font-sans";
+
   return (
-    <div className="fixed inset-0 z-[60] bg-black/80 px-4 py-8 overflow-y-auto flex items-start justify-center">
-      <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-zinc-50 shadow-2xl my-auto shrink-0">
+    <div className={containerClasses}>
+      <div className={`w-full max-w-md rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto shrink-0 ${isFullScreen ? 'shadow-xl border-zinc-300' : ''}`}>
         <div className="flex items-start justify-between border-b border-zinc-200 px-5 py-4">
           <div>
             <h3 className="text-base font-extrabold text-zinc-900">
@@ -29,9 +33,9 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
               type="button"
               onClick={closeReceiptModal}
               disabled={isDownloading}
-              className="rounded border border-zinc-200 px-2 py-1 text-xs font-bold text-zinc-600 hover:text-zinc-900 disabled:opacity-50"
+              className={`rounded border px-3 py-1.5 text-xs font-bold transition disabled:opacity-50 ${isFullScreen ? 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100' : 'border-zinc-200 text-zinc-600 hover:text-zinc-900'}`}
             >
-              Close
+              {isFullScreen ? 'Go to Home Page' : 'Close'}
             </button>
           )}
         </div>
