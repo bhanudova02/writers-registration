@@ -2,14 +2,13 @@ import { useState, useEffect } from "react";
 import { FaBell, FaUserShield, FaSignInAlt, FaSignOutAlt, FaHistory } from "react-icons/fa";
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
+import { TableSkeleton } from "../../components/Skeletons";
 
 export default function NotificationsPage() {
     const [logs, setLogs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const [errorMsg, setErrorMsg] = useState(null);
-
-    const [activeAdmins, setActiveAdmins] = useState([]);
 
     useEffect(() => {
         const q = query(collection(db, "admin_logs"), orderBy("timestamp", "desc"), limit(100));
@@ -26,19 +25,8 @@ export default function NotificationsPage() {
             setErrorMsg(error.message);
             setIsLoading(false);
         });
-
-        const qAdmins = collection(db, "admins");
-        const unsubscribeAdmins = onSnapshot(qAdmins, (snapshot) => {
-            const adminList = [];
-            snapshot.forEach((docSnap) => {
-                adminList.push({ id: docSnap.id, ...docSnap.data() });
-            });
-            setActiveAdmins(adminList);
-        });
-
         return () => {
             unsubscribeLogs();
-            unsubscribeAdmins();
         };
     }, []);
 
@@ -93,57 +81,6 @@ export default function NotificationsPage() {
                 </div>
             </div>
 
-            {/* Active Admin Devices */}
-            <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm mb-6">
-                <h3 className="text-base font-bold text-zinc-800 mb-2 flex items-center gap-2">
-                    <FaUserShield className="text-zinc-500 text-sm -mt-0.5" />
-                    <span>Admin Security & Device Tracking</span>
-                </h3>
-                <p className="text-xs text-zinc-500 mb-4">Real-time status of all authorized admin accounts, including their active device information.</p>
-                <div className="overflow-x-auto">
-                    <table className="w-full min-w-[750px] border-collapse border border-zinc-200">
-                        <thead>
-                            <tr className="bg-zinc-100 border-b border-zinc-200">
-                                {["Admin Email", "Status", "Last Active", "Device & OS"].map((head) => (
-                                    <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
-                                        {head}
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {activeAdmins.length === 0 ? (
-                                <tr>
-                                    <td colSpan="4" className="py-8 text-center text-zinc-400 text-xs font-bold border border-zinc-200">
-                                        No admins configured in database.
-                                    </td>
-                                </tr>
-                            ) : activeAdmins.map((admin) => (
-                                <tr key={admin.id} className="hover:bg-zinc-50 transition-colors">
-                                    <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-800">
-                                        {admin.id}
-                                    </td>
-                                    <td className="border border-zinc-200 py-3 px-3 w-32">
-                                        {admin.active !== true ? (
-                                            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-red-100 text-red-700">Revoked</span>
-                                        ) : admin.isOnline ? (
-                                            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-green-100 text-green-700">Online</span>
-                                        ) : (
-                                            <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-zinc-200 text-zinc-700">Offline</span>
-                                        )}
-                                    </td>
-                                    <td className="border border-zinc-200 py-3 px-3 text-[12px] font-medium text-zinc-500 w-48">
-                                        {admin.lastActive ? new Date(admin.lastActive).toLocaleString() : 'Never logged in'}
-                                    </td>
-                                    <td className="border border-zinc-200 py-3 px-3 text-[13px] font-medium text-blue-600">
-                                        {admin.deviceInfo || 'Unknown Device'}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
             {/* Activity Log Table */}
             <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm">
@@ -154,9 +91,7 @@ export default function NotificationsPage() {
                 <p className="text-xs text-zinc-500 mb-4">Monitor all administrative actions including logins, logouts, and data modifications.</p>
 
                 {isLoading ? (
-                    <div className="py-8 text-center text-zinc-400 text-xs font-bold">
-                        Loading activity logs...
-                    </div>
+                    <TableSkeleton rowCount={5} colCount={4} />
                 ) : errorMsg ? (
                     <div className="py-8 px-4 text-center text-red-500 text-xs font-bold border border-red-200 bg-red-50 rounded">
                         Error loading logs: {errorMsg}

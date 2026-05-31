@@ -7,6 +7,7 @@ import CustomButton from "../../components/custom/CustomButton";
 import { CustomSelect } from "../../components/custom/CustomSelect";
 import Modal from "../../components/common/Modal";
 import { toast } from "react-toastify";
+import { TableSkeleton } from "../../components/Skeletons";
 
 export default function RenewalsPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -303,9 +304,7 @@ export default function RenewalsPage() {
                     </div>
 
                     {isLoading ? (
-                        <div className="py-16 text-center text-zinc-500 text-sm font-bold">
-                            Fetching renewals database...
-                        </div>
+                        <TableSkeleton rowCount={5} colCount={9} />
                     ) : filteredRenewals.length === 0 ? (
                         <div className="py-16 text-center border border-dashed border-zinc-200 rounded flex flex-col items-center justify-center">
                             <FiLayers className="text-zinc-300 text-4xl mb-3" />

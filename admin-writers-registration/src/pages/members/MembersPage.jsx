@@ -10,6 +10,7 @@ import { collection, onSnapshot, doc, setDoc, query, orderBy } from 'firebase/fi
 import { db, auth } from '../../firebase';
 import { logAdminActivity } from '../../lib/logger';
 import EditMemberModal from "../../components/members/EditMemberModal";
+import { TableSkeleton } from "../../components/Skeletons";
 
 const memberTypeOptions = [
     { value: "", label: "Select Member Type" },
@@ -561,10 +562,7 @@ export default function MembersPage() {
                         </div>
 
                         {isLoadingSavedMembers ? (
-                            <div className="py-16 flex flex-col items-center justify-center text-zinc-400 text-sm font-semibold">
-                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-zinc-800 mb-2"></div>
-                                Fetching list...
-                            </div>
+                            <TableSkeleton rowCount={5} colCount={9} />
                         ) : savedMembers.length === 0 ? (
                             <div className="py-16 text-center text-sm font-bold text-zinc-500 border border-dashed border-gray-200 rounded">
                                 No members found in the database.

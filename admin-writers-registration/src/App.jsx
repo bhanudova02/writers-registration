@@ -124,7 +124,33 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div className="grid min-h-screen place-items-center bg-zinc-900 text-white">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-zinc-900 flex flex-col items-center justify-center relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-orange-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div className="relative z-10 flex flex-col items-center">
+          {/* Logo Container with pulse */}
+          <div className="relative mb-8">
+            <div className="absolute inset-0 bg-orange-500/20 blur-xl rounded-full animate-pulse"></div>
+            <img 
+              src="/Logo.png" 
+              alt="TCWA Logo" 
+              className="w-24 h-24 object-contain relative z-10 animate-[bounce_2s_infinite]"
+            />
+          </div>
+          
+          {/* Custom Spinner & Text */}
+          <div className="flex flex-col items-center gap-3">
+             <div className="flex items-center gap-3">
+                <div className="w-5 h-5 border-[3px] border-zinc-700 border-t-orange-500 rounded-full animate-spin"></div>
+                <h2 className="text-white font-bold tracking-widest uppercase text-sm">Authenticating</h2>
+             </div>
+             <p className="text-zinc-500 text-[11px] font-semibold tracking-widest uppercase">Securing Connection...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (

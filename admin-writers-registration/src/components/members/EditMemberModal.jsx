@@ -173,8 +173,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Edit Member: ${member?.membershipId}`} widthClass="md:max-w-4xl">
-            <div className="max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                <div className="space-y-6">
+            <div className="space-y-6">
                     <div>
                         <h4 className="text-xs font-bold text-zinc-500 uppercase mb-3">Status</h4>
                         <div className="w-64">
@@ -282,7 +281,6 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                             onChange={(e) => handleNumberChange("nomineeAadharNo", e.target.value, 12)}
                             error={errors.nomineeAadharNo}
                         />
-                    </div>
                 </div>
             </div>
 

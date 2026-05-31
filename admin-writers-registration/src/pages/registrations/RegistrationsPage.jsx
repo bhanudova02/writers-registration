@@ -7,6 +7,7 @@ import CustomButton from "../../components/custom/CustomButton";
 import { CustomSelect } from "../../components/custom/CustomSelect";
 import { toast } from "react-toastify";
 import { logAdminActivity } from "../../lib/logger";
+import { TableSkeleton } from "../../components/Skeletons";
 
 export default function RegistrationsPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -99,9 +100,7 @@ export default function RegistrationsPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="py-16 text-center text-zinc-500 text-sm font-bold">
-                        Fetching live registrations database...
-                    </div>
+                    <TableSkeleton rowCount={5} colCount={8} />
                 ) : filteredRegs.length === 0 ? (
                     <div className="py-16 text-center border border-dashed border-zinc-200 rounded flex flex-col items-center justify-center">
                         <FaFileSignature className="text-zinc-300 text-4xl mb-3" />

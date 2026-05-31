@@ -3,6 +3,7 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 import { FaUsers, FaFileAlt, FaSyncAlt, FaRupeeSign } from "react-icons/fa";
 import { FiTrendingUp, FiCheckCircle, FiClock, FiActivity } from "react-icons/fi";
+import { MetricSkeleton, ListSkeleton } from "../components/Skeletons";
 
 export default function DashboardHomePage() {
     const [stats, setStats] = useState({
@@ -127,49 +128,60 @@ export default function DashboardHomePage() {
 
             {/* Metrics cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                {/* Total Members */}
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Members</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-zinc-800 mt-1">{stats.totalMembers}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-zinc-50 rounded border border-zinc-100">
-                        <FaUsers className="text-zinc-500 text-base sm:text-lg" />
-                    </div>
-                </div>
+                {isLoading ? (
+                    <>
+                        <MetricSkeleton />
+                        <MetricSkeleton />
+                        <MetricSkeleton />
+                        <MetricSkeleton />
+                    </>
+                ) : (
+                    <>
+                        {/* Total Members */}
+                        <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Members</h3>
+                                <p className="text-xl sm:text-2xl font-bold text-zinc-800 mt-1">{stats.totalMembers}</p>
+                            </div>
+                            <div className="p-2 sm:p-3 bg-zinc-50 rounded border border-zinc-100">
+                                <FaUsers className="text-zinc-500 text-base sm:text-lg" />
+                            </div>
+                        </div>
 
-                {/* Total Scripts */}
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Registered Scripts</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">{stats.totalScripts}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-amber-50 rounded border border-amber-100">
-                        <FaFileAlt className="text-amber-500 text-base sm:text-lg" />
-                    </div>
-                </div>
+                        {/* Total Scripts */}
+                        <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Registered Scripts</h3>
+                                <p className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">{stats.totalScripts}</p>
+                            </div>
+                            <div className="p-2 sm:p-3 bg-amber-50 rounded border border-amber-100">
+                                <FaFileAlt className="text-amber-500 text-base sm:text-lg" />
+                            </div>
+                        </div>
 
-                {/* Pending Renewals */}
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pending Renewals</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">{stats.pendingRenewals}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-red-50 rounded border border-red-100">
-                        <FaSyncAlt className="text-red-500 text-base sm:text-lg" />
-                    </div>
-                </div>
+                        {/* Pending Renewals */}
+                        <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Pending Renewals</h3>
+                                <p className="text-xl sm:text-2xl font-bold text-red-600 mt-1">{stats.pendingRenewals}</p>
+                            </div>
+                            <div className="p-2 sm:p-3 bg-red-50 rounded border border-red-100">
+                                <FaSyncAlt className="text-red-500 text-base sm:text-lg" />
+                            </div>
+                        </div>
 
-                {/* Total Revenue */}
-                <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
-                    <div>
-                        <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Revenue</h3>
-                        <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">₹{stats.totalRevenue.toLocaleString()}</p>
-                    </div>
-                    <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
-                        <FaRupeeSign className="text-green-500 text-base sm:text-lg" />
-                    </div>
-                </div>
+                        {/* Total Revenue */}
+                        <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Revenue</h3>
+                                <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">₹{stats.totalRevenue.toLocaleString()}</p>
+                            </div>
+                            <div className="p-2 sm:p-3 bg-green-50 rounded border border-green-100">
+                                <FaRupeeSign className="text-green-500 text-base sm:text-lg" />
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Dashboard tables section */}
@@ -189,9 +201,7 @@ export default function DashboardHomePage() {
                             Error loading data: {errorMsg}
                         </div>
                     ) : isLoading ? (
-                        <div className="py-8 text-center text-zinc-400 text-xs font-bold">
-                            Loading activity logs...
-                        </div>
+                        <ListSkeleton count={5} />
                     ) : recentRegs.length === 0 ? (
                         <div className="py-8 text-center text-zinc-400 text-xs font-bold border border-dashed border-zinc-200 rounded">
                             No registered scripts in database yet.
@@ -256,9 +266,7 @@ export default function DashboardHomePage() {
                             Error loading data: {errorMsg}
                         </div>
                     ) : isLoading ? (
-                        <div className="py-8 text-center text-zinc-400 text-xs font-bold">
-                            Loading member directory...
-                        </div>
+                        <ListSkeleton count={5} />
                     ) : recentMembers.length === 0 ? (
                         <div className="py-8 text-center text-zinc-400 text-xs font-bold border border-dashed border-zinc-200 rounded">
                             No members found in directory.

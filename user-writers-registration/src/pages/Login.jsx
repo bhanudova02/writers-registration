@@ -294,12 +294,16 @@ export default function Login({ setMember, setIsLoggedIn }) {
                         type="text"
                         value={phone}
                         onChange={(e) => {
-                          const onlyNums = e.target.value.replace(/\D/g, '');
-                          if (onlyNums.length <= 10) setPhone(onlyNums);
+                          let onlyNums = e.target.value.replace(/\D/g, '');
+                          if (onlyNums.length > 10 && onlyNums.startsWith('91')) {
+                            onlyNums = onlyNums.substring(2);
+                          } else if (onlyNums.length > 10 && onlyNums.startsWith('0')) {
+                            onlyNums = onlyNums.substring(1);
+                          }
+                          setPhone(onlyNums.slice(0, 10));
                         }}
                         placeholder="e.g. 9876543210"
                         className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
-                        maxLength={10}
                         required
                       />
                     </div>
