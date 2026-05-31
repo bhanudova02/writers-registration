@@ -300,11 +300,23 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
       pages.forEach((page) => {
         const { width, height } = page.getSize();
+        
+        // Draw light border around the page
+        page.drawRectangle({
+          x: 25,
+          y: 40,
+          width: width - 50,
+          height: height - 65,
+          borderColor: rgb(0.7, 0.7, 0.7),
+          borderWidth: 1.5,
+        });
+
+        // Add stamp text below the border
         page.drawText(`Registered with TCWA | ID: ${regId} | Date: ${dateStr}`, {
-          x: width / 2 - 150,
+          x: width / 2 - 160,
           y: 20,
           size: 10,
-          color: rgb(0.5, 0.5, 0.5),
+          color: rgb(0.4, 0.4, 0.4),
         });
       });
 
