@@ -86,8 +86,7 @@ export default function AdminLoginPage({ onLogin }) {
         <p className="text-xs text-center text-gray-500 mt-6">
           Secure login powered by Google
         </p>
-
-        {bootstrapAdminEmails.length === 0 && <p className="mt-5 text-center text-xs font-semibold text-amber-700">Add VITE_ADMIN_EMAILS in .env to allow first admin login.</p>}
+        {/* Removed the VITE_ADMIN_EMAILS warning message as the database admins collection is now fully configured */}
       </div>
 
       {/* Error Modal */}
