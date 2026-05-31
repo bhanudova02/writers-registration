@@ -17,7 +17,7 @@ export default function RegistrationForm({
 }) {
   return (
     <form onSubmit={handleRegisterScript} className="bg-white border border-slate-200 p-5 sm:p-6 rounded-lg space-y-5">
-      <div className="flex items-center gap-3 border-b border-zinc-200/60 pb-3">
+      <div className="flex items-start gap-3 border-b border-zinc-200/60 pb-3">
         <FileText className="text-orange-500" />
         <div>
           <h3 className="text-lg font-bold text-zinc-900">Register New Movie Script</h3>
