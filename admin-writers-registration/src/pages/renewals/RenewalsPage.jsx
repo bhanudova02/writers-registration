@@ -505,21 +505,47 @@ export default function RenewalsPage() {
             {(() => {
                 const modalMember = members.find(m => m.id === renewModalData.memberId);
                 let willExtendFrom = "today";
+                let baseDateForCalc = new Date();
+
                 if (modalMember && modalMember.createdAt) {
                     const currentCreatedDate = new Date(modalMember.createdAt);
                     const currentExpiryDate = new Date(currentCreatedDate);
                     currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
                     if (currentExpiryDate > new Date()) {
                         willExtendFrom = "their current expiry date";
+                        baseDateForCalc = new Date(currentExpiryDate);
                     }
                 }
+
+                const dropdownOptions = [1, 2, 3, 4, 5].map(y => {
+                    const expiryForThisOption = new Date(baseDateForCalc);
+                    expiryForThisOption.setFullYear(expiryForThisOption.getFullYear() + y);
+                    const formattedDate = expiryForThisOption.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    });
+                    return {
+                        value: y,
+                        label: `${y} ${y === 1 ? 'Year' : 'Years'}`
+                    };
+                });
+
+                const selectedExpiryDate = new Date(baseDateForCalc);
+                selectedExpiryDate.setFullYear(selectedExpiryDate.getFullYear() + renewModalData.years);
+                const finalFormattedDate = selectedExpiryDate.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
                 
                 return (
                     <Modal
                         isOpen={renewModalData.isOpen}
-                        onClose={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
+                        onClose={() => setRenewModalData({ isOpen: false, memberId: '', name: '', years: 1 })}
                         title="Confirm Offline Renewal"
                         widthClass="max-w-md"
+                        overflowVisible={true}
                     >
                         <div className="text-zinc-700 text-sm">
                             <p className="mb-4">
@@ -528,19 +554,18 @@ export default function RenewalsPage() {
                             
                             <div className="mb-5 border border-zinc-200 rounded p-4 bg-zinc-50 flex flex-col gap-2">
                                 <label className="text-xs font-bold text-zinc-600 uppercase">Select Renewal Period</label>
-                                <select 
-                                    className="p-2 border border-zinc-300 rounded text-sm bg-white font-medium text-zinc-800 outline-none focus:border-zinc-500"
+                                <CustomSelect
+                                    label={null}
+                                    dropdownData={dropdownOptions}
                                     value={renewModalData.years}
-                                    onChange={(e) => setRenewModalData(prev => ({ ...prev, years: parseInt(e.target.value) }))}
-                                >
-                                    {[1, 2, 3, 4, 5].map(y => (
-                                        <option key={y} value={y}>{y} {y === 1 ? 'Year' : 'Years'}</option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setRenewModalData(prev => ({ ...prev, years: parseInt(val) }))}
+                                    buttonClassName="h-[38px] bg-white border-zinc-300"
+                                />
                             </div>
 
-                            <p className="mb-6 text-xs text-zinc-500 italic">
-                                This action will extend the membership by exactly {renewModalData.years} {renewModalData.years === 1 ? 'year' : 'years'} from {willExtendFrom} and record a transaction in the database.
+                            <p className="mb-6 text-sm text-zinc-500 italic leading-relaxed">
+                                This action will extend the membership by exactly {renewModalData.years} {renewModalData.years === 1 ? 'year' : 'years'} from {willExtendFrom}. 
+                                The new expiration date will be <strong className="text-zinc-600">{finalFormattedDate}</strong>. This transaction will be recorded in the database.
                             </p>
                             <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
                                 <CustomButton
