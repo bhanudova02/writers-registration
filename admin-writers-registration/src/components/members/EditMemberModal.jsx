@@ -5,11 +5,6 @@ import CustomTextArea from '../custom/CustomTextArea';
 import { CustomSelect } from '../custom/CustomSelect';
 import CustomButton from '../custom/CustomButton';
 
-const statusOptions = [
-    { value: "Active", label: "Active" },
-    { value: "Inactive", label: "Inactive" },
-];
-
 export default function EditMemberModal({ isOpen, onClose, member, onSave, loading }) {
     const [formData, setFormData] = useState({
         name: "",
@@ -25,8 +20,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
         nomineeRelation: "",
         nomineeAadharNo: "",
         permanentAddress: "",
-        temporaryAddress: "",
-        status: "Active"
+        temporaryAddress: ""
     });
 
     const [errors, setErrors] = useState({});
@@ -47,8 +41,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                 nomineeRelation: member.nomineeRelation || "",
                 nomineeAadharNo: member.nomineeAadharNo || "",
                 permanentAddress: member.permanentAddress || "",
-                temporaryAddress: member.temporaryAddress || "",
-                status: member.status || "Active"
+                temporaryAddress: member.temporaryAddress || ""
             });
             setErrors({});
         }
@@ -147,8 +140,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
             nomineeRelation: formData.nomineeRelation.trim(),
             nomineeAadharNo: formData.nomineeAadharNo,
             permanentAddress: formData.permanentAddress.trim(),
-            temporaryAddress: formData.temporaryAddress.trim(),
-            status: formData.status
+            temporaryAddress: formData.temporaryAddress.trim()
         });
     };
 
@@ -174,19 +166,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Edit Member: ${member?.membershipId}`} widthClass="md:max-w-4xl">
             <div className="space-y-6">
-                    <div>
-                        <h4 className="text-xs font-bold text-zinc-500 uppercase mb-3">Status</h4>
-                        <div className="w-64">
-                            <CustomSelect
-                                dropdownData={statusOptions}
-                                value={formData.status}
-                                onChange={(val) => handleTextChange('status', val)}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CustomInput
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <CustomInput
                             label="Full Name *"
                             value={formData.name}
                             onChange={(e) => handleTextChange("name", e.target.value)}

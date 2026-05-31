@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { FaSyncAlt, FaSearch, FaRegCreditCard, FaUserGraduate, FaRupeeSign } from "react-icons/fa";
+import { FaSyncAlt, FaSearch, FaUserGraduate } from "react-icons/fa";
 import { FiAlertTriangle, FiCheck, FiClock, FiLayers } from "react-icons/fi";
-import { collection, onSnapshot, doc, updateDoc, setDoc, query, where } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, setDoc } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import CustomButton from "../../components/custom/CustomButton";
 import { CustomSelect } from "../../components/custom/CustomSelect";
 import { logAdminActivity } from '../../lib/logger';
-import EditMemberModal from "../../components/members/EditMemberModal";
 import Modal from "../../components/common/Modal";
 import { toast } from "react-toastify";
 import { TableSkeleton } from "../../components/Skeletons";
@@ -21,10 +20,7 @@ export default function RenewalsPage() {
     const [upgradeModalData, setUpgradeModalData] = useState({ isOpen: false, memberId: '', name: '', targetType: '' });
     const [renewModalData, setRenewModalData] = useState({ isOpen: false, memberId: '', name: '' });
     const [viewModalData, setViewModalData] = useState({ isOpen: false, member: null });
-
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [selectedMemberToEdit, setSelectedMemberToEdit] = useState(null);
-    const [isSavingEdit, setIsSavingEdit] = useState(false);
+    const [warningModalData, setWarningModalData] = useState({ isOpen: false, message: '' });
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -100,7 +96,10 @@ export default function RenewalsPage() {
 
                 list.push({
                     id: memberId,
-                    ...data, // Include all fields so EditMemberModal can access them
+                    name: data.name,
+                    email: data.email,
+                    mobileNumber: data.mobileNumber,
+                    createdAt: data.createdAt,
                     expiryDate,
                     daysRemaining,
                     amountDue,
@@ -210,32 +209,41 @@ export default function RenewalsPage() {
         }
     };
 
-    // Upgrade to Life Time Member or switch to Associate
-    const triggerUpgradeModal = (memberId, name, targetType) => {
-        setUpgradeModalData({ isOpen: true, memberId, name, targetType });
-    };
-
-    const handleSaveEdit = async (updatedData) => {
+    // Toggle Status
+    const handleToggleStatus = async (memberId, currentStatus, memberName) => {
         try {
-            setIsSavingEdit(true);
-            const memberRef = doc(db, 'members', updatedData.membershipId);
-            await updateDoc(memberRef, updatedData);
+            const newStatus = currentStatus === "Inactive" ? "Active" : "Inactive";
+            
+            // Check expiry date if we are trying to make them Active
+            if (newStatus === "Active") {
+                const memberToToggle = members.find(m => m.id === memberId);
+                if (memberToToggle && memberToToggle.memberType === "Associate Member" && memberToToggle.daysRemaining <= 0) {
+                    setWarningModalData({
+                        isOpen: true,
+                        message: `Cannot activate ${memberName}. Their membership has expired. Please process a renewal first.`
+                    });
+                    return;
+                }
+            }
+
+            const memberRef = doc(db, 'members', memberId);
+            await updateDoc(memberRef, { status: newStatus });
             
             await logAdminActivity(
                 auth.currentUser?.email || 'admin@tcwa.in',
-                "Edited Member",
-                `Edited member details and status for ${updatedData.name} (ID: ${updatedData.membershipId})`
+                "Changed Member Status",
+                `Changed status of ${memberName} (ID: ${memberId}) to ${newStatus}`
             );
-            
-            setIsEditModalOpen(false);
-            setSelectedMemberToEdit(null);
-            toast.success("Member details updated successfully!");
+            toast.success(`Member status updated to ${newStatus}!`);
         } catch (error) {
-            console.error("Error updating member:", error);
-            toast.error("Failed to update member.");
-        } finally {
-            setIsSavingEdit(false);
+            console.error("Error updating status:", error);
+            toast.error("Failed to update status.");
         }
+    };
+
+    // Upgrade to Life Time Member or switch to Associate
+    const triggerUpgradeModal = (memberId, name, targetType) => {
+        setUpgradeModalData({ isOpen: true, memberId, name, targetType });
     };
 
     const confirmTypeChange = async () => {
@@ -382,25 +390,13 @@ export default function RenewalsPage() {
                                                     </span>
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
-                                                    <div className="flex items-center justify-center gap-1.5">
-                                                        <CustomButton
-                                                            label="View"
-                                                            bgColor="bg-zinc-800 hover:bg-zinc-900"
-                                                            textColor="text-white"
-                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm"
-                                                            onClick={() => setViewModalData({ isOpen: true, member: renew })}
-                                                        />
-                                                        <CustomButton
-                                                            label="Edit"
-                                                            bgColor="bg-zinc-100 hover:bg-zinc-200"
-                                                            textColor="text-zinc-700"
-                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm border border-zinc-300"
-                                                            onClick={() => {
-                                                                setSelectedMemberToEdit(renew);
-                                                                setIsEditModalOpen(true);
-                                                            }}
-                                                        />
-                                                    </div>
+                                                    <CustomButton
+                                                        label="View"
+                                                        bgColor="bg-zinc-800 hover:bg-zinc-900"
+                                                        textColor="text-white"
+                                                        className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm"
+                                                        onClick={() => setViewModalData({ isOpen: true, member: renew })}
+                                                    />
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
                                                     {renew.memberType === "Associate Member" ? (
@@ -417,6 +413,13 @@ export default function RenewalsPage() {
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-40 whitespace-nowrap text-center">
                                                     <div className="flex justify-center gap-2">
+                                                        <CustomButton
+                                                            label={renew.status === "Inactive" ? "Make Active" : "Make Inactive"}
+                                                            bgColor={renew.status === "Inactive" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                                                            textColor="text-white"
+                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
+                                                            onClick={() => handleToggleStatus(renew.id, renew.status, renew.name)}
+                                                        />
                                                         {renew.memberType === "Associate Member" ? (
                                                             <CustomButton
                                                                 label="Upgrade to Life"
@@ -512,34 +515,35 @@ export default function RenewalsPage() {
                     <Modal
                         isOpen={renewModalData.isOpen}
                         onClose={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
-                title="Confirm Offline Renewal"
-                widthClass="max-w-md"
-            >
-                <div className="text-zinc-700 text-sm">
-                    <p className="mb-4">
-                        Please confirm that you have received an offline renewal payment of <span className="font-bold text-green-600">₹1,200</span> for <strong>{renewModalData.name}</strong> (ID: {renewModalData.memberId}).
-                    </p>
-                    <p className="mb-6 text-xs text-zinc-500 italic">
-                        This action will extend the membership by exactly 1 year from {willExtendFrom} and record a transaction in the database.
-                    </p>
-                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
-                        <CustomButton
-                            label="Cancel"
-                            onClick={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
-                            bgColor="bg-zinc-100 hover:bg-zinc-200"
-                            textColor="text-zinc-700"
-                            className="border border-zinc-300"
-                        />
-                        <CustomButton
-                            label="Update"
-                            onClick={confirmRecordAndRenew}
-                            bgColor="bg-green-600 hover:bg-green-700"
-                            textColor="text-white"
-                        />
-                    </div>
-                </div>
-            </Modal>
-            );})()}
+                        title="Confirm Offline Renewal"
+                        widthClass="max-w-md"
+                    >
+                        <div className="text-zinc-700 text-sm">
+                            <p className="mb-4">
+                                Please confirm that you have received an offline renewal payment of <span className="font-bold text-green-600">₹1,200</span> for <strong>{renewModalData.name}</strong> (ID: {renewModalData.memberId}).
+                            </p>
+                            <p className="mb-6 text-xs text-zinc-500 italic">
+                                This action will extend the membership by exactly 1 year from {willExtendFrom} and record a transaction in the database.
+                            </p>
+                            <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+                                <CustomButton
+                                    label="Cancel"
+                                    onClick={() => setRenewModalData({ isOpen: false, memberId: '', name: '' })}
+                                    bgColor="bg-zinc-100 hover:bg-zinc-200"
+                                    textColor="text-zinc-700"
+                                    className="border border-zinc-300"
+                                />
+                                <CustomButton
+                                    label="Update"
+                                    onClick={confirmRecordAndRenew}
+                                    bgColor="bg-green-600 hover:bg-green-700"
+                                    textColor="text-white"
+                                />
+                            </div>
+                        </div>
+                    </Modal>
+                );
+            })()}
 
             {/* Upgrade to Life Time Modal */}
             <Modal
@@ -645,16 +649,28 @@ export default function RenewalsPage() {
                 )}
             </Modal>
 
-            <EditMemberModal
-                isOpen={isEditModalOpen}
-                onClose={() => {
-                    setIsEditModalOpen(false);
-                    setSelectedMemberToEdit(null);
-                }}
-                member={selectedMemberToEdit}
-                onSave={handleSaveEdit}
-                loading={isSavingEdit}
-            />
+            {/* Warning Modal */}
+            <Modal
+                isOpen={warningModalData.isOpen}
+                onClose={() => setWarningModalData({ isOpen: false, message: '' })}
+                title="Action Denied"
+                widthClass="max-w-md"
+            >
+                <div className="text-zinc-700 text-sm">
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded flex items-start gap-3">
+                        <FiAlertTriangle className="text-red-500 text-xl shrink-0 mt-0.5" />
+                        <p className="font-semibold text-red-700">{warningModalData.message}</p>
+                    </div>
+                    <div className="flex justify-end pt-4 border-t border-zinc-100">
+                        <CustomButton
+                            label="Okay"
+                            onClick={() => setWarningModalData({ isOpen: false, message: '' })}
+                            bgColor="bg-zinc-800 hover:bg-zinc-900"
+                            textColor="text-white"
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }
