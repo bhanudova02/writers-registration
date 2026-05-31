@@ -6,6 +6,7 @@ import { db, auth } from "../../firebase";
 import CustomButton from "../../components/custom/CustomButton";
 import { CustomSelect } from "../../components/custom/CustomSelect";
 import { logAdminActivity } from '../../lib/logger';
+import ViewMemberModal from "../../components/members/ViewMemberModal";
 import Modal from "../../components/common/Modal";
 import { toast } from "react-toastify";
 import { TableSkeleton } from "../../components/Skeletons";
@@ -96,10 +97,7 @@ export default function RenewalsPage() {
 
                 list.push({
                     id: memberId,
-                    name: data.name,
-                    email: data.email,
-                    mobileNumber: data.mobileNumber,
-                    createdAt: data.createdAt,
+                    ...data,
                     expiryDate,
                     daysRemaining,
                     amountDue,
@@ -586,68 +584,11 @@ export default function RenewalsPage() {
             </Modal>
 
             {/* View Member Modal */}
-            <Modal
+            <ViewMemberModal
                 isOpen={viewModalData.isOpen}
                 onClose={() => setViewModalData({ isOpen: false, member: null })}
-                title="Member Details"
-                widthClass="max-w-lg"
-            >
-                {viewModalData.member && (
-                    <div className="text-zinc-700 text-sm space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Member Name</p>
-                                <p className="font-semibold">{viewModalData.member.name}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Member ID</p>
-                                <p className="font-semibold text-blue-700">{viewModalData.member.id}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Email</p>
-                                <p className="font-medium break-all">{viewModalData.member.email}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Phone Number</p>
-                                <p className="font-medium">{viewModalData.member.mobileNumber}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Member Type</p>
-                                <p className="font-medium">{viewModalData.member.memberType}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Status</p>
-                                <span className={`px-2 py-0.5 rounded text-xs font-bold inline-block mt-0.5 ${viewModalData.member.status === 'Active' || viewModalData.member.status === 'Life Member' ? 'bg-green-100 text-green-700' : viewModalData.member.status === 'Grace Period' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
-                                    {viewModalData.member.status}
-                                </span>
-                            </div>
-                            <div>
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Created At / Last Renewed</p>
-                                <p className="font-medium">{viewModalData.member.createdAt ? new Date(viewModalData.member.createdAt).toLocaleDateString() : 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Expires On</p>
-                                <p className="font-medium">{viewModalData.member.expiryDate}</p>
-                            </div>
-                        </div>
-                        {viewModalData.member.memberType === "Associate Member" && (
-                            <div className="pt-4 border-t border-zinc-100">
-                                <p className="text-xs text-zinc-500 font-bold mb-1">Days Remaining</p>
-                                <p className="font-semibold text-lg">{viewModalData.member.daysRemaining} <span className="text-sm font-normal text-zinc-500">days</span></p>
-                            </div>
-                        )}
-                        <div className="flex justify-end pt-4 border-t border-zinc-100">
-                            <CustomButton
-                                label="Close"
-                                onClick={() => setViewModalData({ isOpen: false, member: null })}
-                                bgColor="bg-zinc-100 hover:bg-zinc-200"
-                                textColor="text-zinc-700"
-                                className="border border-zinc-300"
-                            />
-                        </div>
-                    </div>
-                )}
-            </Modal>
+                member={viewModalData.member}
+            />
 
             {/* Warning Modal */}
             <Modal
