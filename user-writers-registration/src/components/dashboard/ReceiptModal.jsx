@@ -15,12 +15,12 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
 
   useEffect(() => {
-    if (!requiresBothDownloads || canClose) return;
+    if (!requiresBothDownloads) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => prev > 0 ? prev - 1 : 0);
     }, 1000);
     return () => clearInterval(interval);
-  }, [requiresBothDownloads, canClose]);
+  }, [requiresBothDownloads]);
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
@@ -120,7 +120,7 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                     </span>
                   </div>
                   <div>
-                    ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading both, as your stamped script will be permanently lost and cannot be downloaded later. The Close button will appear after you download both.
+                    ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading both, as your stamped script will be permanently lost and cannot be downloaded later.
                   </div>
                 </div>
               ) : (
