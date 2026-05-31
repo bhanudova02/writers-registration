@@ -200,7 +200,7 @@ export default function RenewalsPage() {
             await setDoc(transRef, {
                 memberId,
                 name,
-                amount: 1200,
+                // amount: 1200, // TODO: Amount will be added dynamically later
                 type: "Annual Renewal",
                 date: nowStr
             });
@@ -563,9 +563,9 @@ export default function RenewalsPage() {
                                 />
                             </div>
 
-                            <p className="mb-6 text-sm text-zinc-500 italic leading-relaxed">
+                            <p className="mb-6 text-sm text-zinc-500  leading-relaxed">
                                 This action will extend the membership by exactly {renewModalData.years} {renewModalData.years === 1 ? 'year' : 'years'} from {willExtendFrom}. 
-                                The new expiration date will be <strong className="text-zinc-600">{finalFormattedDate}</strong>. This transaction will be recorded in the database.
+                                The new expiration date will be <strong className="text-zinc-600">{finalFormattedDate}</strong>.
                             </p>
                             <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
                                 <CustomButton
