@@ -137,6 +137,7 @@ export default function App() {
           path="/" 
           element={isLoggedIn ? <Dashboard member={member} setMember={setMember} onLogout={handleLogout} /> : <Navigate to="/login" />} 
         />
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
       <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </BrowserRouter>
