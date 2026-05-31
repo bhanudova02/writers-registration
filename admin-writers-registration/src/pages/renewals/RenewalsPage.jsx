@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { FaSyncAlt, FaSearch, FaRegCreditCard, FaUserGraduate, FaRupeeSign } from "react-icons/fa";
 import { FiAlertTriangle, FiCheck, FiClock, FiLayers } from "react-icons/fi";
 import { collection, onSnapshot, doc, updateDoc, setDoc, query, where } from "firebase/firestore";
-import { db } from "../../firebase";
+import { db, auth } from "../../firebase";
 import CustomButton from "../../components/custom/CustomButton";
 import { CustomSelect } from "../../components/custom/CustomSelect";
+import { logAdminActivity } from '../../lib/logger';
+import EditMemberModal from "../../components/members/EditMemberModal";
 import Modal from "../../components/common/Modal";
 import { toast } from "react-toastify";
 import { TableSkeleton } from "../../components/Skeletons";
@@ -19,6 +21,10 @@ export default function RenewalsPage() {
     const [upgradeModalData, setUpgradeModalData] = useState({ isOpen: false, memberId: '', name: '', targetType: '' });
     const [renewModalData, setRenewModalData] = useState({ isOpen: false, memberId: '', name: '' });
     const [viewModalData, setViewModalData] = useState({ isOpen: false, member: null });
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedMemberToEdit, setSelectedMemberToEdit] = useState(null);
+    const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -48,7 +54,20 @@ export default function RenewalsPage() {
                 let status = data.status || "Active";
                 let amountDue = "-";
 
-                if (data.memberType === "Associate Member") {
+                if (status === "Inactive") {
+                    status = "Inactive";
+                    // Still calculate expiry date for display
+                    if (data.memberType === "Associate Member") {
+                        const createdDate = data.createdAt ? new Date(data.createdAt) : new Date();
+                        const expDate = new Date(createdDate);
+                        expDate.setFullYear(expDate.getFullYear() + 1);
+                        expiryDate = expDate.toLocaleDateString();
+                        const now = new Date();
+                        daysRemaining = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                    } else if (data.memberType === "Life Time Member") {
+                        expiryDate = "No Expiry";
+                    }
+                } else if (data.memberType === "Associate Member") {
                     // Expiry is 1 year from createdAt
                     const createdDate = data.createdAt ? new Date(data.createdAt) : new Date();
                     const expDate = new Date(createdDate);
@@ -81,10 +100,7 @@ export default function RenewalsPage() {
 
                 list.push({
                     id: memberId,
-                    name: data.name,
-                    email: data.email,
-                    mobileNumber: data.mobileNumber,
-                    createdAt: data.createdAt,
+                    ...data, // Include all fields so EditMemberModal can access them
                     expiryDate,
                     daysRemaining,
                     amountDue,
@@ -141,7 +157,6 @@ export default function RenewalsPage() {
     const totalAssociates = members.filter(m => m.memberType === "Associate Member").length;
     const overdueCount = members.filter(m => m.status === "Overdue").length;
     const activeCount = members.filter(m => m.status === "Active" && m.memberType === "Associate Member").length;
-    // Removed MTD Collected
 
     // Record Offline Renewal
     const triggerRenewModal = (memberId, name) => {
@@ -200,6 +215,29 @@ export default function RenewalsPage() {
         setUpgradeModalData({ isOpen: true, memberId, name, targetType });
     };
 
+    const handleSaveEdit = async (updatedData) => {
+        try {
+            setIsSavingEdit(true);
+            const memberRef = doc(db, 'members', updatedData.membershipId);
+            await updateDoc(memberRef, updatedData);
+            
+            await logAdminActivity(
+                auth.currentUser?.email || 'admin@tcwa.in',
+                "Edited Member",
+                `Edited member details and status for ${updatedData.name} (ID: ${updatedData.membershipId})`
+            );
+            
+            setIsEditModalOpen(false);
+            setSelectedMemberToEdit(null);
+            toast.success("Member details updated successfully!");
+        } catch (error) {
+            console.error("Error updating member:", error);
+            toast.error("Failed to update member.");
+        } finally {
+            setIsSavingEdit(false);
+        }
+    };
+
     const confirmTypeChange = async () => {
         const { memberId, name, targetType } = upgradeModalData;
         setUpgradeModalData({ isOpen: false, memberId: '', name: '', targetType: '' });
@@ -229,9 +267,6 @@ export default function RenewalsPage() {
         }
     };
 
-    // Members in grace period alert list
-    const graceAlerts = members.filter(m => m.status === "Grace Period");
-
     return (
         <div className="p-3 sm:p-6">
             <div className="flex items-center gap-2 mb-4 sm:mb-6">
@@ -239,7 +274,6 @@ export default function RenewalsPage() {
                 <h1 className="text-base sm:text-xl font-bold text-gray-800">Membership Renewals</h1>
             </div>
 
-            {/* Metrics cards */}
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
                 <div className="bg-white p-3 sm:p-5 rounded-md shadow-sm border border-zinc-200 flex items-center justify-between">
                     <div>
@@ -270,7 +304,6 @@ export default function RenewalsPage() {
                 </div>
             </div>
 
-            {/* Renewals directory */}
             <div className="mb-6">
                 <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm">
                     <div className="mb-5 space-y-4">
@@ -349,13 +382,25 @@ export default function RenewalsPage() {
                                                     </span>
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
-                                                    <CustomButton
-                                                        label="View"
-                                                        bgColor="bg-zinc-800 hover:bg-zinc-900"
-                                                        textColor="text-white"
-                                                        className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm"
-                                                        onClick={() => setViewModalData({ isOpen: true, member: renew })}
-                                                    />
+                                                    <div className="flex items-center justify-center gap-1.5">
+                                                        <CustomButton
+                                                            label="View"
+                                                            bgColor="bg-zinc-800 hover:bg-zinc-900"
+                                                            textColor="text-white"
+                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm"
+                                                            onClick={() => setViewModalData({ isOpen: true, member: renew })}
+                                                        />
+                                                        <CustomButton
+                                                            label="Edit"
+                                                            bgColor="bg-zinc-100 hover:bg-zinc-200"
+                                                            textColor="text-zinc-700"
+                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm border border-zinc-300"
+                                                            onClick={() => {
+                                                                setSelectedMemberToEdit(renew);
+                                                                setIsEditModalOpen(true);
+                                                            }}
+                                                        />
+                                                    </div>
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
                                                     {renew.memberType === "Associate Member" ? (
@@ -398,7 +443,6 @@ export default function RenewalsPage() {
                                 </table>
                             </div>
 
-                            {/* Pagination Controls */}
                             <div className="mt-4 rounded border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm md:flex md:items-center md:justify-between md:gap-3">
                                 <div className="flex items-center justify-between gap-2 md:flex-1">
                                     <p className="font-semibold text-zinc-600">
@@ -600,6 +644,17 @@ export default function RenewalsPage() {
                     </div>
                 )}
             </Modal>
+
+            <EditMemberModal
+                isOpen={isEditModalOpen}
+                onClose={() => {
+                    setIsEditModalOpen(false);
+                    setSelectedMemberToEdit(null);
+                }}
+                member={selectedMemberToEdit}
+                onSave={handleSaveEdit}
+                loading={isSavingEdit}
+            />
         </div>
     );
 }
