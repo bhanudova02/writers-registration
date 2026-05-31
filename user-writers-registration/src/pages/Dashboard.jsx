@@ -298,6 +298,17 @@ export default function Dashboard({ member, setMember, onLogout }) {
       const dateObj = new Date(receiptModal.registration.createdAt);
       const dateStr = `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
+      // Load stamp image
+      let stampImage = null;
+      let stampDims = null;
+      try {
+        const imageBytes = await fetch('/stamp.png').then(res => res.arrayBuffer());
+        stampImage = await pdfDoc.embedPng(imageBytes);
+        stampDims = stampImage.scaleToFit(14, 14);
+      } catch (err) {
+        console.warn("Could not load stamp image:", err);
+      }
+
       pages.forEach((page) => {
         const { width, height } = page.getSize();
         
@@ -318,6 +329,16 @@ export default function Dashboard({ member, setMember, onLogout }) {
           size: 10,
           color: rgb(0.4, 0.4, 0.4),
         });
+
+        // Add small stamp icon to the left of the text if loaded successfully
+        if (stampImage && stampDims) {
+          page.drawImage(stampImage, {
+            x: width / 2 - 180,
+            y: 18,
+            width: stampDims.width,
+            height: stampDims.height,
+          });
+        }
       });
 
       const pdfBytes = await pdfDoc.save();
