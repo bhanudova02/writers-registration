@@ -17,10 +17,10 @@ export default function RegistrationForm({
 }) {
   return (
     <form onSubmit={handleRegisterScript} className="bg-white border border-slate-200 p-5 sm:p-6 rounded-lg space-y-5">
-      <div className="flex items-start gap-3 border-b border-zinc-200/60 pb-3">
-        <FileText className="text-orange-500" />
+      <div className="flex items-start gap-1.5 border-b border-zinc-200/60 pb-3">
+        <FileText className="text-orange-500 mt-0.5 md:mt-1" />
         <div>
-          <h3 className="text-lg font-bold text-zinc-900">Register New Movie Script</h3>
+          <h3 className="text-base md:text-lg font-bold text-zinc-900">Register New Movie Script</h3>
           <p className="text-xs text-zinc-500">Calculate page count and generate digital stamped receipt instantly.</p>
         </div>
       </div>

@@ -11,10 +11,10 @@ export default function RegistrationsTable({ isLoadingMyRegs, myRegistrations })
 
   return (
     <section className="bg-white border border-slate-200 p-5 rounded-lg space-y-4">
-      <div className="flex items-center gap-2 border-b border-zinc-200/60 pb-3">
-        <ReceiptText className="text-amber-500" />
+      <div className="flex items-start gap-1.5 border-b border-zinc-200/60 pb-3">
+        <ReceiptText className="text-amber-500 mt-0.5 md:mt-1" />
         <div>
-          <h3 className="text-lg font-bold text-zinc-900">My Script Registration Logs</h3>
+          <h3 className="text-base md:text-lg font-bold text-zinc-900">My Script Registration Logs</h3>
           <p className="text-xs text-zinc-500 font-semibold">View and track all your previous script registration logs.</p>
         </div>
       </div>
