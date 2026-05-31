@@ -32,8 +32,13 @@ export async function isAllowedAdmin(user) {
   if (!email) return false
   if (bootstrapAdminEmails.includes(email)) return true
 
-  const adminDoc = await getDoc(doc(db, 'admins', email))
-  return adminDoc.exists() && adminDoc.data()?.active === true
+  try {
+    const adminDoc = await getDoc(doc(db, 'admins', email))
+    return adminDoc.exists() && adminDoc.data()?.active === true
+  } catch (error) {
+    console.error("Error checking admin permissions:", error)
+    return false
+  }
 }
 
 function getDeviceInfo() {
