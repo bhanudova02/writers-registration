@@ -217,7 +217,7 @@ export default function RegistrationsPage() {
             {/* View Receipt Modal */}
             {viewReceipt && (
                 <div className="fixed inset-0 z-[60] bg-black/60 px-4 py-8 overflow-y-auto flex items-start justify-center">
-                    <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto shrink-0">
+                    <div className="w-full max-w-3xl rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto shrink-0">
                         <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg">
                             <h3 className="text-base font-bold text-zinc-800">Registration Details</h3>
                             <button
@@ -227,7 +227,7 @@ export default function RegistrationsPage() {
                                 <FiXCircle size={20} />
                             </button>
                         </div>
-                        <div className="p-5 space-y-3 text-sm font-medium text-zinc-700">
+                        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 text-sm font-medium text-zinc-700">
                             <div className="flex justify-between border-b border-zinc-100 pb-2">
                                 <span className="text-zinc-500">Member Name:</span> 
                                 <span className="font-bold text-zinc-900 text-right">{viewReceipt.writerName || "N/A"}</span>
@@ -274,7 +274,7 @@ export default function RegistrationsPage() {
                                     {viewReceipt.status || 'Pending'}
                                 </span>
                             </div>
-                            <div className="flex justify-between pt-1">
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
                                 <span className="text-zinc-500">Amount Paid:</span> 
                                 <span className="font-bold text-green-600 text-right text-base">₹{viewReceipt.amount || 0}</span>
                             </div>

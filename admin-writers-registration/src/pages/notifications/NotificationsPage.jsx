@@ -122,8 +122,8 @@ export default function NotificationsPage() {
                                         <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-800 w-48">
                                             {log.adminEmail}
                                         </td>
-                                        <td className="border border-zinc-200 py-3 px-3 w-32">
-                                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                        <td className="border border-zinc-200 py-3 px-3 w-40 whitespace-nowrap">
+                                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold whitespace-nowrap ${
                                                 log.action === 'Login' ? 'bg-green-100 text-green-700' :
                                                 log.action === 'Logout' ? 'bg-red-100 text-red-700' :
                                                 'bg-blue-100 text-blue-700'
