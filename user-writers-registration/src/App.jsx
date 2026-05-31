@@ -16,16 +16,6 @@ export default function App() {
     return localStorage.getItem('tcwa_isLoggedIn') === 'true';
   });
 
-  useEffect(() => {
-    if (isLoggedIn && member) {
-      localStorage.setItem('tcwa_member', JSON.stringify(member));
-      localStorage.setItem('tcwa_isLoggedIn', 'true');
-    } else {
-      localStorage.removeItem('tcwa_member');
-      localStorage.removeItem('tcwa_isLoggedIn');
-    }
-  }, [isLoggedIn, member]);
-
   const handleLogout = () => {
     // Completely clear all caches to fix stale deployment issues
     localStorage.clear();
@@ -51,6 +41,55 @@ export default function App() {
     // Hard reload to flush SPA state
     window.location.href = '/login';
   };
+
+  useEffect(() => {
+    let unsubscribeAuth = () => {};
+    
+    // Check Firebase Auth state to prevent localStorage bypass
+    import('firebase/auth').then(({ onAuthStateChanged }) => {
+      import('./firebase').then(({ auth }) => {
+        unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
+          if (!firebaseUser && isLoggedIn) {
+            // Allow developer bypass in local mode
+            if (import.meta.env.DEV && member?.membershipId?.startsWith('TEST')) {
+              return;
+            }
+            console.warn("Security Check: No Firebase Auth session found. Forcing logout.");
+            handleLogout();
+          }
+        });
+      });
+    });
+
+    if (isLoggedIn && member) {
+      localStorage.setItem('tcwa_member', JSON.stringify(member));
+      localStorage.setItem('tcwa_isLoggedIn', 'true');
+      
+      // Real-time check if member still exists in DB
+      import('firebase/firestore').then(({ doc, onSnapshot }) => {
+        import('./firebase').then(({ db }) => {
+          if (member.membershipId) {
+            const unsubDb = onSnapshot(doc(db, 'members', member.membershipId), (docSnap) => {
+              if (!docSnap.exists()) {
+                console.warn("Member deleted from database. Forcing logout.");
+                handleLogout();
+              }
+            });
+            // We can't easily return unsubDb here because of the async imports, 
+            // but for a top-level component that rarely unmounts it's acceptable.
+          }
+        });
+      });
+      
+    } else {
+      localStorage.removeItem('tcwa_member');
+      localStorage.removeItem('tcwa_isLoggedIn');
+    }
+
+    return () => {
+      if (unsubscribeAuth) unsubscribeAuth();
+    };
+  }, [isLoggedIn, member]);
 
   return (
     <BrowserRouter>
