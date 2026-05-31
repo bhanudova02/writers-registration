@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
 
 export default function ReceiptModal({ receiptModal, isDownloading, closeReceiptModal, handleDownloadReceipt, handleUnlockDownload, handleDownloadStampedScript, isFullScreen }) {
@@ -11,6 +11,22 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
 
   const requiresBothDownloads = receiptModal.isPaymentSuccess === true;
   const canClose = !requiresBothDownloads || (scriptDownloaded && receiptDownloaded);
+
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+
+  useEffect(() => {
+    if (!requiresBothDownloads || canClose) return;
+    const interval = setInterval(() => {
+      setTimeLeft(prev => prev > 0 ? prev - 1 : 0);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [requiresBothDownloads, canClose]);
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? '0' : ''}${s}`;
+  };
 
   const containerClasses = isFullScreen
     ? "min-h-screen bg-slate-50 flex items-center justify-center px-4 py-8 overflow-y-auto w-full font-sans"
@@ -94,8 +110,18 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
                 </button>
               )}
               {requiresBothDownloads ? (
-                <div className="rounded border border-red-300 bg-red-50 p-4 text-sm font-bold leading-relaxed text-red-900 shadow-sm order-2">
-                  ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading both, as your stamped script will be permanently lost and cannot be downloaded later. The Close button will appear after you download both.
+                <div className="rounded border border-red-300 bg-red-50 p-4 text-sm font-bold leading-relaxed text-red-900 shadow-sm order-2 flex flex-col">
+                  <div className="flex items-center justify-between mb-3 pb-3 border-b border-red-200/60">
+                    <span className="flex items-center gap-2 uppercase tracking-wide text-xs">
+                       ⏳ Time remaining:
+                    </span>
+                    <span className={`text-2xl font-black font-mono tracking-widest ${timeLeft < 60 ? 'text-red-600 animate-pulse' : 'text-red-500'}`}>
+                      {formatTime(timeLeft)}
+                    </span>
+                  </div>
+                  <div>
+                    ⚠️ CRITICAL WARNING: You must download your Receipt and Stamped Script now. Do NOT refresh or close this window without downloading both, as your stamped script will be permanently lost and cannot be downloaded later. The Close button will appear after you download both.
+                  </div>
                 </div>
               ) : (
                 <div className="rounded border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-relaxed text-amber-950 order-2">
