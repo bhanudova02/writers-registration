@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { doc, updateDoc, collection, query, where, onSnapshot, setDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'react-toastify';
@@ -171,6 +171,14 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
     try {
       if (!member) throw new Error("User session not found. Please log in again.");
+      
+      // Strict Security Check: Verify member still exists in DB before taking payment
+      const memberDocSnap = await getDoc(doc(db, 'members', member.membershipId));
+      if (!memberDocSnap.exists()) {
+        toast.error("Your account no longer exists in the database. Logging out...");
+        setTimeout(() => onLogout(), 2000);
+        return;
+      }
 
       const regId = `REG-TCWA-${Date.now().toString().slice(-8)}${Math.floor(1000 + Math.random() * 9000)}`;
       const amount = pageCount * 10;
@@ -483,6 +491,15 @@ export default function Dashboard({ member, setMember, onLogout }) {
       toast.error("Payment configuration is missing.");
       return;
     }
+    
+    // Strict Security Check: Verify member still exists in DB before taking payment
+    const memberDocSnap = await getDoc(doc(db, 'members', member.membershipId));
+    if (!memberDocSnap.exists()) {
+      toast.error("Your account no longer exists in the database. Logging out...");
+      setTimeout(() => onLogout(), 2000);
+      return;
+    }
+
     setIsDownloading(true);
     try {
       await loadRazorpayCheckout();
