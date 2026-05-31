@@ -10,6 +10,7 @@ import { collection, onSnapshot, doc, setDoc, query, orderBy } from 'firebase/fi
 import { db, auth } from '../../firebase';
 import { logAdminActivity } from '../../lib/logger';
 import EditMemberModal from "../../components/members/EditMemberModal";
+import ViewMemberModal from "../../components/members/ViewMemberModal";
 import { TableSkeleton } from "../../components/Skeletons";
 
 const memberTypeOptions = [
@@ -51,10 +52,13 @@ export default function MembersPage() {
     const [savedMembersPageSize, setSavedMembersPageSize] = useState(10);
     const [activeTab, setActiveTab] = useState("normal");
     
-    // Edit Member Modal States
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
     const [isSavingEdit, setIsSavingEdit] = useState(false);
+    
+    // View Member Modal States
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [viewMember, setViewMember] = useState(null);
 
     const isSubmitDisabled = useMemo(() => {
         return !(formData.membershipId || "").trim()
@@ -611,18 +615,31 @@ export default function MembersPage() {
                                                             {member.status || "Active"}
                                                         </span>
                                                     </td>
-                                                    <td className="border border-zinc-200 py-2.5 px-3 w-24 text-center">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setSelectedMember(member);
-                                                                setIsEditModalOpen(true);
-                                                            }}
-                                                            className="inline-flex items-center gap-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 px-2 py-1 text-xs font-semibold border border-zinc-300 transition-colors cursor-pointer"
-                                                        >
-                                                            <FiEdit className="text-[10px]" />
-                                                            <span>Edit</span>
-                                                        </button>
+                                                    <td className="border border-zinc-200 py-2.5 px-3 w-36 text-center">
+                                                        <div className="flex items-center justify-center gap-1.5">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setViewMember(member);
+                                                                    setIsViewModalOpen(true);
+                                                                }}
+                                                                className="inline-flex items-center gap-1 rounded bg-blue-50 hover:bg-blue-100 text-blue-600 px-2 py-1 text-xs font-semibold border border-blue-200 transition-colors cursor-pointer"
+                                                            >
+                                                                <FiList className="text-[10px]" />
+                                                                <span>View</span>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setSelectedMember(member);
+                                                                    setIsEditModalOpen(true);
+                                                                }}
+                                                                className="inline-flex items-center gap-1 rounded bg-zinc-100 hover:bg-zinc-200 text-zinc-700 px-2 py-1 text-xs font-semibold border border-zinc-300 transition-colors cursor-pointer"
+                                                            >
+                                                                <FiEdit className="text-[10px]" />
+                                                                <span>Edit</span>
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
@@ -692,6 +709,15 @@ export default function MembersPage() {
                 member={selectedMember}
                 onSave={handleSaveEdit}
                 loading={isSavingEdit}
+            />
+
+            <ViewMemberModal
+                isOpen={isViewModalOpen}
+                onClose={() => {
+                    setIsViewModalOpen(false);
+                    setViewMember(null);
+                }}
+                member={viewMember}
             />
         </div>
     );

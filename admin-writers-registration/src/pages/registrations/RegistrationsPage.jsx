@@ -219,7 +219,7 @@ export default function RegistrationsPage() {
                 <div className="fixed inset-0 z-[60] bg-black/60 px-4 py-8 overflow-y-auto flex items-start justify-center">
                     <div className="w-full max-w-md rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto shrink-0">
                         <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg">
-                            <h3 className="text-base font-bold text-zinc-800">Receipt Details</h3>
+                            <h3 className="text-base font-bold text-zinc-800">Registration Details</h3>
                             <button
                                 onClick={() => setViewReceipt(null)}
                                 className="text-zinc-500 hover:text-zinc-800 transition cursor-pointer"
@@ -228,13 +228,56 @@ export default function RegistrationsPage() {
                             </button>
                         </div>
                         <div className="p-5 space-y-3 text-sm font-medium text-zinc-700">
-                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Name of the Member:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.writerName}</span></div>
-                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Working Title:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.title}</span></div>
-                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Total Pages:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.pageCount}</span></div>
-                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Membership Id No.:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.membershipId}</span></div>
-                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Receipt No.:</span> <span className="font-bold text-zinc-900 text-right">{viewReceipt.registrationId || viewReceipt.id}</span></div>
-                            <div className="flex justify-between border-b border-zinc-100 pb-2"><span className="text-zinc-500">Time:</span> <span className="font-bold text-zinc-900 text-right">{new Date(viewReceipt.createdAt).toLocaleString()}</span></div>
-                            <div className="flex justify-between"><span className="text-zinc-500">Amount:</span> <span className="font-bold text-green-600 text-right">₹{viewReceipt.amount}</span></div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Member Name:</span> 
+                                <span className="font-bold text-zinc-900 text-right">{viewReceipt.writerName || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Membership Id:</span> 
+                                <span className="font-bold text-zinc-900 text-right">{viewReceipt.membershipId || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Title:</span> 
+                                <span className="font-bold text-zinc-900 text-right">{viewReceipt.title || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Script Type / Category:</span> 
+                                <span className="font-bold text-zinc-900 text-right">{viewReceipt.category || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Total Pages:</span> 
+                                <span className="font-bold text-zinc-900 text-right">{viewReceipt.pageCount || 0}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Registration Id:</span> 
+                                <span className="font-bold text-zinc-900 text-right">{viewReceipt.registrationId || viewReceipt.id}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Payment ID:</span> 
+                                <span className="font-bold text-zinc-900 text-right break-all ml-4">{viewReceipt.paymentId || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Payment Status:</span> 
+                                <span className={`font-bold text-right ${viewReceipt.paymentStatus === 'Success' ? 'text-green-600' : 'text-zinc-900'}`}>{viewReceipt.paymentStatus || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">PDF File:</span> 
+                                <span className="font-bold text-zinc-900 text-right truncate ml-4" title={viewReceipt.pdfFileName}>{viewReceipt.pdfFileName || "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Date & Time:</span> 
+                                <span className="font-bold text-zinc-900 text-right">{viewReceipt.createdAt ? new Date(viewReceipt.createdAt).toLocaleString() : "N/A"}</span>
+                            </div>
+                            <div className="flex justify-between border-b border-zinc-100 pb-2">
+                                <span className="text-zinc-500">Status:</span> 
+                                <span className={`font-bold text-right ${viewReceipt.status === 'Approved' ? 'text-green-600' : viewReceipt.status === 'Rejected' ? 'text-red-600' : 'text-amber-600'}`}>
+                                    {viewReceipt.status || 'Pending'}
+                                </span>
+                            </div>
+                            <div className="flex justify-between pt-1">
+                                <span className="text-zinc-500">Amount Paid:</span> 
+                                <span className="font-bold text-green-600 text-right text-base">₹{viewReceipt.amount || 0}</span>
+                            </div>
                         </div>
                         <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-end">
                             <button onClick={() => setViewReceipt(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>

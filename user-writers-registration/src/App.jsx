@@ -62,6 +62,18 @@ export default function App() {
     });
 
     if (isLoggedIn && member) {
+      const loginTime = localStorage.getItem('tcwa_user_login_time');
+      const now = Date.now();
+      const SIX_DAYS = 6 * 24 * 60 * 60 * 1000;
+
+      if (!loginTime) {
+        localStorage.setItem('tcwa_user_login_time', now.toString());
+      } else if (now - parseInt(loginTime, 10) > SIX_DAYS) {
+        console.warn("Session expired (6 days limit reached). Forcing logout.");
+        handleLogout();
+        return;
+      }
+
       localStorage.setItem('tcwa_member', JSON.stringify(member));
       localStorage.setItem('tcwa_isLoggedIn', 'true');
       
@@ -88,12 +100,29 @@ export default function App() {
     } else {
       localStorage.removeItem('tcwa_member');
       localStorage.removeItem('tcwa_isLoggedIn');
+      localStorage.removeItem('tcwa_user_login_time');
     }
 
     return () => {
       if (unsubscribeAuth) unsubscribeAuth();
     };
   }, [isLoggedIn, member]);
+
+  // Enforce 6 day session limit while app is open
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    
+    const checkSession = () => {
+      const loginTime = localStorage.getItem('tcwa_user_login_time');
+      if (loginTime && Date.now() - parseInt(loginTime, 10) > 6 * 24 * 60 * 60 * 1000) {
+        console.warn("Session expired (6 days limit reached) while active. Logging out...");
+        handleLogout();
+      }
+    };
+
+    const interval = setInterval(checkSession, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, [isLoggedIn]);
 
   return (
     <BrowserRouter>
