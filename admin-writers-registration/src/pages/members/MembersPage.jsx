@@ -283,6 +283,34 @@ export default function MembersPage() {
     const handleSaveEdit = async (membershipId, updatedFields) => {
         setIsSavingEdit(true);
         try {
+            const isSelfNominee = updatedFields.aadharNo && updatedFields.nomineeAadharNo && updatedFields.aadharNo === updatedFields.nomineeAadharNo;
+            if (isSelfNominee) {
+                toast.error("Member Aadhar and Nominee Aadhar cannot be the same.");
+                setIsSavingEdit(false);
+                return;
+            }
+
+            const existingAadhar = savedMembers.find(m => m.aadharNo === updatedFields.aadharNo && m.membershipId !== membershipId);
+            if (existingAadhar) {
+                toast.error(`Aadhar Number is already registered to Member ID: ${existingAadhar.membershipId}`);
+                setIsSavingEdit(false);
+                return;
+            }
+
+            const existingPan = savedMembers.find(m => m.panCardNo && m.panCardNo.toUpperCase() === updatedFields.panCardNo.toUpperCase().trim() && m.membershipId !== membershipId);
+            if (existingPan) {
+                toast.error(`PAN Card Number is already registered to Member ID: ${existingPan.membershipId}`);
+                setIsSavingEdit(false);
+                return;
+            }
+
+            const existingMobile = savedMembers.find(m => m.mobileNumber === updatedFields.mobileNumber && m.membershipId !== membershipId);
+            if (existingMobile) {
+                toast.error(`Mobile Number is already registered to Member ID: ${existingMobile.membershipId}`);
+                setIsSavingEdit(false);
+                return;
+            }
+
             const memberRef = doc(db, 'members', membershipId);
             await setDoc(memberRef, updatedFields, { merge: true });
             
