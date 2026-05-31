@@ -65,7 +65,6 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
             case "nomineeName":
             case "nomineeRelation":
             case "permanentAddress":
-            case "temporaryAddress":
                 return trimmedValue ? "" : "Field is required.";
             case "mobileNumber":
                 if (!trimmedValue) return "Field is required.";
@@ -166,7 +165,6 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
             || !(formData.nomineeName || "").trim()
             || !(formData.nomineeRelation || "").trim()
             || !(formData.permanentAddress || "").trim()
-            || !(formData.temporaryAddress || "").trim()
             || !(formData.email || "").trim()
             || Object.values(errors).some(Boolean);
     }, [errors, formData]);
@@ -256,7 +254,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                                 rows={2}
                             />
                             <CustomTextArea
-                                label="Temporary Address *"
+                                label="Temporary Address (Optional)"
                                 value={formData.temporaryAddress}
                                 onChange={(e) => handleTextChange("temporaryAddress", e.target.value)}
                                 error={errors.temporaryAddress}

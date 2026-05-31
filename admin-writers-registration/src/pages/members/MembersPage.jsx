@@ -70,7 +70,6 @@ export default function MembersPage() {
             || !(formData.nomineeName || "").trim()
             || !(formData.nomineeRelation || "").trim()
             || !(formData.permanentAddress || "").trim()
-            || !(formData.temporaryAddress || "").trim()
             || !(formData.email || "").trim()
             || !formData.memberType
             || Object.values(errors).some(Boolean);
@@ -122,7 +121,6 @@ export default function MembersPage() {
             case "nomineeName":
             case "nomineeRelation":
             case "permanentAddress":
-            case "temporaryAddress":
             case "memberType":
                 return trimmedValue ? "" : "Field is required.";
             case "mobileNumber":
@@ -491,7 +489,7 @@ export default function MembersPage() {
                                             rows={3}
                                         />
                                         <CustomTextArea
-                                            label="Temporary Address *"
+                                            label="Temporary Address (Optional)"
                                             value={formData.temporaryAddress}
                                             onChange={(e) => handleTextChange("temporaryAddress", e.target.value)}
                                             placeholder="Enter temporary/present address"
