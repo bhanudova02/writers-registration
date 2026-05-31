@@ -95,9 +95,20 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     };
 
     const handleNumberChange = (field, value, maxLength) => {
-        const cleaned = value.replace(/\D/g, '').slice(0, maxLength);
-        setFormData(prev => ({ ...prev, [field]: cleaned }));
-        setErrors(prev => ({ ...prev, [field]: validateField(field, cleaned) }));
+        let numericValue = value.replace(/\D/g, '');
+        
+        if (field === "mobileNumber") {
+            if (numericValue.length > 10 && numericValue.startsWith("91")) {
+                numericValue = numericValue.substring(2);
+            } else if (numericValue.length > 10 && numericValue.startsWith("0")) {
+                numericValue = numericValue.substring(1);
+            }
+        }
+        
+        numericValue = numericValue.slice(0, maxLength);
+        
+        setFormData(prev => ({ ...prev, [field]: numericValue }));
+        setErrors(prev => ({ ...prev, [field]: validateField(field, numericValue) }));
     };
 
     const handleSave = () => {

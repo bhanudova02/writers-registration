@@ -156,7 +156,17 @@ export default function MembersPage() {
     };
 
     const handleNumberChange = (field, value, maxLength) => {
-        const numericValue = value.replace(/\D/g, "").slice(0, maxLength);
+        let numericValue = value.replace(/\D/g, "");
+        
+        if (field === "mobileNumber") {
+            if (numericValue.length > 10 && numericValue.startsWith("91")) {
+                numericValue = numericValue.substring(2);
+            } else if (numericValue.length > 10 && numericValue.startsWith("0")) {
+                numericValue = numericValue.substring(1);
+            }
+        }
+        
+        numericValue = numericValue.slice(0, maxLength);
         handleTextChange(field, numericValue);
     };
 
