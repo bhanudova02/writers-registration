@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { FaUserPlus, FaUsers, FaSearch } from "react-icons/fa";
 import { FiEdit, FiList } from "react-icons/fi";
 import CustomInput from "../../components/custom/CustomInput";
+import CustomTextArea from "../../components/custom/CustomTextArea";
 import { CustomSelect } from "../../components/custom/CustomSelect";
 import CustomButton from "../../components/custom/CustomButton";
 import { collection, onSnapshot, doc, setDoc, query, orderBy } from 'firebase/firestore';
@@ -19,10 +20,21 @@ const memberTypeOptions = [
 const initialFormData = {
     membershipId: "",
     name: "",
+    surname: "",
+    dateOfJoining: "",
+    dateOfBirth: "",
+    qualification: "",
+    bloodGroup: "",
     mobileNumber: "",
-    memberType: "",
     email: "",
-    validityYears: "",
+    aadharNo: "",
+    panCardNo: "",
+    nomineeName: "",
+    nomineeRelation: "",
+    nomineeAadharNo: "",
+    permanentAddress: "",
+    temporaryAddress: "",
+    memberType: "",
 };
 
 const savedMemberPageSizeOptions = [5, 10, 25, 50, 100];
@@ -44,11 +56,23 @@ export default function MembersPage() {
     const [isSavingEdit, setIsSavingEdit] = useState(false);
 
     const isSubmitDisabled = useMemo(() => {
-        return !formData.membershipId.trim()
-            || !formData.name.trim()
-            || formData.mobileNumber.length !== 10
+        return !(formData.membershipId || "").trim()
+            || !(formData.name || "").trim()
+            || !(formData.surname || "").trim()
+            || !formData.dateOfJoining
+            || !formData.dateOfBirth
+            || !(formData.qualification || "").trim()
+            || !(formData.bloodGroup || "").trim()
+            || (formData.mobileNumber || "").length !== 10
+            || (formData.aadharNo || "").length !== 12
+            || (formData.nomineeAadharNo || "").length !== 12
+            || !(formData.panCardNo || "").trim()
+            || !(formData.nomineeName || "").trim()
+            || !(formData.nomineeRelation || "").trim()
+            || !(formData.permanentAddress || "").trim()
+            || !(formData.temporaryAddress || "").trim()
+            || !(formData.email || "").trim()
             || !formData.memberType
-            || (formData.memberType === "Associate Member" && !formData.validityYears)
             || Object.values(errors).some(Boolean);
     }, [errors, formData]);
 
@@ -90,20 +114,33 @@ export default function MembersPage() {
         switch (name) {
             case "membershipId":
             case "name":
+            case "surname":
+            case "dateOfJoining":
+            case "dateOfBirth":
+            case "qualification":
+            case "bloodGroup":
+            case "nomineeName":
+            case "nomineeRelation":
+            case "permanentAddress":
+            case "temporaryAddress":
             case "memberType":
                 return trimmedValue ? "" : "Field is required.";
-            case "validityYears":
-                if (formData.memberType !== "Associate Member") return "";
-                if (!trimmedValue) return "Field is required.";
-                if (!/^\d+$/.test(String(trimmedValue))) return "Validity years must be a number.";
-                if (Number(trimmedValue) < 1 || Number(trimmedValue) > 5) return "Validity years must be between 1 and 5.";
-                return "";
             case "mobileNumber":
                 if (!trimmedValue) return "Field is required.";
                 if (!/^\d{10}$/.test(trimmedValue)) return "Mobile number must be exactly 10 digits.";
                 return "";
+            case "aadharNo":
+            case "nomineeAadharNo":
+                if (!trimmedValue) return "Field is required.";
+                if (!/^\d{12}$/.test(trimmedValue)) return "Aadhar number must be exactly 12 digits.";
+                return "";
+            case "panCardNo":
+                if (!trimmedValue) return "Field is required.";
+                if (!/^[A-Za-z]{5}\d{4}[A-Za-z]{1}$/.test(trimmedValue)) return "Invalid PAN format.";
+                return "";
             case "email":
-                if (trimmedValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) return "Invalid email format.";
+                if (!trimmedValue) return "Field is required.";
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedValue)) return "Invalid email format.";
                 return "";
             default:
                 return "";
@@ -111,17 +148,10 @@ export default function MembersPage() {
     };
 
     const handleTextChange = (field, value) => {
-        setFormData((prev) => {
-            const nextData = { ...prev, [field]: value };
-            if (field === "memberType" && value !== "Associate Member") {
-                nextData.validityYears = "";
-            }
-            return nextData;
-        });
+        setFormData((prev) => ({ ...prev, [field]: value }));
         setErrors((prev) => ({
             ...prev,
             [field]: validateField(field, value),
-            ...(field === "memberType" && value !== "Associate Member" ? { validityYears: "" } : {}),
         }));
     };
 
@@ -134,10 +164,21 @@ export default function MembersPage() {
         const nextErrors = {
             membershipId: validateField("membershipId", formData.membershipId),
             name: validateField("name", formData.name),
+            surname: validateField("surname", formData.surname),
+            dateOfJoining: validateField("dateOfJoining", formData.dateOfJoining),
+            dateOfBirth: validateField("dateOfBirth", formData.dateOfBirth),
+            qualification: validateField("qualification", formData.qualification),
+            bloodGroup: validateField("bloodGroup", formData.bloodGroup),
             mobileNumber: validateField("mobileNumber", formData.mobileNumber),
-            memberType: validateField("memberType", formData.memberType),
             email: validateField("email", formData.email),
-            validityYears: validateField("validityYears", formData.validityYears),
+            aadharNo: validateField("aadharNo", formData.aadharNo),
+            panCardNo: validateField("panCardNo", formData.panCardNo),
+            nomineeName: validateField("nomineeName", formData.nomineeName),
+            nomineeRelation: validateField("nomineeRelation", formData.nomineeRelation),
+            nomineeAadharNo: validateField("nomineeAadharNo", formData.nomineeAadharNo),
+            permanentAddress: validateField("permanentAddress", formData.permanentAddress),
+            temporaryAddress: validateField("temporaryAddress", formData.temporaryAddress),
+            memberType: validateField("memberType", formData.memberType),
         };
 
         setErrors(nextErrors);
@@ -155,6 +196,13 @@ export default function MembersPage() {
         try {
             setIsSubmitting(true);
             
+            const isSelfNominee = formData.aadharNo && formData.nomineeAadharNo && formData.aadharNo === formData.nomineeAadharNo;
+            if (isSelfNominee) {
+                toast.error("Member Aadhar and Nominee Aadhar cannot be the same.");
+                setIsSubmitting(false);
+                return;
+            }
+
             const existingMember = savedMembers.find(m => m.membershipId && m.membershipId.toLowerCase() === formData.membershipId.toLowerCase().trim());
             if (existingMember) {
                 toast.error(`Membership ID ${formData.membershipId} already exists!`);
@@ -162,18 +210,53 @@ export default function MembersPage() {
                 return;
             }
 
+            const existingAadhar = savedMembers.find(m => m.aadharNo === formData.aadharNo);
+            if (existingAadhar) {
+                toast.error(`Aadhar Number is already registered to Member ID: ${existingAadhar.membershipId}`);
+                setIsSubmitting(false);
+                return;
+            }
+
+            const existingPan = savedMembers.find(m => m.panCardNo && m.panCardNo.toUpperCase() === formData.panCardNo.toUpperCase().trim());
+            if (existingPan) {
+                toast.error(`PAN Card Number is already registered to Member ID: ${existingPan.membershipId}`);
+                setIsSubmitting(false);
+                return;
+            }
+
+            const existingMobile = savedMembers.find(m => m.mobileNumber === formData.mobileNumber);
+            if (existingMobile) {
+                toast.error(`Mobile Number is already registered to Member ID: ${existingMobile.membershipId}`);
+                setIsSubmitting(false);
+                return;
+            }
+
             const docId = formData.membershipId.trim().toUpperCase();
             const memberRef = doc(db, 'members', docId);
             const createdAt = new Date();
-            const validityYears = formData.memberType === "Associate Member" ? Number(formData.validityYears) : null;
-            const validityExpiresAt = validityYears ? new Date(new Date(createdAt).setFullYear(createdAt.getFullYear() + validityYears)).toISOString() : null;
+            
+            const joiningDate = formData.dateOfJoining ? new Date(formData.dateOfJoining) : new Date();
+            const validityYears = formData.memberType === "Associate Member" ? 1 : null;
+            const validityExpiresAt = validityYears ? new Date(new Date(joiningDate).setFullYear(joiningDate.getFullYear() + validityYears)).toISOString() : null;
             
             await setDoc(memberRef, {
                 membershipId: docId,
-                name: formData.name.trim(),
-                mobileNumber: formData.mobileNumber,
-                memberType: formData.memberType,
-                email: formData.email.trim(),
+                name: (formData.name || "").trim(),
+                surname: (formData.surname || "").trim(),
+                dateOfJoining: formData.dateOfJoining || "",
+                dateOfBirth: formData.dateOfBirth || "",
+                qualification: (formData.qualification || "").trim(),
+                bloodGroup: (formData.bloodGroup || "").trim(),
+                mobileNumber: formData.mobileNumber || "",
+                email: (formData.email || "").trim(),
+                aadharNo: formData.aadharNo || "",
+                panCardNo: (formData.panCardNo || "").trim().toUpperCase(),
+                nomineeName: (formData.nomineeName || "").trim(),
+                nomineeRelation: (formData.nomineeRelation || "").trim(),
+                nomineeAadharNo: formData.nomineeAadharNo || "",
+                permanentAddress: (formData.permanentAddress || "").trim(),
+                temporaryAddress: (formData.temporaryAddress || "").trim(),
+                memberType: formData.memberType || "",
                 validityYears,
                 validityExpiresAt,
                 status: "Active",
@@ -261,8 +344,9 @@ export default function MembersPage() {
                 {activeTab === "normal" ? (
                     <form onSubmit={handleSubmit} className="border border-zinc-200 border-t-0 bg-white px-6 md:px-10 pt-6 md:pt-8 pb-7 md:pb-10 rounded-b-md shadow-sm">
                         <div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
-                                <div>
+                            <div className="mb-8 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">1. Membership Details</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
                                     <CustomInput
                                         label="Membership ID *"
                                         value={formData.membershipId}
@@ -270,17 +354,6 @@ export default function MembersPage() {
                                         placeholder="e.g. TCWA1234"
                                         error={errors.membershipId}
                                     />
-                                </div>
-                                <div>
-                                    <CustomInput
-                                        label="Member Name *"
-                                        value={formData.name}
-                                        onChange={(e) => handleTextChange("name", e.target.value)}
-                                        placeholder="Enter member's full name"
-                                        error={errors.name}
-                                    />
-                                </div>
-                                <div>
                                     <CustomSelect
                                         label="Member Type *"
                                         dropdownData={memberTypeOptions}
@@ -288,8 +361,60 @@ export default function MembersPage() {
                                         onChange={(value) => handleTextChange("memberType", value)}
                                         error={errors.memberType}
                                     />
+                                    <CustomInput
+                                        label="Date of Joining *"
+                                        type="date"
+                                        value={formData.dateOfJoining}
+                                        onChange={(e) => handleTextChange("dateOfJoining", e.target.value)}
+                                        error={errors.dateOfJoining}
+                                    />
                                 </div>
-                                <div>
+                            </div>
+
+                            <div className="mb-8 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">2. Personal Details</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
+                                    <CustomInput
+                                        label="Full Name *"
+                                        value={formData.name}
+                                        onChange={(e) => handleTextChange("name", e.target.value)}
+                                        placeholder="Enter member's full name"
+                                        error={errors.name}
+                                    />
+                                    <CustomInput
+                                        label="Surname *"
+                                        value={formData.surname}
+                                        onChange={(e) => handleTextChange("surname", e.target.value)}
+                                        placeholder="Enter surname"
+                                        error={errors.surname}
+                                    />
+                                    <CustomInput
+                                        label="Date of Birth *"
+                                        type="date"
+                                        value={formData.dateOfBirth}
+                                        onChange={(e) => handleTextChange("dateOfBirth", e.target.value)}
+                                        error={errors.dateOfBirth}
+                                    />
+                                    <CustomInput
+                                        label="Qualification *"
+                                        value={formData.qualification}
+                                        onChange={(e) => handleTextChange("qualification", e.target.value)}
+                                        placeholder="Enter qualification"
+                                        error={errors.qualification}
+                                    />
+                                    <CustomInput
+                                        label="Blood Group *"
+                                        value={formData.bloodGroup}
+                                        onChange={(e) => handleTextChange("bloodGroup", e.target.value)}
+                                        placeholder="e.g. O+"
+                                        error={errors.bloodGroup}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-8 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">3. Contact & Identity</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
                                     <CustomInput
                                         label="Mobile Number *"
                                         value={formData.mobileNumber}
@@ -297,30 +422,73 @@ export default function MembersPage() {
                                         placeholder="Enter 10-digit mobile number"
                                         error={errors.mobileNumber}
                                     />
-                                </div>
-                                <div>
                                     <CustomInput
-                                        label="Email Address (Optional)"
+                                        label="Email Address *"
                                         value={formData.email}
                                         onChange={(e) => handleTextChange("email", e.target.value)}
                                         placeholder="Enter email address"
                                         error={errors.email}
                                     />
-                                </div>
-                                {formData.memberType === "Associate Member" && (
-                                    <div>
-                                        <CustomInput
-                                            label="Validity Years *"
-                                            type="number"
-                                            min="1"
-                                            max="5"
-                                            value={formData.validityYears}
-                                            onChange={(e) => handleNumberChange("validityYears", e.target.value, 1)}
-                                            placeholder="Enter 1 to 5 years"
-                                            error={errors.validityYears}
+                                    <CustomInput
+                                        label="Aadhar Number *"
+                                        value={formData.aadharNo}
+                                        onChange={(e) => handleNumberChange("aadharNo", e.target.value, 12)}
+                                        placeholder="Enter 12-digit Aadhar"
+                                        error={errors.aadharNo}
+                                    />
+                                    <CustomInput
+                                        label="PAN Card Number *"
+                                        value={formData.panCardNo}
+                                        onChange={(e) => handleTextChange("panCardNo", e.target.value.toUpperCase())}
+                                        placeholder="Enter PAN number"
+                                        error={errors.panCardNo}
+                                    />
+                                    <div className="col-span-1 md:col-span-2 xl:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 pt-3">
+                                        <CustomTextArea
+                                            label="Permanent Address *"
+                                            value={formData.permanentAddress}
+                                            onChange={(e) => handleTextChange("permanentAddress", e.target.value)}
+                                            placeholder="Enter complete permanent address"
+                                            error={errors.permanentAddress}
+                                            rows={3}
+                                        />
+                                        <CustomTextArea
+                                            label="Temporary Address *"
+                                            value={formData.temporaryAddress}
+                                            onChange={(e) => handleTextChange("temporaryAddress", e.target.value)}
+                                            placeholder="Enter temporary/present address"
+                                            error={errors.temporaryAddress}
+                                            rows={3}
                                         />
                                     </div>
-                                )}
+                                </div>
+                            </div>
+
+                            <div className="mb-2 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">4. Nominee Details</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
+                                    <CustomInput
+                                        label="Nominee Name *"
+                                        value={formData.nomineeName}
+                                        onChange={(e) => handleTextChange("nomineeName", e.target.value)}
+                                        placeholder="Enter nominee name"
+                                        error={errors.nomineeName}
+                                    />
+                                    <CustomInput
+                                        label="Relation with Nominee *"
+                                        value={formData.nomineeRelation}
+                                        onChange={(e) => handleTextChange("nomineeRelation", e.target.value)}
+                                        placeholder="e.g. Wife, Son"
+                                        error={errors.nomineeRelation}
+                                    />
+                                    <CustomInput
+                                        label="Nominee Aadhar Number *"
+                                        value={formData.nomineeAadharNo}
+                                        onChange={(e) => handleNumberChange("nomineeAadharNo", e.target.value, 12)}
+                                        placeholder="Enter 12-digit Aadhar"
+                                        error={errors.nomineeAadharNo}
+                                    />
+                                </div>
                             </div>
 
                             <div className="flex justify-end mt-8 border-t border-gray-100 pt-5">
