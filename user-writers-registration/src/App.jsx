@@ -69,17 +69,21 @@ export default function App() {
       import('firebase/firestore').then(({ doc, onSnapshot }) => {
         import('./firebase').then(({ db }) => {
           if (member.membershipId) {
-            const unsubDb = onSnapshot(doc(db, 'members', member.membershipId), (docSnap) => {
-              if (!docSnap.exists()) {
-                console.warn("Member deleted from database. Forcing logout.");
+            const unsubDb = onSnapshot(doc(db, 'members', member.membershipId), 
+              (docSnap) => {
+                if (!docSnap.exists()) {
+                  console.warn("Member deleted from database. Forcing logout.");
+                  handleLogout();
+                }
+              },
+              (error) => {
+                console.error("Firestore permission/access error. Forcing logout to be safe.", error);
                 handleLogout();
               }
-            });
-            // We can't easily return unsubDb here because of the async imports, 
-            // but for a top-level component that rarely unmounts it's acceptable.
+            );
           }
-        });
-      });
+        }).catch(err => console.error("Failed to load firebase", err));
+      }).catch(err => console.error("Failed to load firestore", err));
       
     } else {
       localStorage.removeItem('tcwa_member');

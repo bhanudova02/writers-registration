@@ -95,13 +95,20 @@ function App() {
           }
 
           // Real-time security listener: Auto-logout if admin is revoked or deleted
-          unsubscribeSnapshot = onSnapshot(doc(db, 'admins', email), (docSnap) => {
-            if (!docSnap.exists() || docSnap.data()?.active !== true) {
-              console.warn("Admin access revoked in real-time. Logging out...");
+          unsubscribeSnapshot = onSnapshot(doc(db, 'admins', email), 
+            (docSnap) => {
+              if (!docSnap.exists() || docSnap.data()?.active !== true) {
+                console.warn("Admin access revoked in real-time. Logging out...");
+                auth.signOut();
+                setUser(null);
+              }
+            },
+            (error) => {
+              console.error("Admin DB listener error:", error);
               auth.signOut();
               setUser(null);
             }
-          });
+          );
         }
       } else {
         await auth.signOut();
