@@ -47,6 +47,12 @@ export default function AdminLoginPage({ onLogin }) {
       let msg = loginError.message || 'Google login failed.'
       if (msg.includes('Missing or insufficient permissions') || msg.includes('permission-denied')) {
         msg = 'The email you used is not authorized to access the admin dashboard.'
+      } else if (msg.includes('auth/popup-blocked')) {
+        msg = 'Login popup was blocked by your browser. Please allow popups for this site and try again.'
+      } else if (msg.includes('auth/popup-closed-by-user')) {
+        msg = 'Login was cancelled. Please complete the Google sign-in process to continue.'
+      } else if (msg.includes('auth/cancelled-popup-request')) {
+        msg = 'Another login request is already pending. Please close it and try again.'
       }
       
       setErrorMessage(msg)
