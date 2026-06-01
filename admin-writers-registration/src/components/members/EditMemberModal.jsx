@@ -7,6 +7,8 @@ import CustomButton from '../custom/CustomButton';
 
 export default function EditMemberModal({ isOpen, onClose, member, onSave, loading }) {
     const [formData, setFormData] = useState({
+        memberType: "",
+        dateOfJoining: "",
         name: "",
         surname: "",
         dateOfBirth: "",
@@ -37,6 +39,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     useEffect(() => {
         if (member) {
             setFormData({
+                memberType: member.memberType || "",
+                dateOfJoining: member.dateOfJoining || "",
                 name: member.name || "",
                 surname: member.surname || "",
                 dateOfBirth: member.dateOfBirth || "",
@@ -68,6 +72,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     const validateField = (fieldName, value) => {
         const trimmedValue = typeof value === 'string' ? value.trim() : value;
         switch (fieldName) {
+            case "memberType":
+            case "dateOfJoining":
             case "name":
             case "surname":
             case "dateOfBirth":
@@ -145,6 +151,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
         }
 
         onSave(member.membershipId, {
+            memberType: formData.memberType,
+            dateOfJoining: formData.dateOfJoining,
             name: formData.name.trim(),
             surname: formData.surname.trim(),
             dateOfBirth: formData.dateOfBirth,
@@ -172,7 +180,9 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     };
 
     const isSubmitDisabled = useMemo(() => {
-        return !(formData.name || "").trim()
+        return !formData.memberType
+            || !formData.dateOfJoining
+            || !(formData.name || "").trim()
             || !(formData.surname || "").trim()
             || !formData.dateOfBirth
             || !(formData.qualification || "").trim()
@@ -194,137 +204,93 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Edit Member: ${member?.membershipId}`} widthClass="md:max-w-4xl">
             <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <CustomInput
-                            label="Full Name *"
-                            value={formData.name}
-                            onChange={(e) => handleTextChange("name", e.target.value)}
-                            error={errors.name}
-                        />
-                        <CustomInput
-                            label="Surname *"
-                            value={formData.surname}
-                            onChange={(e) => handleTextChange("surname", e.target.value)}
-                            error={errors.surname}
-                        />
-                        <CustomInput
-                            label="Date of Birth (dd/mm/yyyy) *"
-                            type="date"
-                            value={formData.dateOfBirth}
-                            onChange={(e) => handleTextChange("dateOfBirth", e.target.value)}
-                            error={errors.dateOfBirth}
-                        />
-                        <CustomInput
-                            label="Qualification *"
-                            value={formData.qualification}
-                            onChange={(e) => handleTextChange("qualification", e.target.value)}
-                            error={errors.qualification}
-                        />
-                        <CustomInput
-                            label="Blood Group *"
-                            value={formData.bloodGroup}
-                            onChange={(e) => handleTextChange("bloodGroup", e.target.value)}
-                            error={errors.bloodGroup}
-                        />
-                    </div>
-
+                
+                {/* 1. Personal Details */}
+                <div className="mb-2 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                    <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">1. Personal Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CustomInput
-                            label="Mobile Number *"
-                            value={formData.mobileNumber}
-                            onChange={(e) => handleNumberChange("mobileNumber", e.target.value, 10)}
-                            error={errors.mobileNumber}
-                        />
-                        <CustomInput
-                            label="Email Address *"
-                            value={formData.email}
-                            onChange={(e) => handleTextChange("email", e.target.value)}
-                            error={errors.email}
-                        />
-                        <CustomInput
-                            label="Aadhar Number *"
-                            value={formData.aadharNo}
-                            onChange={(e) => handleNumberChange("aadharNo", e.target.value, 12)}
-                            error={errors.aadharNo}
-                        />
-                        <CustomInput
-                            label="PAN Card Number *"
-                            value={formData.panCardNo}
-                            onChange={(e) => handleTextChange("panCardNo", e.target.value.toUpperCase())}
-                            error={errors.panCardNo}
-                        />
+                        <CustomInput label="Full Name *" value={formData.name} onChange={(e) => handleTextChange("name", e.target.value)} error={errors.name} />
+                        <CustomInput label="Surname *" value={formData.surname} onChange={(e) => handleTextChange("surname", e.target.value)} error={errors.surname} />
+                        <CustomInput label="Date of Birth (dd/mm/yyyy) *" type="date" value={formData.dateOfBirth} onChange={(e) => handleTextChange("dateOfBirth", e.target.value)} error={errors.dateOfBirth} />
+                        <CustomInput label="Qualification *" value={formData.qualification} onChange={(e) => handleTextChange("qualification", e.target.value)} error={errors.qualification} />
+                        <CustomInput label="Blood Group *" value={formData.bloodGroup} onChange={(e) => handleTextChange("bloodGroup", e.target.value)} error={errors.bloodGroup} />
+                    </div>
+                </div>
+
+                {/* 2. Contact & Identity */}
+                <div className="mb-2 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                    <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">2. Contact & Identity</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CustomInput label="Mobile Number *" value={formData.mobileNumber} onChange={(e) => handleNumberChange("mobileNumber", e.target.value, 10)} error={errors.mobileNumber} />
+                        <CustomInput label="Alternate Mobile Number (Optional)" value={formData.alternateMobileNumber} onChange={(e) => handleNumberChange("alternateMobileNumber", e.target.value, 10)} error={errors.alternateMobileNumber} />
+                        <CustomInput label="Email Address *" value={formData.email} onChange={(e) => handleTextChange("email", e.target.value)} error={errors.email} />
+                        <CustomInput label="Aadhar Number *" value={formData.aadharNo} onChange={(e) => handleNumberChange("aadharNo", e.target.value, 12)} error={errors.aadharNo} />
+                        <CustomInput label="PAN Card Number *" value={formData.panCardNo} onChange={(e) => handleTextChange("panCardNo", e.target.value.toUpperCase())} error={errors.panCardNo} />
                         <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <CustomTextArea
-                                label="Permanent Address *"
-                                value={formData.permanentAddress}
-                                onChange={(e) => handleTextChange("permanentAddress", e.target.value)}
-                                error={errors.permanentAddress}
-                                rows={2}
-                            />
-                            <CustomTextArea
-                                label="Temporary Address (Optional)"
-                                value={formData.temporaryAddress}
-                                onChange={(e) => handleTextChange("temporaryAddress", e.target.value)}
-                                error={errors.temporaryAddress}
-                                rows={2}
-                            />
+                            <CustomTextArea label="Permanent Address *" value={formData.permanentAddress} onChange={(e) => handleTextChange("permanentAddress", e.target.value)} error={errors.permanentAddress} rows={2} />
+                            <CustomTextArea label="Temporary Address (Optional)" value={formData.temporaryAddress} onChange={(e) => handleTextChange("temporaryAddress", e.target.value)} error={errors.temporaryAddress} rows={2} />
                         </div>
                     </div>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CustomInput
-                            label="Nominee Name *"
-                            value={formData.nomineeName}
-                            onChange={(e) => handleTextChange("nomineeName", e.target.value)}
-                            error={errors.nomineeName}
+                {/* 3. Membership Details */}
+                <div className="mb-2 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                    <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">3. Membership Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <CustomSelect
+                            label="Member Type *"
+                            dropdownData={[
+                                { value: "", label: "Select Member Type" },
+                                { value: "Life Time Member", label: "Life Time Member" },
+                                { value: "Associate Member", label: "Associate Member" },
+                            ]}
+                            value={formData.memberType}
+                            onChange={(value) => handleTextChange("memberType", value)}
+                            error={errors.memberType}
                         />
                         <CustomInput
-                            label="Relation with Nominee *"
-                            value={formData.nomineeRelation}
-                            onChange={(e) => handleTextChange("nomineeRelation", e.target.value)}
-                            error={errors.nomineeRelation}
-                        />
-                        <CustomInput
-                            label="Nominee Aadhar Number *"
-                            value={formData.nomineeAadharNo}
-                            onChange={(e) => handleNumberChange("nomineeAadharNo", e.target.value, 12)}
-                            error={errors.nomineeAadharNo}
+                            label="Date of Joining *"
+                            type="date"
+                            value={formData.dateOfJoining}
+                            onChange={(e) => handleTextChange("dateOfJoining", e.target.value)}
+                            error={errors.dateOfJoining}
                         />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CustomInput
-                            label="Alternate Mobile Number (Optional)"
-                            value={formData.alternateMobileNumber}
-                            onChange={(e) => handleNumberChange("alternateMobileNumber", e.target.value, 10)}
-                            error={errors.alternateMobileNumber}
-                        />
-                        <CustomInput
-                            label="Title Card Movie Details"
-                            value={formData.titleCardMovieDetails}
-                            onChange={(e) => handleTextChange("titleCardMovieDetails", e.target.value)}
-                        />
-                    </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
                         <CustomInput label="Joining Fee Amount" value={formData.joiningFeeAmount} onChange={(e) => handleTextChange("joiningFeeAmount", e.target.value)} />
                         <CustomInput label="Joining Fee Receipt No" value={formData.joiningFeeReceiptNo} onChange={(e) => handleTextChange("joiningFeeReceiptNo", e.target.value)} />
                         <CustomInput label="Joining Fee DD/Bank" value={formData.joiningFeeDDNoBank} onChange={(e) => handleTextChange("joiningFeeDDNoBank", e.target.value)} />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
+                    <div className="grid grid-cols-1 mt-4">
+                        <CustomInput label="Title Card Movie Details" value={formData.titleCardMovieDetails} onChange={(e) => handleTextChange("titleCardMovieDetails", e.target.value)} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-4">
                         <CustomInput label="AM to LM Fee Amount" value={formData.amToLmFeeAmount} onChange={(e) => handleTextChange("amToLmFeeAmount", e.target.value)} />
                         <CustomInput label="AM to LM Receipt No" value={formData.amToLmFeeReceiptNo} onChange={(e) => handleTextChange("amToLmFeeReceiptNo", e.target.value)} />
                         <CustomInput label="AM to LM DD/Bank" value={formData.amToLmFeeDDNoBank} onChange={(e) => handleTextChange("amToLmFeeDDNoBank", e.target.value)} />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                         <CustomInput
                             label="Change to Life Member Date"
                             type="date"
                             value={formData.changeToLifeMemberDate}
                             onChange={(e) => handleTextChange("changeToLifeMemberDate", e.target.value)}
                         />
+                    </div>
+                </div>
+
+                {/* 4. Nominee Details */}
+                <div className="mb-2 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                    <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">4. Nominee Details</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CustomInput label="Nominee Name *" value={formData.nomineeName} onChange={(e) => handleTextChange("nomineeName", e.target.value)} error={errors.nomineeName} />
+                        <CustomInput label="Relation with Nominee *" value={formData.nomineeRelation} onChange={(e) => handleTextChange("nomineeRelation", e.target.value)} error={errors.nomineeRelation} />
+                        <CustomInput label="Nominee Aadhar Number *" value={formData.nomineeAadharNo} onChange={(e) => handleNumberChange("nomineeAadharNo", e.target.value, 12)} error={errors.nomineeAadharNo} />
+                    </div>
                 </div>
             </div>
 

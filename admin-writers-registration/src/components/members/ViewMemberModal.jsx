@@ -25,8 +25,8 @@ export default function ViewMemberModal({ isOpen, onClose, member }) {
                 </div>
                 
                 <div className="p-5 overflow-y-auto max-h-[70vh]">
-                    {/* Basic Info */}
-                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">Basic Information</h4>
+                    {/* 1. Personal Details */}
+                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">1. Personal Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm font-medium text-zinc-700 mb-6">
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">First Name:</span> 
@@ -35,14 +35,6 @@ export default function ViewMemberModal({ isOpen, onClose, member }) {
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Surname:</span> 
                             <span className="font-bold text-zinc-900 text-right">{member.surname || "N/A"}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Member Type:</span> 
-                            <span className="font-bold text-zinc-900 text-right">{member.memberType || "N/A"}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Date of Joining:</span> 
-                            <span className="font-bold text-zinc-900 text-right">{formatDate(member.dateOfJoining)}</span>
                         </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Date of Birth:</span> 
@@ -56,17 +48,54 @@ export default function ViewMemberModal({ isOpen, onClose, member }) {
                             <span className="text-zinc-500">Blood Group:</span> 
                             <span className="font-bold text-zinc-900 text-right">{member.bloodGroup || "N/A"}</span>
                         </div>
+                    </div>
+
+                    {/* 2. Contact & Identity */}
+                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">2. Contact & Identity</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm font-medium text-zinc-700 mb-4">
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Added On:</span> 
-                            <span className="font-bold text-zinc-900 text-right">
-                                {member.createdAt ? new Date(member.createdAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : "N/A"}
-                            </span>
+                            <span className="text-zinc-500">Mobile Number:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.mobileNumber || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Alternate Mobile:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.alternateMobileNumber || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1 md:col-span-2">
+                            <span className="text-zinc-500">Email:</span> 
+                            <span className="font-bold text-zinc-900 text-right truncate ml-2" title={member.email}>{member.email || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Aadhar No:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.aadharNo || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">PAN Card No:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.panCardNo || "N/A"}</span>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 gap-y-3 text-sm font-medium text-zinc-700 mb-6">
+                        <div className="flex flex-col border-b border-zinc-100 pb-2">
+                            <span className="text-zinc-500 mb-1">Permanent Address:</span> 
+                            <span className="font-bold text-zinc-900">{member.permanentAddress || "N/A"}</span>
+                        </div>
+                        <div className="flex flex-col border-b border-zinc-100 pb-2">
+                            <span className="text-zinc-500 mb-1">Temporary Address:</span> 
+                            <span className="font-bold text-zinc-900">{member.temporaryAddress || "N/A"}</span>
                         </div>
                     </div>
 
-                    {/* Fees & Additional Details */}
-                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">Fees & Additional Details</h4>
+                    {/* 3. Membership Details */}
+                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">3. Membership Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm font-medium text-zinc-700 mb-6">
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Member Type:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.memberType || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Date of Joining:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{formatDate(member.dateOfJoining)}</span>
+                        </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Joining Fee:</span> 
                             <span className="font-bold text-zinc-900 text-right">{member.joiningFeeAmount || "N/A"}</span>
@@ -99,48 +128,16 @@ export default function ViewMemberModal({ isOpen, onClose, member }) {
                             <span className="text-zinc-500">Change to LM Date:</span> 
                             <span className="font-bold text-zinc-900 text-right">{formatDate(member.changeToLifeMemberDate)}</span>
                         </div>
-                    </div>
-
-                    {/* Contact & Identity */}
-                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">Contact & Identity</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm font-medium text-zinc-700 mb-6">
-                        <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Mobile Number:</span> 
-                            <span className="font-bold text-zinc-900 text-right">{member.mobileNumber || "N/A"}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Alternate Mobile:</span> 
-                            <span className="font-bold text-zinc-900 text-right">{member.alternateMobileNumber || "N/A"}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Email:</span> 
-                            <span className="font-bold text-zinc-900 text-right truncate ml-2" title={member.email}>{member.email || "N/A"}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Aadhar No:</span> 
-                            <span className="font-bold text-zinc-900 text-right">{member.aadharNo || "N/A"}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">PAN Card No:</span> 
-                            <span className="font-bold text-zinc-900 text-right">{member.panCardNo || "N/A"}</span>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1 md:col-span-2">
+                            <span className="text-zinc-500">Added On:</span> 
+                            <span className="font-bold text-zinc-900 text-right">
+                                {member.createdAt ? new Date(member.createdAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : "N/A"}
+                            </span>
                         </div>
                     </div>
 
-                    {/* Addresses */}
-                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">Addresses</h4>
-                    <div className="grid grid-cols-1 gap-y-3 text-sm font-medium text-zinc-700 mb-6">
-                        <div className="flex flex-col border-b border-zinc-100 pb-2">
-                            <span className="text-zinc-500 mb-1">Temporary Address:</span> 
-                            <span className="font-bold text-zinc-900">{member.temporaryAddress || "N/A"}</span>
-                        </div>
-                        <div className="flex flex-col border-b border-zinc-100 pb-2">
-                            <span className="text-zinc-500 mb-1">Permanent Address:</span> 
-                            <span className="font-bold text-zinc-900">{member.permanentAddress || "N/A"}</span>
-                        </div>
-                    </div>
-
-                    {/* Nominee Details */}
-                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">Nominee Details</h4>
+                    {/* 4. Nominee Details */}
+                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">4. Nominee Details</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm font-medium text-zinc-700 mb-2">
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Nominee Name:</span> 
@@ -151,7 +148,7 @@ export default function ViewMemberModal({ isOpen, onClose, member }) {
                             <span className="font-bold text-zinc-900 text-right">{member.nomineeRelation || "N/A"}</span>
                         </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Nominee Aadhar:</span> 
+                            <span className="text-zinc-500">Aadhar No:</span> 
                             <span className="font-bold text-zinc-900 text-right">{member.nomineeAadharNo || "N/A"}</span>
                         </div>
                     </div>

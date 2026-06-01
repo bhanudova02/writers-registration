@@ -406,7 +406,107 @@ export default function MembersPage() {
                     <form onSubmit={handleSubmit} className="border border-zinc-200 border-t-0 bg-white px-6 md:px-10 pt-6 md:pt-8 pb-7 md:pb-10 rounded-b-md shadow-sm">
                         <div>
                             <div className="mb-8 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
-                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">1. Membership Details</h3>
+                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">1. Personal Details</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
+                                    <CustomInput
+                                        label="Full Name *"
+                                        value={formData.name}
+                                        onChange={(e) => handleTextChange("name", e.target.value)}
+                                        placeholder="Enter member's full name"
+                                        error={errors.name}
+                                    />
+                                    <CustomInput
+                                        label="Surname *"
+                                        value={formData.surname}
+                                        onChange={(e) => handleTextChange("surname", e.target.value)}
+                                        placeholder="Enter surname"
+                                        error={errors.surname}
+                                    />
+                                    <CustomInput
+                                        label="Date of Birth (dd/mm/yyyy) *"
+                                        type="date"
+                                        value={formData.dateOfBirth}
+                                        onChange={(e) => handleTextChange("dateOfBirth", e.target.value)}
+                                        error={errors.dateOfBirth}
+                                    />
+                                    <CustomInput
+                                        label="Qualification *"
+                                        value={formData.qualification}
+                                        onChange={(e) => handleTextChange("qualification", e.target.value)}
+                                        placeholder="Enter qualification"
+                                        error={errors.qualification}
+                                    />
+                                    <CustomInput
+                                        label="Blood Group *"
+                                        value={formData.bloodGroup}
+                                        onChange={(e) => handleTextChange("bloodGroup", e.target.value)}
+                                        placeholder="e.g. O+"
+                                        error={errors.bloodGroup}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mb-8 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">2. Contact & Identity</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
+                                    <CustomInput
+                                        label="Mobile Number *"
+                                        value={formData.mobileNumber}
+                                        onChange={(e) => handleNumberChange("mobileNumber", e.target.value, 10)}
+                                        placeholder="Enter 10-digit mobile number"
+                                        error={errors.mobileNumber}
+                                    />
+                                    <CustomInput
+                                        label="Alternate Mobile Number"
+                                        value={formData.alternateMobileNumber}
+                                        onChange={(e) => handleNumberChange("alternateMobileNumber", e.target.value, 10)}
+                                        placeholder="Enter 10-digit number"
+                                        error={errors.alternateMobileNumber}
+                                    />
+                                    <CustomInput
+                                        label="Email Address *"
+                                        value={formData.email}
+                                        onChange={(e) => handleTextChange("email", e.target.value)}
+                                        placeholder="Enter email address"
+                                        error={errors.email}
+                                    />
+                                    <CustomInput
+                                        label="Aadhar Number *"
+                                        value={formData.aadharNo}
+                                        onChange={(e) => handleNumberChange("aadharNo", e.target.value, 12)}
+                                        placeholder="Enter 12-digit Aadhar"
+                                        error={errors.aadharNo}
+                                    />
+                                    <CustomInput
+                                        label="PAN Card Number *"
+                                        value={formData.panCardNo}
+                                        onChange={(e) => handleTextChange("panCardNo", e.target.value.toUpperCase())}
+                                        placeholder="Enter PAN number"
+                                        error={errors.panCardNo}
+                                    />
+                                    <div className="col-span-1 md:col-span-2 xl:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 pt-3">
+                                        <CustomTextArea
+                                            label="Permanent Address *"
+                                            value={formData.permanentAddress}
+                                            onChange={(e) => handleTextChange("permanentAddress", e.target.value)}
+                                            placeholder="Enter complete permanent address"
+                                            error={errors.permanentAddress}
+                                            rows={3}
+                                        />
+                                        <CustomTextArea
+                                            label="Temporary Address (Optional)"
+                                            value={formData.temporaryAddress}
+                                            onChange={(e) => handleTextChange("temporaryAddress", e.target.value)}
+                                            placeholder="Enter temporary/present address"
+                                            error={errors.temporaryAddress}
+                                            rows={3}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mb-8 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
+                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">3. Membership Details</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
                                     <CustomInput
                                         label="Membership ID *"
@@ -477,106 +577,6 @@ export default function MembersPage() {
                                         value={formData.changeToLifeMemberDate}
                                         onChange={(e) => handleTextChange("changeToLifeMemberDate", e.target.value)}
                                     />
-                                </div>
-                            </div>
-
-                            <div className="mb-8 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
-                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">2. Personal Details</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
-                                    <CustomInput
-                                        label="Full Name *"
-                                        value={formData.name}
-                                        onChange={(e) => handleTextChange("name", e.target.value)}
-                                        placeholder="Enter member's full name"
-                                        error={errors.name}
-                                    />
-                                    <CustomInput
-                                        label="Surname *"
-                                        value={formData.surname}
-                                        onChange={(e) => handleTextChange("surname", e.target.value)}
-                                        placeholder="Enter surname"
-                                        error={errors.surname}
-                                    />
-                                    <CustomInput
-                                        label="Date of Birth (dd/mm/yyyy) *"
-                                        type="date"
-                                        value={formData.dateOfBirth}
-                                        onChange={(e) => handleTextChange("dateOfBirth", e.target.value)}
-                                        error={errors.dateOfBirth}
-                                    />
-                                    <CustomInput
-                                        label="Qualification *"
-                                        value={formData.qualification}
-                                        onChange={(e) => handleTextChange("qualification", e.target.value)}
-                                        placeholder="Enter qualification"
-                                        error={errors.qualification}
-                                    />
-                                    <CustomInput
-                                        label="Blood Group *"
-                                        value={formData.bloodGroup}
-                                        onChange={(e) => handleTextChange("bloodGroup", e.target.value)}
-                                        placeholder="e.g. O+"
-                                        error={errors.bloodGroup}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="mb-8 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
-                                <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">3. Contact & Identity</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-5">
-                                    <CustomInput
-                                        label="Mobile Number *"
-                                        value={formData.mobileNumber}
-                                        onChange={(e) => handleNumberChange("mobileNumber", e.target.value, 10)}
-                                        placeholder="Enter 10-digit mobile number"
-                                        error={errors.mobileNumber}
-                                    />
-                                    <CustomInput
-                                        label="Alternate Mobile Number"
-                                        value={formData.alternateMobileNumber}
-                                        onChange={(e) => handleNumberChange("alternateMobileNumber", e.target.value, 10)}
-                                        placeholder="Enter 10-digit number"
-                                        error={errors.alternateMobileNumber}
-                                    />
-                                    <CustomInput
-                                        label="Email Address *"
-                                        value={formData.email}
-                                        onChange={(e) => handleTextChange("email", e.target.value)}
-                                        placeholder="Enter email address"
-                                        error={errors.email}
-                                    />
-                                    <CustomInput
-                                        label="Aadhar Number *"
-                                        value={formData.aadharNo}
-                                        onChange={(e) => handleNumberChange("aadharNo", e.target.value, 12)}
-                                        placeholder="Enter 12-digit Aadhar"
-                                        error={errors.aadharNo}
-                                    />
-                                    <CustomInput
-                                        label="PAN Card Number *"
-                                        value={formData.panCardNo}
-                                        onChange={(e) => handleTextChange("panCardNo", e.target.value.toUpperCase())}
-                                        placeholder="Enter PAN number"
-                                        error={errors.panCardNo}
-                                    />
-                                    <div className="col-span-1 md:col-span-2 xl:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 pt-3">
-                                        <CustomTextArea
-                                            label="Permanent Address *"
-                                            value={formData.permanentAddress}
-                                            onChange={(e) => handleTextChange("permanentAddress", e.target.value)}
-                                            placeholder="Enter complete permanent address"
-                                            error={errors.permanentAddress}
-                                            rows={3}
-                                        />
-                                        <CustomTextArea
-                                            label="Temporary Address (Optional)"
-                                            value={formData.temporaryAddress}
-                                            onChange={(e) => handleTextChange("temporaryAddress", e.target.value)}
-                                            placeholder="Enter temporary/present address"
-                                            error={errors.temporaryAddress}
-                                            rows={3}
-                                        />
-                                    </div>
                                 </div>
                             </div>
 
