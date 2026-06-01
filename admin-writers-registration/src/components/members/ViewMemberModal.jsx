@@ -4,6 +4,13 @@ import { FiXCircle } from "react-icons/fi";
 export default function ViewMemberModal({ isOpen, onClose, member }) {
     if (!isOpen || !member) return null;
 
+    const formatDate = (dateString) => {
+        if (!dateString) return "N/A";
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return dateString;
+        return date.toLocaleDateString("en-GB"); // dd/MM/yyyy
+    };
+
     return (
         <div className="fixed inset-0 z-[60] bg-black/60 px-4 py-8 overflow-y-auto flex items-start justify-center">
             <div className="w-full max-w-2xl rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto shrink-0">
@@ -35,11 +42,11 @@ export default function ViewMemberModal({ isOpen, onClose, member }) {
                         </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Date of Joining:</span> 
-                            <span className="font-bold text-zinc-900 text-right">{member.dateOfJoining || "N/A"}</span>
+                            <span className="font-bold text-zinc-900 text-right">{formatDate(member.dateOfJoining)}</span>
                         </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Date of Birth:</span> 
-                            <span className="font-bold text-zinc-900 text-right">{member.dateOfBirth || "N/A"}</span>
+                            <span className="font-bold text-zinc-900 text-right">{formatDate(member.dateOfBirth)}</span>
                         </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Qualification:</span> 
@@ -57,12 +64,53 @@ export default function ViewMemberModal({ isOpen, onClose, member }) {
                         </div>
                     </div>
 
+                    {/* Fees & Additional Details */}
+                    <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">Fees & Additional Details</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm font-medium text-zinc-700 mb-6">
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Joining Fee:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.joiningFeeAmount || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Receipt No (Joining):</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.joiningFeeReceiptNo || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">DD/Bank (Joining):</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.joiningFeeDDNoBank || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Title Card Movie:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.titleCardMovieDetails || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">AM to LM Fee:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.amToLmFeeAmount || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Receipt No (AM to LM):</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.amToLmFeeReceiptNo || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">DD/Bank (AM to LM):</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.amToLmFeeDDNoBank || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Change to LM Date:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{formatDate(member.changeToLifeMemberDate)}</span>
+                        </div>
+                    </div>
+
                     {/* Contact & Identity */}
                     <h4 className="text-[13px] font-black text-zinc-800 mb-3 uppercase tracking-wide border-b border-zinc-200 pb-1">Contact & Identity</h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2 text-sm font-medium text-zinc-700 mb-6">
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Mobile Number:</span> 
                             <span className="font-bold text-zinc-900 text-right">{member.mobileNumber || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between border-b border-zinc-100 pb-1">
+                            <span className="text-zinc-500">Alternate Mobile:</span> 
+                            <span className="font-bold text-zinc-900 text-right">{member.alternateMobileNumber || "N/A"}</span>
                         </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
                             <span className="text-zinc-500">Email:</span> 

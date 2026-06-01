@@ -20,7 +20,16 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
         nomineeRelation: "",
         nomineeAadharNo: "",
         permanentAddress: "",
-        temporaryAddress: ""
+        temporaryAddress: "",
+        joiningFeeAmount: "",
+        joiningFeeReceiptNo: "",
+        joiningFeeDDNoBank: "",
+        titleCardMovieDetails: "",
+        amToLmFeeAmount: "",
+        amToLmFeeReceiptNo: "",
+        amToLmFeeDDNoBank: "",
+        changeToLifeMemberDate: "",
+        alternateMobileNumber: ""
     });
 
     const [errors, setErrors] = useState({});
@@ -41,7 +50,16 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                 nomineeRelation: member.nomineeRelation || "",
                 nomineeAadharNo: member.nomineeAadharNo || "",
                 permanentAddress: member.permanentAddress || "",
-                temporaryAddress: member.temporaryAddress || ""
+                temporaryAddress: member.temporaryAddress || "",
+                joiningFeeAmount: member.joiningFeeAmount || "",
+                joiningFeeReceiptNo: member.joiningFeeReceiptNo || "",
+                joiningFeeDDNoBank: member.joiningFeeDDNoBank || "",
+                titleCardMovieDetails: member.titleCardMovieDetails || "",
+                amToLmFeeAmount: member.amToLmFeeAmount || "",
+                amToLmFeeReceiptNo: member.amToLmFeeReceiptNo || "",
+                amToLmFeeDDNoBank: member.amToLmFeeDDNoBank || "",
+                changeToLifeMemberDate: member.changeToLifeMemberDate || "",
+                alternateMobileNumber: member.alternateMobileNumber || ""
             });
             setErrors({});
         }
@@ -140,7 +158,16 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
             nomineeRelation: formData.nomineeRelation.trim(),
             nomineeAadharNo: formData.nomineeAadharNo,
             permanentAddress: formData.permanentAddress.trim(),
-            temporaryAddress: formData.temporaryAddress.trim()
+            temporaryAddress: formData.temporaryAddress.trim(),
+            joiningFeeAmount: formData.joiningFeeAmount.trim(),
+            joiningFeeReceiptNo: formData.joiningFeeReceiptNo.trim(),
+            joiningFeeDDNoBank: formData.joiningFeeDDNoBank.trim(),
+            titleCardMovieDetails: formData.titleCardMovieDetails.trim(),
+            amToLmFeeAmount: formData.amToLmFeeAmount.trim(),
+            amToLmFeeReceiptNo: formData.amToLmFeeReceiptNo.trim(),
+            amToLmFeeDDNoBank: formData.amToLmFeeDDNoBank.trim(),
+            changeToLifeMemberDate: formData.changeToLifeMemberDate,
+            alternateMobileNumber: formData.alternateMobileNumber
         });
     };
 
@@ -158,6 +185,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
             || !(formData.nomineeRelation || "").trim()
             || !(formData.permanentAddress || "").trim()
             || !(formData.email || "").trim()
+            || (formData.alternateMobileNumber && formData.alternateMobileNumber.length !== 10)
             || Object.values(errors).some(Boolean);
     }, [errors, formData]);
 
@@ -261,6 +289,41 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                             value={formData.nomineeAadharNo}
                             onChange={(e) => handleNumberChange("nomineeAadharNo", e.target.value, 12)}
                             error={errors.nomineeAadharNo}
+                        />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CustomInput
+                            label="Alternate Mobile Number (Optional)"
+                            value={formData.alternateMobileNumber}
+                            onChange={(e) => handleNumberChange("alternateMobileNumber", e.target.value, 10)}
+                            error={errors.alternateMobileNumber}
+                        />
+                        <CustomInput
+                            label="Title Card Movie Details"
+                            value={formData.titleCardMovieDetails}
+                            onChange={(e) => handleTextChange("titleCardMovieDetails", e.target.value)}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
+                        <CustomInput label="Joining Fee Amount" value={formData.joiningFeeAmount} onChange={(e) => handleTextChange("joiningFeeAmount", e.target.value)} />
+                        <CustomInput label="Joining Fee Receipt No" value={formData.joiningFeeReceiptNo} onChange={(e) => handleTextChange("joiningFeeReceiptNo", e.target.value)} />
+                        <CustomInput label="Joining Fee DD/Bank" value={formData.joiningFeeDDNoBank} onChange={(e) => handleTextChange("joiningFeeDDNoBank", e.target.value)} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
+                        <CustomInput label="AM to LM Fee Amount" value={formData.amToLmFeeAmount} onChange={(e) => handleTextChange("amToLmFeeAmount", e.target.value)} />
+                        <CustomInput label="AM to LM Receipt No" value={formData.amToLmFeeReceiptNo} onChange={(e) => handleTextChange("amToLmFeeReceiptNo", e.target.value)} />
+                        <CustomInput label="AM to LM DD/Bank" value={formData.amToLmFeeDDNoBank} onChange={(e) => handleTextChange("amToLmFeeDDNoBank", e.target.value)} />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CustomInput
+                            label="Change to Life Member Date"
+                            type="date"
+                            value={formData.changeToLifeMemberDate}
+                            onChange={(e) => handleTextChange("changeToLifeMemberDate", e.target.value)}
                         />
                 </div>
             </div>

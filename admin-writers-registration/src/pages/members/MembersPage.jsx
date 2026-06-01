@@ -37,6 +37,16 @@ const initialFormData = {
     permanentAddress: "",
     temporaryAddress: "",
     memberType: "",
+    // New Fields
+    joiningFeeAmount: "",
+    joiningFeeReceiptNo: "",
+    joiningFeeDDNoBank: "",
+    titleCardMovieDetails: "",
+    amToLmFeeAmount: "",
+    amToLmFeeReceiptNo: "",
+    amToLmFeeDDNoBank: "",
+    changeToLifeMemberDate: "",
+    alternateMobileNumber: "",
 };
 
 const savedMemberPageSizeOptions = [5, 10, 25, 50, 100];
@@ -77,6 +87,7 @@ export default function MembersPage() {
             || !(formData.permanentAddress || "").trim()
             || !(formData.email || "").trim()
             || !formData.memberType
+            || (formData.alternateMobileNumber && formData.alternateMobileNumber.length !== 10)
             || Object.values(errors).some(Boolean);
     }, [errors, formData]);
 
@@ -273,7 +284,16 @@ export default function MembersPage() {
                 validityYears,
                 validityExpiresAt,
                 status: "Active",
-                createdAt: createdAt.toISOString()
+                createdAt: createdAt.toISOString(),
+                joiningFeeAmount: (formData.joiningFeeAmount || "").trim(),
+                joiningFeeReceiptNo: (formData.joiningFeeReceiptNo || "").trim(),
+                joiningFeeDDNoBank: (formData.joiningFeeDDNoBank || "").trim(),
+                titleCardMovieDetails: (formData.titleCardMovieDetails || "").trim(),
+                amToLmFeeAmount: (formData.amToLmFeeAmount || "").trim(),
+                amToLmFeeReceiptNo: (formData.amToLmFeeReceiptNo || "").trim(),
+                amToLmFeeDDNoBank: (formData.amToLmFeeDDNoBank || "").trim(),
+                changeToLifeMemberDate: formData.changeToLifeMemberDate || "",
+                alternateMobileNumber: formData.alternateMobileNumber || ""
             });
 
             const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
@@ -409,6 +429,54 @@ export default function MembersPage() {
                                         onChange={(e) => handleTextChange("dateOfJoining", e.target.value)}
                                         error={errors.dateOfJoining}
                                     />
+                                    <CustomInput
+                                        label="Joining Fee / Donation Amount"
+                                        value={formData.joiningFeeAmount}
+                                        onChange={(e) => handleTextChange("joiningFeeAmount", e.target.value)}
+                                        placeholder="Enter amount"
+                                    />
+                                    <CustomInput
+                                        label="Joining Fee Receipt No."
+                                        value={formData.joiningFeeReceiptNo}
+                                        onChange={(e) => handleTextChange("joiningFeeReceiptNo", e.target.value)}
+                                        placeholder="Enter receipt no"
+                                    />
+                                    <CustomInput
+                                        label="Joining Fee DD No & Bank"
+                                        value={formData.joiningFeeDDNoBank}
+                                        onChange={(e) => handleTextChange("joiningFeeDDNoBank", e.target.value)}
+                                        placeholder="Enter DD No & Bank"
+                                    />
+                                    <CustomInput
+                                        label="Title Card Movie Details"
+                                        value={formData.titleCardMovieDetails}
+                                        onChange={(e) => handleTextChange("titleCardMovieDetails", e.target.value)}
+                                        placeholder="Enter movie details"
+                                    />
+                                    <CustomInput
+                                        label="AM to LM Fee / Donation Amount"
+                                        value={formData.amToLmFeeAmount}
+                                        onChange={(e) => handleTextChange("amToLmFeeAmount", e.target.value)}
+                                        placeholder="Enter amount"
+                                    />
+                                    <CustomInput
+                                        label="AM to LM Fee Receipt No."
+                                        value={formData.amToLmFeeReceiptNo}
+                                        onChange={(e) => handleTextChange("amToLmFeeReceiptNo", e.target.value)}
+                                        placeholder="Enter receipt no"
+                                    />
+                                    <CustomInput
+                                        label="AM to LM DD No & Bank"
+                                        value={formData.amToLmFeeDDNoBank}
+                                        onChange={(e) => handleTextChange("amToLmFeeDDNoBank", e.target.value)}
+                                        placeholder="Enter DD No & Bank"
+                                    />
+                                    <CustomInput
+                                        label="Change to Life Member Date"
+                                        type="date"
+                                        value={formData.changeToLifeMemberDate}
+                                        onChange={(e) => handleTextChange("changeToLifeMemberDate", e.target.value)}
+                                    />
                                 </div>
                             </div>
 
@@ -462,6 +530,13 @@ export default function MembersPage() {
                                         onChange={(e) => handleNumberChange("mobileNumber", e.target.value, 10)}
                                         placeholder="Enter 10-digit mobile number"
                                         error={errors.mobileNumber}
+                                    />
+                                    <CustomInput
+                                        label="Alternate Mobile Number"
+                                        value={formData.alternateMobileNumber}
+                                        onChange={(e) => handleNumberChange("alternateMobileNumber", e.target.value, 10)}
+                                        placeholder="Enter 10-digit number"
+                                        error={errors.alternateMobileNumber}
                                     />
                                     <CustomInput
                                         label="Email Address *"
