@@ -257,7 +257,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                         />
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                         <CustomInput label="Joining Fee Amount" value={formData.joiningFeeAmount} onChange={(e) => handleTextChange("joiningFeeAmount", e.target.value)} />
                         <CustomInput label="Joining Fee Receipt No" value={formData.joiningFeeReceiptNo} onChange={(e) => handleTextChange("joiningFeeReceiptNo", e.target.value)} />
                         <CustomInput label="Joining Fee DD/Bank" value={formData.joiningFeeDDNoBank} onChange={(e) => handleTextChange("joiningFeeDDNoBank", e.target.value)} />
@@ -267,7 +267,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                         <CustomInput label="Title Card Movie Details" value={formData.titleCardMovieDetails} onChange={(e) => handleTextChange("titleCardMovieDetails", e.target.value)} />
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t pt-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                         <CustomInput label="AM to LM Fee Amount" value={formData.amToLmFeeAmount} onChange={(e) => handleTextChange("amToLmFeeAmount", e.target.value)} />
                         <CustomInput label="AM to LM Receipt No" value={formData.amToLmFeeReceiptNo} onChange={(e) => handleTextChange("amToLmFeeReceiptNo", e.target.value)} />
                         <CustomInput label="AM to LM DD/Bank" value={formData.amToLmFeeDDNoBank} onChange={(e) => handleTextChange("amToLmFeeDDNoBank", e.target.value)} />
