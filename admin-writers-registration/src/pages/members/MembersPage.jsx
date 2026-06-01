@@ -498,7 +498,7 @@ export default function MembersPage() {
                                         error={errors.surname}
                                     />
                                     <CustomInput
-                                        label="Date of Birth *"
+                                        label="Date of Birth (dd/mm/yyyy) *"
                                         type="date"
                                         value={formData.dateOfBirth}
                                         onChange={(e) => handleTextChange("dateOfBirth", e.target.value)}
