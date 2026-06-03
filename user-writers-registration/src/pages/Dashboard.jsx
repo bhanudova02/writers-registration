@@ -390,8 +390,8 @@ export default function Dashboard({ member, setMember, onLogout }) {
           })
         ]);
         
-        // Draw only logo on the left (stamp removed)
-        docPdf.addImage(logoImg, 'PNG', 19, 14, 18, 28);
+        // Draw only logo on the left (moved slightly higher and wider)
+        docPdf.addImage(logoImg, 'PNG', 15, 11, 20, 30);
         
         // Draw rounded stamp/seal at the bottom center (replacing the logo)
         docPdf.addImage(stampImg, 'PNG', 95, 180, 20, 20);
@@ -401,15 +401,13 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
       // Header Text
       docPdf.setTextColor(0, 0, 150); // Dark Blue
-      docPdf.setFontSize(18);
+      docPdf.setFontSize(15);
       docPdf.setFont("helvetica", "bold");
-      docPdf.text("TELUGU", 50, 18);
-      docPdf.setFontSize(16);
-      docPdf.text("CINE WRITERS' ASSOCIATION", 50, 25);
+      docPdf.text("TELUGU CINE WRITERS' ASSOCIATION", 38, 20);
       
-      docPdf.setFontSize(7);
+      docPdf.setFontSize(7.5);
       docPdf.setFont("helvetica", "normal");
-      docPdf.text("(Regd.NO.A741) Registered under trade Union Act, 1926, Affiliated to T.S.F.I.E.F)", 50, 30);
+      docPdf.text("(Regd. No. A741, Registered under Trade Union Act, 1926, Affiliated to T.S.F.I.E.F.)", 38, 27);
       
       // Address Block (Right aligned)
       docPdf.setFontSize(8);

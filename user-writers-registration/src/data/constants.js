@@ -1,1 +1,1 @@
-export const categories = ['Story', 'Screenplay', 'Songs', 'Dialogues', 'Story,ScreenPlay,Songs,Dilaogues'];
+export const categories = ['Story,ScreenPlay,Dilaogues', 'Story', 'Screenplay', 'Dialogues'];
