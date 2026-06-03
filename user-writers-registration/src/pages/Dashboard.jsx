@@ -390,12 +390,11 @@ export default function Dashboard({ member, setMember, onLogout }) {
           })
         ]);
         
-        // Draw stamp first, then logo on top of it on the left
-        docPdf.addImage(stampImg, 'PNG', 12, 12, 32, 32);
+        // Draw only logo on the left (stamp removed)
         docPdf.addImage(logoImg, 'PNG', 19, 14, 18, 28);
         
-        // Hamsa Grandhalayam logo at bottom (using the same logo temporarily)
-        docPdf.addImage(logoImg, 'PNG', 97, 188, 11, 17);
+        // Draw rounded stamp/seal at the bottom center (replacing the logo)
+        docPdf.addImage(stampImg, 'PNG', 95, 180, 20, 20);
       } catch (e) {
         console.error("Could not load logo/stamp images", e);
       }
@@ -510,7 +509,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
       docPdf.setTextColor(0, 0, 150);
       docPdf.setFontSize(10);
       docPdf.setFont("helvetica", "bold");
-      docPdf.text("GENERAL SECRETARY / TREASURER", 125, 185);
+      docPdf.text("GENERAL SECRETARY", 165, 185, { align: "center" });
 
       // Try signature if available
       try {
@@ -523,10 +522,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
         docPdf.addImage(signImg, 'PNG', 145, 165, 40, 15);
       } catch (e) {}
 
-      // Footer bottom text
-      docPdf.setFont("times", "italic");
-      docPdf.text("Read the Great Books at our", 45, 200);
-      docPdf.text("Hamsa Grandhalayam", 115, 200);
+
       
       docPdf.save(`TCWA_Receipt_${reg.registrationId}.pdf`);
 
