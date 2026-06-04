@@ -34,6 +34,8 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const [isLoadingMyRegs, setIsLoadingMyRegs] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [isAgreed, setIsAgreed] = useState(false);
+  const [showAgreementModal, setShowAgreementModal] = useState(false);
 
   const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -216,6 +218,56 @@ export default function Dashboard({ member, setMember, onLogout }) {
     }
   }, [selectedCategory, pageCount, isCalculatingPages, pdfFile]);
 
+  const getAgreementText = () => {
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('en-GB') || today.toLocaleDateString();
+    const name = member?.name || '............................................';
+    const fatherOrHusband = member?.fatherName || member?.fatherOrHusbandName || '..........................................';
+    const membershipId = member?.membershipId || '.............';
+    
+    let memberTypeStr = 'జీవిత సభ్యులు / అసోసియేట్ సభ్యులు';
+    if (member?.memberType) {
+      if (member.memberType === 'Life Time Member') {
+        memberTypeStr = 'జీవిత సభ్యులు';
+      } else {
+        memberTypeStr = 'అసోసియేట్ సభ్యులు';
+      }
+    }
+
+    const address = member?.address || '......................................................................................................................................................................';
+    const cell = member?.mobileNumber || '......................................';
+    const title = scriptTitle || '.......................................................';
+    const pages = pageCount || '...................';
+    
+    return `అధ్యక్షులు / ప్రధానకార్యదర్శి
+తెలుగు సినీ రచయితల సంఘం వారికి!
+
+అయ్యా!
+
+1) నా పేరు ${name} (కథారచయిత / పాటల రచయిత), తండ్రి / భర్త ${fatherOrHusband} సభ్యత్వం నెం. ${membershipId} ${memberTypeStr}, చిరునామా ${address} సెల్ నెం. ${cell} నేను ది. ${dateStr} నాడు రిజిష్టర్ చేయిస్తున్న ${title} అనుపేరుగల కథ/కథనం/దృశ్యమాలిక/సంభాషణలతో కూడిన ${pages} పేజీల స్క్రిప్ట్ / పాట(లు) పూర్తిగా నా స్వంత రచన.
+
+2) ఇది తెలుగు కాని, మరి ఏ ఇతర భాషల్లో గాని వెలువడిన కథ, నవల, సినిమా, టి.వి, రేడియో, నాటకం, నాటిక వంటి ప్రక్రియలకు అనువాదం గానీ, అనుసరణగానీ, పై వాటిలో దేనినుంచైనా కొంత భాగాన్ని గ్రహించడం గానీ కాదని హామీ ఇస్తున్నాను.
+
+3) నేను రాసిన ${title} పాటని (పాటల్ని) రిజిష్టర్ చేయిస్తున్నాను. ఇది ఏ ఇతర సినిమా పాటలకు, కవిత్వ ఖండికలకు అనుసరణకానీ, అనుకరణకానీ కాదు, అని ధృవపరుస్తున్నాను.
+
+4) కథా హక్కుల విషయంలో వివాదం తలెత్తినపుడు కాపీరైట్ యాక్ట్ ప్రకారం కథా బీజంలో మరొక కథాంశంతో పోలికలు ఉన్నంత మాత్రాన సరిపోదు. కథా సంవిధానం విస్తరించిన విధానం మీదనే హక్కులు నిర్ణయించబడతాయి అనే విషయం నేను తెలుసుకున్నాను.
+
+5) నేను రిజిష్టర్ చేస్తున్న కథ విషయమై నేను ఏదైనా ఫిర్యాదు చేసినపుడు, ఆ కథను రచయితల సంఘం పరిశీలించే సమయంలో ఆ కథను పోలిన పాయింట్ గతంలో ఏ సినిమాలోనైనా, నవలలోనైనా, టి.వి,రేడియో, నాటకం, నాటికలలో వచ్చినదని తెలిసినట్లైయితే, నా ఫిర్యాదును అంతటితో ముగించే హక్కు రచయితల సంఘానికి ఉందని నాకు తెలుసు.
+
+6) కథాచౌర్యం విషయమై అభియోగం మోపబడిన వ్యక్తి తెలుగు చలనచిత్ర కార్మిక సమాఖ్య అనుబంధ సంస్థలైన 24 యూనియన్లలో కానీ, తెలుగు ఫిలిం ఛాంబర్లో కానీ, తెలుగు చలనచిత్ర నిర్మాతల మండలిలో కానీ సభ్యుడు కాని పక్షాన నా ఫిర్యాదు స్వీకరించబడదు అని నాకు తెలుసు.
+
+7) నేను రిజిష్టరు చేయిస్తున్న వాటిలో కథ, కథనం, సంభాషణలు, పాటలకు సంబందించిన విషయాలు మాత్రమే రిజిష్టరు చేయబడతాయి అని నాకు తెలుసు.
+
+8) భవిష్యత్ కాలంలో ఈ కథ / పాటల విషయమై ఎటువంటి అభియోగం వచ్చినా, ఆ అభియోగాన్ని తెలుగు సినీ రచయితల సంఘం కో-ఆర్డినేషన్ కమిటీకి కానీ, కథా హక్కుల వేదికకు కానీ మధ్యంతర నిర్ణయం కోసం పంపించే హక్కు తెలుగు సినీ రచయితల సంఘానికి ఉంది అని నాకు తెలుసు. మధ్యవర్తిత్వం సమయంలో అభియోగానికి గురైన వారు చిత్రం చిత్రీకరణ సమయంలో తన కథాహక్కులకు భంగం కలుగుతుందని అభ్యంతరం వ్యక్తం చేస్తే, చిత్రీకరణ పూర్తయిన పిదప, చిత్రం విడుదలకు ముందే వారి కథను రచయితల సంఘంలో సబ్మిట్ చేయవలసి ఉంటుంది. ఉభయుల కథలను పరిశీలించి, మధ్యవర్తిత్వ నిర్ణయం తెలియజేసే హక్కు తెలుగు సినీ రచయితల సంఘం కథాహక్కుల వేదికకు ఉందని నాకు తెలుసు. చిత్రీకరణ సమయంలోనే సత్వర న్యాయం కావాలని కోరుకుంటే న్యాయస్థానానికి వెళ్ళమని సూచించే హక్కు రచయితల సంఘానికి ఉందని నాకు తెలుసు. 
+
+ఈ కథ / పాట విషయమై ఎలాంటి వివాదాలు తలెత్తినా మన సంఘం ఇచ్చే ఆదేశాలకు కట్టుబడి ఉంటానని, కథాహక్కులవేదిక నియమం 16 ప్రకారము నేను చేసిన లేదా నాపై వచ్చిన అభియోగం గురించి సోషల్ మీడియాకు గానీ, ఛానల్స్కుగానీ, పత్రికలకు తెలియజేయననీ, సామాజిక మాధ్యమాలలో ఎలాంటి చర్చలకు వెళ్ళనని వాగ్ధానం చేస్తున్నాను. ఒకవేళ ఈ నియమాన్ని ఉల్లంఘించినట్లైయితే నామీద చర్య తీసుకొనే హక్కు తెలుగు సినీ రచయితల సంఘానికి ఉన్నదని అంగీకరిస్తున్నాను.
+
+ఈ పత్రంలోని అన్ని విషయాలు చదివి, అర్ధం చేసుకొని నా అంగీకారంతో సంతకం చేస్తున్నాను.
+
+భవదీయుడు / భవదీయురాలు
+( కథా రచయిత / రచయిత్రి సంతకం )`;
+  };
+
   const handleRegisterScript = async (e) => {
     e.preventDefault();
     const normalizedScriptTitle = normalizeTitle(scriptTitle);
@@ -260,6 +312,11 @@ export default function Dashboard({ member, setMember, onLogout }) {
         toast.error(`Script registration requires a minimum of 20 pages. Your file has ${pageCount} pages.`);
         return;
       }
+    }
+
+    if (!isAgreed) {
+      toast.error("Please read and agree to the Story Registration Agreement (హామీపత్రం) before proceeding to payment.");
+      return;
     }
 
     if (!razorpayKeyId) {
@@ -325,7 +382,10 @@ export default function Dashboard({ member, setMember, onLogout }) {
         pdfFileSize: `${(pdfFile.size / (1024 * 1024)).toFixed(2)} MB`,
         status: 'Approved',
         downloadCount: 0,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        agreementText: getAgreementText(),
+        agreedAt: new Date().toISOString(),
+        agreementSigned: true
       };
 
       await setDoc(regRef, newRegData);
@@ -336,6 +396,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
       setScriptTitle('');
       setPageCount(1);
       setPdfFile(null);
+      setIsAgreed(false);
       toast.success("Script Registered & Approved Successfully!");
     } catch (error) {
       console.error("Script submission failed:", error);
@@ -773,6 +834,9 @@ export default function Dashboard({ member, setMember, onLogout }) {
             pageCount={pageCount}
             isCalculatingPages={isCalculatingPages}
             isRegistering={isRegistering}
+            isAgreed={isAgreed}
+            setIsAgreed={setIsAgreed}
+            setShowAgreementModal={setShowAgreementModal}
           />
 
           <ReceiptSidebar 
@@ -805,6 +869,57 @@ export default function Dashboard({ member, setMember, onLogout }) {
           isFullScreen={false}
         />
       )}
+
+      {showAgreementModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-zinc-200 overflow-hidden transform scale-100 transition-all duration-300">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50">
+              <h3 className="text-sm sm:text-base font-extrabold text-zinc-900 flex items-center gap-2">
+                <span className="size-2.5 rounded-full bg-orange-500 animate-pulse flex-shrink-0"></span>
+                <span>స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం (TCWA Agreement)</span>
+              </h3>
+              <button 
+                onClick={() => setShowAgreementModal(false)}
+                className="text-zinc-400 hover:text-zinc-600 transition p-1 hover:bg-zinc-100 rounded-lg cursor-pointer"
+              >
+                <svg className="size-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 text-xs sm:text-sm text-zinc-700 leading-relaxed font-sans bg-zinc-50/30">
+              <div className="bg-white border border-zinc-200/80 p-5 rounded-lg shadow-sm whitespace-pre-line text-justify font-sans leading-relaxed tracking-normal">
+                {getAgreementText()}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between bg-zinc-50">
+              <button
+                onClick={() => setShowAgreementModal(false)}
+                className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-800 transition hover:bg-zinc-100 rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setIsAgreed(true);
+                  setShowAgreementModal(false);
+                }}
+                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition shadow-md hover:shadow-orange-500/20 active:scale-[0.98] flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>I Agree & Accept (అంగీకరిస్తున్నాను)</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       <Footer />
     </main>
   );

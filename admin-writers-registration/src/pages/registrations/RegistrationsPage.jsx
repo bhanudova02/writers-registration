@@ -14,6 +14,22 @@ export default function RegistrationsPage() {
     const [registrations, setRegistrations] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [viewReceipt, setViewReceipt] = useState(null);
+    const [showAgreementViewer, setShowAgreementViewer] = useState(null);
+
+    const handleDownloadAgreementDoc = (reg) => {
+        if (!reg.agreementText) {
+            toast.error("No agreement text found for this registration.");
+            return;
+        }
+        const element = document.createElement("a");
+        const file = new Blob([reg.agreementText], { type: 'text/plain;charset=utf-8' });
+        element.href = URL.createObjectURL(file);
+        element.download = `TCWA_Agreement_${reg.registrationId || reg.id}.txt`;
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        toast.success("Agreement downloaded successfully.");
+    };
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
@@ -279,8 +295,57 @@ export default function RegistrationsPage() {
                                 <span className="font-bold text-green-600 text-right text-base">₹{viewReceipt.amount || 0}</span>
                             </div>
                         </div>
+
+                        {viewReceipt.agreementSigned && (
+                            <div className="mx-5 mb-5 p-4 border border-orange-200 bg-orange-50/50 rounded-md">
+                                <h4 className="text-xs font-extrabold text-orange-850 uppercase tracking-wider mb-2">TCWA Registration Agreement (హామీపత్రం)</h4>
+                                <p className="text-xs text-zinc-600 mb-3">
+                                    This script was registered with a digitally signed agreement.
+                                    Agreed on: <span className="font-semibold text-zinc-900">{viewReceipt.agreedAt ? new Date(viewReceipt.agreedAt).toLocaleString() : "N/A"}</span>
+                                </p>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => handleDownloadAgreementDoc(viewReceipt)}
+                                        className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded transition shadow-sm hover:shadow-orange-600/10 flex items-center gap-1 cursor-pointer"
+                                    >
+                                        Download Agreement TXT
+                                    </button>
+                                    <button 
+                                        onClick={() => setShowAgreementViewer(viewReceipt.agreementText)}
+                                        className="px-3 py-1.5 bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 text-xs font-bold rounded transition cursor-pointer"
+                                    >
+                                        View Agreement Text
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-end">
                             <button onClick={() => setViewReceipt(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showAgreementViewer && (
+                <div className="fixed inset-0 z-[70] bg-black/60 px-4 py-8 overflow-y-auto flex items-center justify-center">
+                    <div className="w-full max-w-2xl rounded-lg border border-zinc-200 bg-white shadow-2xl flex flex-col max-h-[80vh] my-auto">
+                        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg">
+                            <h3 className="text-sm sm:text-base font-extrabold text-zinc-800">TCWA Signed Agreement Viewer</h3>
+                            <button
+                                onClick={() => setShowAgreementViewer(null)}
+                                className="text-zinc-500 hover:text-zinc-855 transition cursor-pointer"
+                            >
+                                <FiXCircle size={20} />
+                            </button>
+                        </div>
+                        <div className="p-5 overflow-y-auto flex-1 text-xs sm:text-sm text-zinc-700 whitespace-pre-line leading-relaxed font-sans">
+                            <div className="bg-zinc-50 p-4 border border-zinc-200 rounded font-sans leading-relaxed text-justify">
+                                {showAgreementViewer}
+                            </div>
+                        </div>
+                        <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-end">
+                            <button onClick={() => setShowAgreementViewer(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>
                         </div>
                     </div>
                 </div>

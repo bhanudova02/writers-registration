@@ -13,7 +13,10 @@ export default function RegistrationForm({
   calculatePdfPages, 
   pageCount, 
   isCalculatingPages, 
-  isRegistering 
+  isRegistering,
+  isAgreed,
+  setIsAgreed,
+  setShowAgreementModal
 }) {
   return (
     <form onSubmit={handleRegisterScript} className="bg-white border border-slate-200 p-5 sm:p-6 rounded-lg space-y-5">
@@ -103,6 +106,37 @@ export default function RegistrationForm({
         <p className="text-[10px] text-zinc-500 mt-1.5 font-medium italic">
           * Pages are automatically calculated from the uploaded PDF.
         </p>
+      </div>
+
+      {/* Agreement Checkbox */}
+      <div className="flex items-start gap-2.5 pt-1.5 pb-0.5">
+        <input
+          type="checkbox"
+          id="agreeAgreement"
+          checked={isAgreed}
+          onChange={(e) => {
+            if (e.target.checked) {
+              // If trying to check it, open the modal
+              setShowAgreementModal(true);
+            } else {
+              // If unchecking, let it happen
+              setIsAgreed(false);
+            }
+          }}
+          className="size-4.5 rounded border-zinc-300 text-orange-500 focus:ring-orange-500 cursor-pointer mt-0.5"
+        />
+        <label htmlFor="agreeAgreement" className="text-xs text-zinc-600 leading-normal cursor-pointer select-none font-medium">
+          I read and agree to the{" "}
+          <span 
+            onClick={(e) => {
+              e.preventDefault();
+              setShowAgreementModal(true);
+            }} 
+            className="text-orange-500 font-bold hover:underline cursor-pointer"
+          >
+            TCWA Story Registration Agreement (హామీపత్రం)
+          </span> *
+        </label>
       </div>
 
       <button
