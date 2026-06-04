@@ -42,27 +42,8 @@ export default function RegistrationsPage() {
 
             // Build the HTML content to render inside html2canvas
             const htmlContent = `
-                <div style="font-family: 'Outfit', 'Noto Sans Telugu', sans-serif; padding: 40px; color: #1f2937; line-height: 1.8; font-size: 14px; background: white; width: 800px; box-sizing: border-box;">
-                    <div style="text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
-                        <div style="font-size: 26px; font-weight: 900; color: #f97316; margin-bottom: 5px; letter-spacing: 0.05em; font-family: sans-serif;">TCWA</div>
-                        <div style="font-size: 20px; font-weight: 900; color: #1e3a8a; font-family: sans-serif;">TELUGU CINE WRITERS' ASSOCIATION</div>
-                        <div style="font-size: 10px; color: #4b5563; font-weight: bold; margin-top: 5px; font-family: sans-serif;">(Regd. No. A741, Registered under Trade Union Act, 1926)</div>
-                    </div>
-
-                    <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 18px; border-radius: 8px; font-size: 13px; margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-family: sans-serif;">
-                        <div><strong>Registration ID:</strong> ${reg.registrationId || reg.id}</div>
-                        <div><strong>Writer Name:</strong> ${reg.writerName || "N/A"}</div>
-                        <div><strong>Membership ID:</strong> ${reg.membershipId || "N/A"}</div>
-                        <div><strong>Date Signed:</strong> ${dateStr}</div>
-                    </div>
-
-                    <div style="font-size: 18px; font-weight: 900; text-align: center; margin-top: 25px; margin-bottom: 25px; color: #111827; text-decoration: underline;">
-                        ${reg.category && reg.category.toLowerCase().includes('song') ? 'పాటల రిజిస్ట్రేషన్ హామీపత్రం' : 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం'}
-                    </div>
-
-                    <div style="white-space: pre-line; text-align: justify; margin-bottom: 35px; font-size: 13px;">
-                        ${reg.agreementText}
-                    </div>
+                <div style="font-family: 'Outfit', 'Noto Sans Telugu', sans-serif; padding: 50px 60px; color: #111827; line-height: 1.8; font-size: 14px; background: white; width: 800px; box-sizing: border-box; white-space: pre-line; text-align: justify;">
+                    ${reg.agreementText}
                 </div>
             `;
 
