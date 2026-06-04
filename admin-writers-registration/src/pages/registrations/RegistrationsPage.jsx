@@ -38,90 +38,115 @@ export default function RegistrationsPage() {
         const toastId = toast.loading("Generating PDF, please wait...");
 
         try {
-            const dateStr = reg.agreedAt ? new Date(reg.agreedAt).toLocaleString() : new Date().toLocaleString();
+            // Split the agreement text by newlines into paragraphs
+            const paragraphsList = reg.agreementText.split('\n');
 
-            // Build the HTML content to render inside html2canvas
-            const htmlContent = `
-                <div style="font-family: 'Outfit', 'Noto Sans Telugu', sans-serif; padding: 50px 60px; color: #111827; line-height: 1.8; font-size: 14px; background: white; width: 800px; box-sizing: border-box; white-space: pre-line; text-align: justify;">
-                    ${reg.agreementText}
-                </div>
-            `;
+            // Create a temporary hidden container to measure paragraph heights
+            const tempMeasureDiv = document.createElement('div');
+            tempMeasureDiv.style.position = 'fixed';
+            tempMeasureDiv.style.left = '0';
+            tempMeasureDiv.style.top = '0';
+            tempMeasureDiv.style.transform = 'translate(-200%, -200%)';
+            tempMeasureDiv.style.width = '800px';
+            tempMeasureDiv.style.boxSizing = 'border-box';
+            tempMeasureDiv.style.padding = '50px 60px'; // Matching page padding
+            tempMeasureDiv.style.zIndex = '-9999';
 
-            // Create a temporary container element that is appended to the document
-            const tempDiv = document.createElement('div');
-            // Make it visible to html2canvas but out of the user's viewport
-            tempDiv.style.position = 'fixed';
-            tempDiv.style.left = '0';
-            tempDiv.style.top = '0';
-            tempDiv.style.transform = 'translate(-200%, -200%)';
-            tempDiv.style.width = '800px';
-            tempDiv.style.background = 'white';
-            tempDiv.style.zIndex = '-9999';
-            tempDiv.innerHTML = htmlContent;
-            document.body.appendChild(tempDiv);
+            // Insert each paragraph inside its own div to measure offsetHeight
+            paragraphsList.forEach((para) => {
+                const pDiv = document.createElement('div');
+                pDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
+                pDiv.style.fontSize = '14px';
+                pDiv.style.lineHeight = '1.8';
+                pDiv.style.color = '#111827';
+                pDiv.style.textAlign = 'justify';
+                pDiv.style.whiteSpace = 'pre-wrap';
+                pDiv.style.marginBottom = '12px';
+                pDiv.style.minHeight = '18px';
+                pDiv.textContent = para;
+                tempMeasureDiv.appendChild(pDiv);
+            });
 
-            // Wait for fonts to load
+            document.body.appendChild(tempMeasureDiv);
+
+            // Wait for fonts to load so height calculations are accurate
             if (document.fonts) {
                 await document.fonts.ready;
             }
 
-            // Convert to canvas using html2canvas (bypasses SVG security and syntax issues)
-            const canvas = await html2canvas(tempDiv, {
-                scale: 2, // High-quality resolution
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                logging: false
+            const pElements = Array.from(tempMeasureDiv.children);
+
+            // A4 page height in pixels at 800px width:
+            // A4 width: 595.28pt, A4 height: 841.89pt
+            // scaleFactor: 595.28 / 800 = 0.7441
+            // Max height in pixels = 841.89 / 0.7441 = 1131.4px
+            // Available height for text = Max height - top padding (50px) - bottom padding (50px) = 1031px
+            const usablePageHeight = 1031;
+
+            const pages = [];
+            let currentPageParas = [];
+            let currentPageHeight = 0;
+
+            pElements.forEach((pEl) => {
+                const elHeight = pEl.offsetHeight + 12; // Height + margin-bottom
+                if (currentPageHeight + elHeight > usablePageHeight && currentPageParas.length > 0) {
+                    // Push current page and start a new page
+                    pages.push(currentPageParas);
+                    currentPageParas = [pEl];
+                    currentPageHeight = elHeight;
+                } else {
+                    currentPageParas.push(pEl);
+                    currentPageHeight += elHeight;
+                }
             });
 
-            // Remove temporary element from DOM
-            document.body.removeChild(tempDiv);
+            if (currentPageParas.length > 0) {
+                pages.push(currentPageParas);
+            }
 
-            const contentWidth = canvas.width;
-            const contentHeight = canvas.height;
-
-            // A4 size: 595.28 x 841.89 points
-            // Scale factor: A4 width / original width of canvas
-            const scaleFactor = 595.28 / (contentWidth / 2);
-            const pdfPageHeight = 841.89;
+            // Remove the measurement div
+            document.body.removeChild(tempMeasureDiv);
 
             const pdf = new jsPDF('p', 'pt', 'a4');
-            
-            let yOffset = 0;
-            const origHeight = contentHeight / 2;
+            const scaleFactor = 595.28 / 800;
 
-            while (yOffset < origHeight) {
-                if (yOffset > 0) {
+            for (let i = 0; i < pages.length; i++) {
+                if (i > 0) {
                     pdf.addPage();
                 }
-                
-                // Create a temporary canvas for this page segment
-                const pageCanvas = document.createElement('canvas');
-                pageCanvas.width = contentWidth;
-                
-                const pageSegmentHeightOrig = Math.min(origHeight - yOffset, pdfPageHeight / scaleFactor);
-                pageCanvas.height = pageSegmentHeightOrig * 2;
-                
-                const pageCtx = pageCanvas.getContext('2d');
-                pageCtx.fillStyle = '#ffffff';
-                pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-                
-                // Draw segment
-                pageCtx.drawImage(
-                    canvas, 
-                    0, 
-                    yOffset * 2, 
-                    contentWidth, 
-                    pageSegmentHeightOrig * 2, 
-                    0, 
-                    0, 
-                    contentWidth, 
-                    pageSegmentHeightOrig * 2
-                );
-                
-                const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-                pdf.addImage(pageImgData, 'JPEG', 0, 0, 595.28, pageSegmentHeightOrig * scaleFactor);
-                
-                yOffset += pageSegmentHeightOrig;
+
+                // Create a temporary container for this specific page
+                const pageContainer = document.createElement('div');
+                pageContainer.style.position = 'fixed';
+                pageContainer.style.left = '0';
+                pageContainer.style.top = '0';
+                pageContainer.style.transform = 'translate(-200%, -200%)';
+                pageContainer.style.width = '800px';
+                pageContainer.style.boxSizing = 'border-box';
+                pageContainer.style.padding = '50px 60px';
+                pageContainer.style.background = 'white';
+                pageContainer.style.zIndex = '-9999';
+
+                // Clone paragraphs belonging to this page
+                pages[i].forEach((pEl) => {
+                    pageContainer.appendChild(pEl.cloneNode(true));
+                });
+
+                document.body.appendChild(pageContainer);
+
+                const canvas = await html2canvas(pageContainer, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+
+                document.body.removeChild(pageContainer);
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const pageHeightPoints = (canvas.height / 2) * scaleFactor;
+
+                pdf.addImage(imgData, 'JPEG', 0, 0, 595.28, pageHeightPoints);
             }
 
             pdf.save(`TCWA_Agreement_${reg.registrationId || reg.id}.pdf`);
