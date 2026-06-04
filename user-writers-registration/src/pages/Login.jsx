@@ -78,13 +78,8 @@ export default function Login({ setMember, setIsLoggedIn }) {
       setConfirmationResult(confirmation);
 
       setMember({
-        membershipId: docId,
-        name: memberData.name,
-        memberType: memberData.memberType,
-        status: memberData.status,
-        mobileNumber: memberData.mobileNumber,
-        email: memberData.email,
-        createdAt: memberData.createdAt
+        ...memberData,
+        membershipId: docId
       });
 
       setShowOtpScreen(true);
