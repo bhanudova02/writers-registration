@@ -1,6 +1,7 @@
 import { FileText, UploadCloud, RefreshCw, Loader2 } from 'lucide-react';
 import { categories } from '../../data/constants';
 import { CustomSelect } from '../custom/CustomSelect';
+import { toast } from 'react-toastify';
 
 export default function RegistrationForm({ 
   handleRegisterScript, 
@@ -18,6 +19,26 @@ export default function RegistrationForm({
   setIsAgreed,
   setShowAgreementModal
 }) {
+  const validateFormBeforeAgreement = () => {
+    if (!scriptTitle || !scriptTitle.trim()) {
+      toast.error("Please enter Movie Script / Song Title first.");
+      return false;
+    }
+    if (!selectedCategory) {
+      toast.error("Please select a Registration Category first.");
+      return false;
+    }
+    if (!pdfFile) {
+      toast.error("Please upload the Movie Script PDF first.");
+      return false;
+    }
+    if (isCalculatingPages || pageCount === 0) {
+      toast.error("Please wait for the page count calculation to complete.");
+      return false;
+    }
+    return true;
+  };
+
   return (
     <form onSubmit={handleRegisterScript} className="bg-white border border-slate-200 p-5 sm:p-6 rounded-lg space-y-5">
       <div className="flex items-start gap-1.5 border-b border-zinc-200/60 pb-3">
@@ -116,10 +137,12 @@ export default function RegistrationForm({
           checked={isAgreed}
           onChange={(e) => {
             if (e.target.checked) {
-              // If trying to check it, open the modal
-              setShowAgreementModal(true);
+              if (validateFormBeforeAgreement()) {
+                setShowAgreementModal(true);
+              } else {
+                setIsAgreed(false);
+              }
             } else {
-              // If unchecking, let it happen
               setIsAgreed(false);
             }
           }}
@@ -130,7 +153,9 @@ export default function RegistrationForm({
           <span 
             onClick={(e) => {
               e.preventDefault();
-              setShowAgreementModal(true);
+              if (validateFormBeforeAgreement()) {
+                setShowAgreementModal(true);
+              }
             }} 
             className="text-orange-500 font-bold hover:underline cursor-pointer"
           >
