@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { jsPDF } from "jspdf";
 import { FaFileSignature, FaSearch } from "react-icons/fa";
 import { FiCheckCircle, FiXCircle, FiEye, FiTrendingUp } from "react-icons/fi";
 import { collection, onSnapshot, doc, updateDoc, query, orderBy } from "firebase/firestore";
@@ -8,6 +9,17 @@ import { CustomSelect } from "../../components/custom/CustomSelect";
 import { toast } from "react-toastify";
 import { logAdminActivity } from "../../lib/logger";
 import { TableSkeleton } from "../../components/Skeletons";
+
+
+const escapeXml = (str) => {
+    if (!str) return "";
+    return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+};
 
 export default function RegistrationsPage() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -26,7 +38,7 @@ export default function RegistrationsPage() {
 
         const dateStr = reg.agreedAt ? new Date(reg.agreedAt).toLocaleString() : new Date().toLocaleString();
 
-        // Build the HTML content
+        // Build the HTML content with XML escaping on injected variables to prevent SVG parsing errors
         const htmlContent = `
             <div style="font-family: 'Outfit', 'Noto Sans Telugu', sans-serif; padding: 40px; color: #1f2937; line-height: 1.8; font-size: 14px; background: white;">
                 <div style="text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
@@ -36,10 +48,10 @@ export default function RegistrationsPage() {
                 </div>
 
                 <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 18px; border-radius: 8px; font-size: 13px; margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div><strong>Registration ID:</strong> ${reg.registrationId || reg.id}</div>
-                    <div><strong>Writer Name:</strong> ${reg.writerName || "N/A"}</div>
-                    <div><strong>Membership ID:</strong> ${reg.membershipId || "N/A"}</div>
-                    <div><strong>Date Signed:</strong> ${dateStr}</div>
+                    <div><strong>Registration ID:</strong> ${escapeXml(reg.registrationId || reg.id)}</div>
+                    <div><strong>Writer Name:</strong> ${escapeXml(reg.writerName || "N/A")}</div>
+                    <div><strong>Membership ID:</strong> ${escapeXml(reg.membershipId || "N/A")}</div>
+                    <div><strong>Date Signed:</strong> ${escapeXml(dateStr)}</div>
                 </div>
 
                 <div style="font-size: 18px; font-weight: 900; text-align: center; margin-top: 25px; margin-bottom: 25px; color: #111827; text-decoration: underline;">
@@ -47,7 +59,7 @@ export default function RegistrationsPage() {
                 </div>
 
                 <div style="white-space: pre-line; text-align: justify; margin-bottom: 35px; font-size: 13px;">
-                    ${reg.agreementText}
+                    ${escapeXml(reg.agreementText)}
                 </div>
             </div>
         `;
@@ -94,12 +106,10 @@ export default function RegistrationsPage() {
                     // Clean up URL
                     URL.revokeObjectURL(blobURL);
 
-                    const { jsPDF } = await import('jspdf');
                     // A4 size: 595.28 x 841.89 points
                     // Scale factor: 595.28 / 800 = 0.7441
                     const scaleFactor = 595.28 / 800;
                     const pdfPageHeight = 841.89;
-                    const contentHeightInPdf = contentHeight * scaleFactor;
 
                     const pdf = new jsPDF('p', 'pt', 'a4');
                     
@@ -137,7 +147,7 @@ export default function RegistrationsPage() {
 
             img.onerror = (e) => {
                 console.error("Failed to load SVG into Image", e);
-                toast.update(toastId, { render: "Failed to load layout image.", type: "error", isLoading: false, autoClose: 3000 });
+                toast.update(toastId, { render: "Failed to load layout image. Please verify if the content has invalid characters.", type: "error", isLoading: false, autoClose: 3000 });
             };
 
             img.src = blobURL;
