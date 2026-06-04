@@ -21,14 +21,113 @@ export default function RegistrationsPage() {
             toast.error("No agreement text found for this registration.");
             return;
         }
-        const element = document.createElement("a");
-        const file = new Blob([reg.agreementText], { type: 'text/plain;charset=utf-8' });
-        element.href = URL.createObjectURL(file);
-        element.download = `TCWA_Agreement_${reg.registrationId || reg.id}.txt`;
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-        toast.success("Agreement downloaded successfully.");
+
+        const printWindow = window.open("", "_blank");
+        if (!printWindow) {
+            toast.error("Popup blocked! Please allow popups to download the PDF.");
+            return;
+        }
+
+        const dateStr = reg.agreedAt ? new Date(reg.agreedAt).toLocaleString() : new Date().toLocaleString();
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>TCWA_Agreement_${reg.registrationId || reg.id}</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;855;900&display=swap');
+                    body {
+                        font-family: 'Outfit', sans-serif;
+                        padding: 40px;
+                        color: #1f2937;
+                        line-height: 1.8;
+                        font-size: 14px;
+                    }
+                    .header {
+                        text-align: center;
+                        border-bottom: 2px solid #e5e7eb;
+                        padding-bottom: 20px;
+                        margin-bottom: 30px;
+                    }
+                    .logo-placeholder {
+                        font-size: 26px;
+                        font-weight: 900;
+                        color: #f97316;
+                        margin-bottom: 5px;
+                        letter-spacing: 0.05em;
+                    }
+                    .association-name {
+                        font-size: 20px;
+                        font-weight: 900;
+                        color: #1e3a8a;
+                    }
+                    .title {
+                        font-size: 18px;
+                        font-weight: 900;
+                        text-align: center;
+                        margin-top: 25px;
+                        margin-bottom: 25px;
+                        color: #111827;
+                        text-decoration: underline;
+                    }
+                    .content {
+                        white-space: pre-line;
+                        text-align: justify;
+                        margin-bottom: 35px;
+                        font-size: 13px;
+                    }
+                    .meta-info {
+                        background-color: #f9fafb;
+                        border: 1px solid #e5e7eb;
+                        padding: 18px;
+                        border-radius: 8px;
+                        font-size: 13px;
+                        margin-bottom: 30px;
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 10px;
+                    }
+                    .meta-item {
+                        margin-bottom: 5px;
+                    }
+                    @media print {
+                        body {
+                            padding: 20px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="logo-placeholder">TCWA</div>
+                    <div class="association-name">TELUGU CINE WRITERS' ASSOCIATION</div>
+                    <div style="font-size: 10px; color: #4b5563; font-weight: bold; margin-top: 5px;">(Regd. No. A741, Registered under Trade Union Act, 1926)</div>
+                </div>
+
+                <div class="meta-info">
+                    <div class="meta-item"><strong>Registration ID:</strong> ${reg.registrationId || reg.id}</div>
+                    <div class="meta-item"><strong>Writer Name:</strong> ${reg.writerName || "N/A"}</div>
+                    <div class="meta-item"><strong>Membership ID:</strong> ${reg.membershipId || "N/A"}</div>
+                    <div class="meta-item"><strong>Date Signed:</strong> ${dateStr}</div>
+                </div>
+
+                <div class="title">స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం</div>
+
+                <div class="content">${reg.agreementText}</div>
+
+                <script>
+                    window.onload = function() {
+                        window.print();
+                        setTimeout(function() {
+                            window.close();
+                        }, 500);
+                    };
+                </script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        toast.success("Agreement PDF print dialog opened.");
     };
 
     // Pagination states
@@ -308,7 +407,7 @@ export default function RegistrationsPage() {
                                         onClick={() => handleDownloadAgreementDoc(viewReceipt)}
                                         className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold rounded transition shadow-sm hover:shadow-orange-600/10 flex items-center gap-1 cursor-pointer"
                                     >
-                                        Download Agreement TXT
+                                        Download Agreement PDF
                                     </button>
                                     <button 
                                         onClick={() => setShowAgreementViewer(viewReceipt.agreementText)}
