@@ -345,9 +345,9 @@ export default function RegistrationsPage() {
 
             {/* View Receipt Modal */}
             {viewReceipt && (
-                <div className="fixed inset-0 z-[60] bg-black/60 px-4 py-8 overflow-y-auto flex items-start justify-center">
-                    <div className="w-full max-w-3xl rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto shrink-0">
-                        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg">
+                <div className="fixed inset-0 z-[60] bg-black/60 px-4 py-8 flex items-center justify-center">
+                    <div className="w-full max-w-3xl rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto flex flex-col max-h-[85vh]">
+                        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg shrink-0">
                             <h3 className="text-base font-bold text-zinc-800">Registration Details</h3>
                             <button
                                 onClick={() => setViewReceipt(null)}
@@ -356,7 +356,9 @@ export default function RegistrationsPage() {
                                 <FiXCircle size={20} />
                             </button>
                         </div>
-                        <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 text-sm font-medium text-zinc-700">
+                        {/* Scrollable Body Container */}
+                        <div className="flex-1 overflow-y-auto">
+                            <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 text-sm font-medium text-zinc-700">
                             <div className="flex justify-between border-b border-zinc-100 pb-2">
                                 <span className="text-zinc-500">Member Name:</span> 
                                 <span className="font-bold text-zinc-900 text-right">{viewReceipt.writerName || "N/A"}</span>
@@ -433,6 +435,7 @@ export default function RegistrationsPage() {
                             </div>
                         )}
 
+                        </div>
                         <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-end">
                             <button onClick={() => setViewReceipt(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>
                         </div>
