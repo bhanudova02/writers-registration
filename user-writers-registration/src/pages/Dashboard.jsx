@@ -217,6 +217,18 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const getAgreementText = () => {
     const today = new Date();
     const dateStr = today.toLocaleDateString('en-GB') || today.toLocaleDateString();
+    
+    // Helper to format a field centered inside a dotted line
+    const formatDottedField = (value, totalLength = 30) => {
+      const strVal = value ? String(value).trim() : '';
+      if (strVal.length >= totalLength) {
+        return ` ${strVal} `;
+      }
+      const remaining = totalLength - strVal.length;
+      const leftDots = Math.floor(remaining / 2);
+      const rightDots = remaining - leftDots;
+      return `${'.'.repeat(leftDots)} ${strVal} ${'.'.repeat(rightDots)}`;
+    };
 
     const name = member?.name || '';
     const surname = member?.surname || '';
@@ -244,7 +256,6 @@ export default function Dashboard({ member, setMember, onLogout }) {
     
     // Dynamic Role and Script Category strings based on selectedCategory
     let roleStr = '(కథారచయిత / పాటల రచయిత)';
-    let scriptCategoryStr = `కథ/కథనం/దృశ్యమాలిక/సంభాషణలతో కూడిన ${pages} పేజీల స్క్రిప్ట్ / పాట(లు)`;
     const isSongCategory = selectedCategory ? selectedCategory.toLowerCase().includes('song') : false;
     
     if (selectedCategory) {
@@ -252,41 +263,63 @@ export default function Dashboard({ member, setMember, onLogout }) {
       if (catLower.includes('song')) {
         agreementTitle = 'పాటల రిజిస్ట్రేషన్ హామీపత్రం';
         roleStr = '(పాటల రచయిత)';
-        scriptCategoryStr = `${pages} పేజీల పాట(లు)`;
       } else if (catLower.includes('story') || catLower.includes('కథ')) {
         agreementTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
         roleStr = '(కథారచయిత)';
-        scriptCategoryStr = `${pages} పేజీల కథా స్క్రిప్ట్`;
       } else if (catLower.includes('screenplay')) {
         agreementTitle = 'స్క్రీన్ ప్లే రిజిస్ట్రేషన్ హామీపత్రం';
         roleStr = '(కథనం / స్క్రీన్ ప్లే రచయిత)';
-        scriptCategoryStr = `${pages} పేజీల కథనం / స్క్రీన్ ప్లే స్క్రిప్ట్`;
       } else if (catLower.includes('dialogue') || catLower.includes('సంభాషణ')) {
         agreementTitle = 'సంభాషణల రిజిస్ట్రేషన్ హామీపత్రం';
         roleStr = '(సంభాషణల రచయిత)';
-        scriptCategoryStr = `${pages} పేజీల సంభాషణల స్క్రిప్ట్`;
       }
     }
 
-    const formattedName = fullName || '............................................................';
-    const formattedNominee = nomineeName ? `${nomineeRelation} : ${nomineeName}` : '..........................................';
-    const formattedMemberId = membershipId || '.............';
-    const formattedAddress = address || '...........................................................................';
-    const formattedCell = cell || '......................................';
-    const formattedTitle = title ? `"${title}"` : '.......................................................';
-    const formattedDate = dateStr || '........................';
+    // Format all dotted fields centered inside dots matching the image structure
+    const formattedName = formatDottedField(fullName, 45);
+    const formattedNominee = formatDottedField(nomineeName, 40);
+    const formattedMemberId = formatDottedField(membershipId, 12);
+    const formattedCell = formatDottedField(cell, 25);
+    const formattedDate = formatDottedField(dateStr, 20);
+    const formattedTitle = formatDottedField(title, 45);
+    const formattedPagesCount = formatDottedField(pages, 10);
+
+    // Split long address into two dotted lines cleanly
+    let addressLine1 = '';
+    let addressLine2 = '';
+    if (address) {
+      if (address.length <= 60) {
+        addressLine1 = address;
+      } else {
+        let splitIdx = address.lastIndexOf(' ', 60);
+        if (splitIdx === -1) splitIdx = 60;
+        addressLine1 = address.substring(0, splitIdx);
+        addressLine2 = address.substring(splitIdx).trim();
+      }
+    }
+    const formattedAddress1 = formatDottedField(addressLine1, 60);
+    const formattedAddress2 = formatDottedField(addressLine2, 80);
 
     // Build the agreement clauses dynamically based on category
     const clauses = [];
 
-    // Clause 1: Basic registration details structured on separate lines for visual excellence
-    clauses.push(`నా వివరాలు:
-   • నా పేరు: ${formattedName} ${roleStr}
-   • తండ్రి / భర్త: ${formattedNominee}
-   • సభ్యత్వం నెం: ${formattedMemberId} (${memberTypeStr})
-   • చిరునామా: ${formattedAddress}
-   • సెల్ నెం: ${formattedCell}
-   • నేను ది: ${formattedDate} నాడు రిజిష్టర్ చేయిస్తున్న ${formattedTitle} అనుపేరుగల కథ/కథనం/దృశ్యమాలిక/సంభాషణలతో కూడిన ${scriptCategoryStr} పూర్తిగా నా స్వంత రచన.`);
+    // Clause 1: Basic registration details matching the exact image line breaks and labels
+    clauses.push(`నా పేరు ${formattedName} ${roleStr},
+
+   తండ్రి / భర్త ${formattedNominee}
+
+   సభ్యత్వం నెం. ${formattedMemberId} ${memberTypeStr},
+
+   చిరునామా ${formattedAddress1}
+   ${formattedAddress2}
+
+   సెల్ నెం. ${formattedCell} నేను ది. ${formattedDate} నాడు
+
+   రిజిష్టర్ చేయిస్తున్న ${formattedTitle} అనుపేరుగల
+
+   కథ/కథనం/దృశ్యమాలిక/సంభాషణలతో కూడిన ${formattedPagesCount} పేజీల స్క్రిప్ట్ / పాట(లు) పూర్తిగా
+
+   నా స్వంత రచన.`);
 
     // Clause 2: Originality warranty
     clauses.push(`ఇది తెలుగు కాని, మరి ఏ ఇతర భాషల్లో గాని వెలువడిన కథ, నవల, సినిమా, టి.వి, రేడియో, నాటకం, నాటిక వంటి ప్రక్రియలకు అనువాదం గానీ, అనుసరణగానీ, పై వాటిలో దేనినుంచైనా కొంత భాగాన్ని గ్రహించడం గానీ కాదని హామీ ఇస్తున్నాను.`);
