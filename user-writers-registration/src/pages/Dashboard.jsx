@@ -318,9 +318,9 @@ export default function Dashboard({ member, setMember, onLogout }) {
         // Draw light border around the page
         page.drawRectangle({
           x: 25,
-          y: 40,
+          y: 55,
           width: width - 50,
-          height: height - 65,
+          height: height - 80,
           borderColor: rgb(0.7, 0.7, 0.7),
           borderWidth: 1.5,
         });
@@ -333,23 +333,13 @@ export default function Dashboard({ member, setMember, onLogout }) {
           color: rgb(0.4, 0.4, 0.4),
         });
 
-        // Add small stamp icon to the left of the top text if loaded successfully
-        if (stampImage) {
-          page.drawImage(stampImage, {
-            x: width / 2 - 180,
-            y: height - 22,
-            width: 14,
-            height: 14,
-          });
-        }
-
         // Draw seal (increased size) at the bottom left
         if (stampImage) {
           page.drawImage(stampImage, {
             x: 35,
-            y: 8,
-            width: 32,
-            height: 32,
+            y: 10,
+            width: 38,
+            height: 38,
           });
         }
 
@@ -357,7 +347,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
         if (signImage) {
           page.drawImage(signImage, {
             x: width - 80,
-            y: 12,
+            y: 15,
             width: 45,
             height: 20,
           });
