@@ -298,15 +298,18 @@ export default function Dashboard({ member, setMember, onLogout }) {
       const dateObj = new Date(receiptModal.registration.createdAt);
       const dateStr = `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
-      // Load stamp image
+      // Load stamp and signature images
       let stampImage = null;
-      let stampDims = null;
+      let signImage = null;
       try {
-        const imageBytes = await fetch('/stamp.png').then(res => res.arrayBuffer());
-        stampImage = await pdfDoc.embedPng(imageBytes);
-        stampDims = stampImage.scaleToFit(14, 14);
+        const [stampBytes, signBytes] = await Promise.all([
+          fetch('/stamp.png').then(res => res.arrayBuffer()),
+          fetch('/signature.png').then(res => res.arrayBuffer())
+        ]);
+        stampImage = await pdfDoc.embedPng(stampBytes);
+        signImage = await pdfDoc.embedPng(signBytes);
       } catch (err) {
-        console.warn("Could not load stamp image:", err);
+        console.warn("Could not load stamp/signature images:", err);
       }
 
       pages.forEach((page) => {
@@ -322,21 +325,41 @@ export default function Dashboard({ member, setMember, onLogout }) {
           borderWidth: 1.5,
         });
 
-        // Add stamp text below the border
+        // Add stamp text at the top of the page (in the 25pt top margin)
         page.drawText(`Registered with TCWA | ID: ${regId} | Date: ${dateStr}`, {
           x: width / 2 - 160,
-          y: 20,
+          y: height - 20,
           size: 10,
           color: rgb(0.4, 0.4, 0.4),
         });
 
-        // Add small stamp icon to the left of the text if loaded successfully
-        if (stampImage && stampDims) {
+        // Add small stamp icon to the left of the top text if loaded successfully
+        if (stampImage) {
           page.drawImage(stampImage, {
             x: width / 2 - 180,
-            y: 18,
-            width: stampDims.width,
-            height: stampDims.height,
+            y: height - 22,
+            width: 14,
+            height: 14,
+          });
+        }
+
+        // Draw seal (increased size) at the bottom left
+        if (stampImage) {
+          page.drawImage(stampImage, {
+            x: 35,
+            y: 8,
+            width: 32,
+            height: 32,
+          });
+        }
+
+        // Draw signature at the bottom right
+        if (signImage) {
+          page.drawImage(signImage, {
+            x: width - 80,
+            y: 12,
+            width: 45,
+            height: 20,
           });
         }
       });
