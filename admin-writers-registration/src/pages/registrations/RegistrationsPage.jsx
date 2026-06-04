@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 import { FaFileSignature, FaSearch } from "react-icons/fa";
 import { FiCheckCircle, FiXCircle, FiEye, FiTrendingUp } from "react-icons/fi";
 import { collection, onSnapshot, doc, updateDoc, query, orderBy } from "firebase/firestore";
@@ -36,122 +37,118 @@ export default function RegistrationsPage() {
 
         const toastId = toast.loading("Generating PDF, please wait...");
 
-        const dateStr = reg.agreedAt ? new Date(reg.agreedAt).toLocaleString() : new Date().toLocaleString();
+        try {
+            const dateStr = reg.agreedAt ? new Date(reg.agreedAt).toLocaleString() : new Date().toLocaleString();
 
-        // Build the HTML content with XML escaping on injected variables to prevent SVG parsing errors
-        const htmlContent = `
-            <div style="font-family: 'Outfit', 'Noto Sans Telugu', sans-serif; padding: 40px; color: #1f2937; line-height: 1.8; font-size: 14px; background: white;">
-                <div style="text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
-                    <div style="font-size: 26px; font-weight: 900; color: #f97316; margin-bottom: 5px; letter-spacing: 0.05em;">TCWA</div>
-                    <div style="font-size: 20px; font-weight: 900; color: #1e3a8a;">TELUGU CINE WRITERS' ASSOCIATION</div>
-                    <div style="font-size: 10px; color: #4b5563; font-weight: bold; margin-top: 5px;">(Regd. No. A741, Registered under Trade Union Act, 1926)</div>
+            // Build the HTML content to render inside html2canvas
+            const htmlContent = `
+                <div style="font-family: 'Outfit', 'Noto Sans Telugu', sans-serif; padding: 40px; color: #1f2937; line-height: 1.8; font-size: 14px; background: white; width: 800px; box-sizing: border-box;">
+                    <div style="text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
+                        <div style="font-size: 26px; font-weight: 900; color: #f97316; margin-bottom: 5px; letter-spacing: 0.05em; font-family: sans-serif;">TCWA</div>
+                        <div style="font-size: 20px; font-weight: 900; color: #1e3a8a; font-family: sans-serif;">TELUGU CINE WRITERS' ASSOCIATION</div>
+                        <div style="font-size: 10px; color: #4b5563; font-weight: bold; margin-top: 5px; font-family: sans-serif;">(Regd. No. A741, Registered under Trade Union Act, 1926)</div>
+                    </div>
+
+                    <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 18px; border-radius: 8px; font-size: 13px; margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-family: sans-serif;">
+                        <div><strong>Registration ID:</strong> ${reg.registrationId || reg.id}</div>
+                        <div><strong>Writer Name:</strong> ${reg.writerName || "N/A"}</div>
+                        <div><strong>Membership ID:</strong> ${reg.membershipId || "N/A"}</div>
+                        <div><strong>Date Signed:</strong> ${dateStr}</div>
+                    </div>
+
+                    <div style="font-size: 18px; font-weight: 900; text-align: center; margin-top: 25px; margin-bottom: 25px; color: #111827; text-decoration: underline;">
+                        ${reg.category && reg.category.toLowerCase().includes('song') ? 'పాటల రిజిస్ట్రేషన్ హామీపత్రం' : 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం'}
+                    </div>
+
+                    <div style="white-space: pre-line; text-align: justify; margin-bottom: 35px; font-size: 13px;">
+                        ${reg.agreementText}
+                    </div>
                 </div>
-
-                <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 18px; border-radius: 8px; font-size: 13px; margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                    <div><strong>Registration ID:</strong> ${escapeXml(reg.registrationId || reg.id)}</div>
-                    <div><strong>Writer Name:</strong> ${escapeXml(reg.writerName || "N/A")}</div>
-                    <div><strong>Membership ID:</strong> ${escapeXml(reg.membershipId || "N/A")}</div>
-                    <div><strong>Date Signed:</strong> ${escapeXml(dateStr)}</div>
-                </div>
-
-                <div style="font-size: 18px; font-weight: 900; text-align: center; margin-top: 25px; margin-bottom: 25px; color: #111827; text-decoration: underline;">
-                    ${reg.category && reg.category.toLowerCase().includes('song') ? 'పాటల రిజిస్ట్రేషన్ హామీపత్రం' : 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం'}
-                </div>
-
-                <div style="white-space: pre-line; text-align: justify; margin-bottom: 35px; font-size: 13px;">
-                    ${escapeXml(reg.agreementText)}
-                </div>
-            </div>
-        `;
-
-        // Create a temporary container element to let the browser compute the layout height
-        const tempDiv = document.createElement('div');
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.left = '-9999px';
-        tempDiv.style.width = '800px';
-        tempDiv.innerHTML = htmlContent;
-        document.body.appendChild(tempDiv);
-
-        // Wait a small moment for layout calculation
-        setTimeout(async () => {
-            const contentHeight = tempDiv.offsetHeight;
-            document.body.removeChild(tempDiv);
-
-            // Construct SVG
-            const svgString = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="800" height="${contentHeight}">
-                    <foreignObject width="100%" height="100%">
-                        <div xmlns="http://www.w3.org/1999/xhtml">
-                            ${htmlContent}
-                        </div>
-                    </foreignObject>
-                </svg>
             `;
 
-            const img = new Image();
-            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-            const URL = window.URL || window.webkitURL || window;
-            const blobURL = URL.createObjectURL(svgBlob);
+            // Create a temporary container element that is appended to the document
+            const tempDiv = document.createElement('div');
+            // Make it visible to html2canvas but out of the user's viewport
+            tempDiv.style.position = 'fixed';
+            tempDiv.style.left = '0';
+            tempDiv.style.top = '0';
+            tempDiv.style.transform = 'translate(-200%, -200%)';
+            tempDiv.style.width = '800px';
+            tempDiv.style.background = 'white';
+            tempDiv.style.zIndex = '-9999';
+            tempDiv.innerHTML = htmlContent;
+            document.body.appendChild(tempDiv);
 
-            img.onload = async () => {
-                try {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = 800;
-                    canvas.height = contentHeight;
-                    const ctx = canvas.getContext('2d');
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0);
+            // Wait for fonts to load
+            if (document.fonts) {
+                await document.fonts.ready;
+            }
 
-                    // Clean up URL
-                    URL.revokeObjectURL(blobURL);
+            // Convert to canvas using html2canvas (bypasses SVG security and syntax issues)
+            const canvas = await html2canvas(tempDiv, {
+                scale: 2, // High-quality resolution
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            });
 
-                    // A4 size: 595.28 x 841.89 points
-                    // Scale factor: 595.28 / 800 = 0.7441
-                    const scaleFactor = 595.28 / 800;
-                    const pdfPageHeight = 841.89;
+            // Remove temporary element from DOM
+            document.body.removeChild(tempDiv);
 
-                    const pdf = new jsPDF('p', 'pt', 'a4');
-                    
-                    let yOffset = 0;
-                    while (yOffset < contentHeight) {
-                        if (yOffset > 0) {
-                            pdf.addPage();
-                        }
-                        
-                        // Create a temporary canvas for this page segment
-                        const pageCanvas = document.createElement('canvas');
-                        pageCanvas.width = 800;
-                        // Limit height to one A4 page equivalent in pixels (841.89 / scaleFactor)
-                        const pageSegmentHeight = Math.min(contentHeight - yOffset, pdfPageHeight / scaleFactor);
-                        pageCanvas.height = pageSegmentHeight;
-                        
-                        const pageCtx = pageCanvas.getContext('2d');
-                        pageCtx.fillStyle = '#ffffff';
-                        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-                        pageCtx.drawImage(canvas, 0, yOffset, 800, pageSegmentHeight, 0, 0, 800, pageSegmentHeight);
-                        
-                        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-                        pdf.addImage(pageImgData, 'JPEG', 0, 0, 595.28, pageSegmentHeight * scaleFactor);
-                        
-                        yOffset += pageSegmentHeight;
-                    }
+            const contentWidth = canvas.width;
+            const contentHeight = canvas.height;
 
-                    pdf.save(`TCWA_Agreement_${reg.registrationId || reg.id}.pdf`);
-                    toast.update(toastId, { render: "Agreement PDF downloaded successfully!", type: "success", isLoading: false, autoClose: 3000 });
-                } catch (error) {
-                    console.error("PDF generation failed:", error);
-                    toast.update(toastId, { render: "Failed to generate PDF. Please try again.", type: "error", isLoading: false, autoClose: 3000 });
+            // A4 size: 595.28 x 841.89 points
+            // Scale factor: A4 width / original width of canvas
+            const scaleFactor = 595.28 / (contentWidth / 2);
+            const pdfPageHeight = 841.89;
+
+            const pdf = new jsPDF('p', 'pt', 'a4');
+            
+            let yOffset = 0;
+            const origHeight = contentHeight / 2;
+
+            while (yOffset < origHeight) {
+                if (yOffset > 0) {
+                    pdf.addPage();
                 }
-            };
+                
+                // Create a temporary canvas for this page segment
+                const pageCanvas = document.createElement('canvas');
+                pageCanvas.width = contentWidth;
+                
+                const pageSegmentHeightOrig = Math.min(origHeight - yOffset, pdfPageHeight / scaleFactor);
+                pageCanvas.height = pageSegmentHeightOrig * 2;
+                
+                const pageCtx = pageCanvas.getContext('2d');
+                pageCtx.fillStyle = '#ffffff';
+                pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                
+                // Draw segment
+                pageCtx.drawImage(
+                    canvas, 
+                    0, 
+                    yOffset * 2, 
+                    contentWidth, 
+                    pageSegmentHeightOrig * 2, 
+                    0, 
+                    0, 
+                    contentWidth, 
+                    pageSegmentHeightOrig * 2
+                );
+                
+                const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+                pdf.addImage(pageImgData, 'JPEG', 0, 0, 595.28, pageSegmentHeightOrig * scaleFactor);
+                
+                yOffset += pageSegmentHeightOrig;
+            }
 
-            img.onerror = (e) => {
-                console.error("Failed to load SVG into Image", e);
-                toast.update(toastId, { render: "Failed to load layout image. Please verify if the content has invalid characters.", type: "error", isLoading: false, autoClose: 3000 });
-            };
-
-            img.src = blobURL;
-        }, 100);
+            pdf.save(`TCWA_Agreement_${reg.registrationId || reg.id}.pdf`);
+            toast.update(toastId, { render: "Agreement PDF downloaded successfully!", type: "success", isLoading: false, autoClose: 3000 });
+        } catch (error) {
+            console.error("PDF generation failed:", error);
+            toast.update(toastId, { render: "Failed to generate PDF. Please try again.", type: "error", isLoading: false, autoClose: 3000 });
+        }
     };
 
     // Pagination states
