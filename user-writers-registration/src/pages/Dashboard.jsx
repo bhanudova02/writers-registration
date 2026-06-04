@@ -221,9 +221,26 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const getAgreementText = () => {
     const today = new Date();
     const dateStr = today.toLocaleDateString('en-GB') || today.toLocaleDateString();
-    const name = member?.name || '............................................';
-    const fatherOrHusband = member?.fatherName || member?.fatherOrHusbandName || '..........................................';
-    const membershipId = member?.membershipId || '.............';
+    
+    // Helper to format a field centered inside a dotted line
+    const formatDottedField = (value, totalLength = 30) => {
+      if (!value || String(value).trim() === '') {
+        return '.'.repeat(totalLength);
+      }
+      const strVal = String(value).trim();
+      if (strVal.length >= totalLength) {
+        return ` ${strVal} `;
+      }
+      const remaining = totalLength - strVal.length;
+      const leftDots = Math.floor(remaining / 2);
+      const rightDots = remaining - leftDots;
+      return `${'.'.repeat(leftDots)} ${strVal} ${'.'.repeat(rightDots)}`;
+    };
+
+    const name = member?.name || '';
+    const nomineeName = member?.nomineeName || member?.fatherName || member?.fatherOrHusbandName || '';
+    const nomineeRelation = member?.nomineeRelation || 'తండ్రి / భర్త';
+    const membershipId = member?.membershipId || '';
     
     let memberTypeStr = 'జీవిత సభ్యులు / అసోసియేట్ సభ్యులు';
     if (member?.memberType) {
@@ -234,21 +251,50 @@ export default function Dashboard({ member, setMember, onLogout }) {
       }
     }
 
-    const address = member?.address || '......................................................................................................................................................................';
-    const cell = member?.mobileNumber || '......................................';
-    const title = scriptTitle || '.......................................................';
-    const pages = pageCount || '...................';
+    const address = member?.address || '';
+    const cell = member?.mobileNumber || '';
+    const title = scriptTitle || '';
+    const pages = pageCount || '';
+
+    // Dynamic Role and Script Category strings based on selectedCategory
+    let roleStr = '(కథారచయిత / పాటల రచయిత)';
+    let scriptCategoryStr = `కథ/కథనం/దృశ్యమాలిక/సంభాషణలతో కూడిన ${formatDottedField(pages, 8)} పేజీల స్క్రిప్ట్ / పాట(లు)`;
     
+    if (selectedCategory) {
+      const catLower = selectedCategory.toLowerCase();
+      if (catLower.includes('song')) {
+        roleStr = '(పాటల రచయిత)';
+        scriptCategoryStr = `${formatDottedField(pages, 8)} పేజీల పాట(లు)`;
+      } else if (catLower.includes('story') || catLower.includes('కథ')) {
+        roleStr = '(కథారచయిత)';
+        scriptCategoryStr = `${formatDottedField(pages, 8)} పేజీల కథా స్క్రిప్ట్`;
+      } else if (catLower.includes('screenplay')) {
+        roleStr = '(కథనం / స్క్రీన్ ప్లే రచయిత)';
+        scriptCategoryStr = `${formatDottedField(pages, 8)} పేజీల కథనం / స్క్రీన్ ప్లే స్క్రిప్ట్`;
+      } else if (catLower.includes('dialogue') || catLower.includes('సంభాషణ')) {
+        roleStr = '(సంభాషణల రచయిత)';
+        scriptCategoryStr = `${formatDottedField(pages, 8)} పేజీల సంభాషణల స్క్రిప్ట్`;
+      }
+    }
+
+    const formattedName = formatDottedField(name, 40);
+    const formattedNominee = `${nomineeRelation} : ${formatDottedField(nomineeName, 40)}`;
+    const formattedMemberId = formatDottedField(membershipId, 12);
+    const formattedAddress = formatDottedField(address, 70);
+    const formattedCell = formatDottedField(cell, 20);
+    const formattedTitle = formatDottedField(title, 45);
+    const formattedDate = formatDottedField(dateStr, 15);
+
     return `అధ్యక్షులు / ప్రధానకార్యదర్శి
 తెలుగు సినీ రచయితల సంఘం వారికి!
 
 అయ్యా!
 
-1) నా పేరు ${name} (కథారచయిత / పాటల రచయిత), తండ్రి / భర్త ${fatherOrHusband} సభ్యత్వం నెం. ${membershipId} ${memberTypeStr}, చిరునామా ${address} సెల్ నెం. ${cell} నేను ది. ${dateStr} నాడు రిజిష్టర్ చేయిస్తున్న ${title} అనుపేరుగల కథ/కథనం/దృశ్యమాలిక/సంభాషణలతో కూడిన ${pages} పేజీల స్క్రిప్ట్ / పాట(లు) పూర్తిగా నా స్వంత రచన.
+1) నా పేరు ${formattedName} ${roleStr}, ${formattedNominee} సభ్యత్వం నెం. ${formattedMemberId} ${memberTypeStr}, చిరునామా ${formattedAddress} సెల్ నెం. ${formattedCell} నేను ది. ${formattedDate} నాడు రిజిష్టర్ చేయిస్తున్న ${formattedTitle} అనుపేరుగల ${scriptCategoryStr} పూర్తిగా నా స్వంత రచన.
 
 2) ఇది తెలుగు కాని, మరి ఏ ఇతర భాషల్లో గాని వెలువడిన కథ, నవల, సినిమా, టి.వి, రేడియో, నాటకం, నాటిక వంటి ప్రక్రియలకు అనువాదం గానీ, అనుసరణగానీ, పై వాటిలో దేనినుంచైనా కొంత భాగాన్ని గ్రహించడం గానీ కాదని హామీ ఇస్తున్నాను.
 
-3) నేను రాసిన ${title} పాటని (పాటల్ని) రిజిష్టర్ చేయిస్తున్నాను. ఇది ఏ ఇతర సినిమా పాటలకు, కవిత్వ ఖండికలకు అనుసరణకానీ, అనుకరణకానీ కాదు, అని ధృవపరుస్తున్నాను.
+3) నేను రాసిన ${formattedTitle} పాటని (పాటల్ని) రిజిష్టర్ చేయిస్తున్నాను. ఇది ఏ ఇతర సినిమా పాటలకు, కవిత్వ ఖండికలకు అనుసరణకానీ, అనుకరణకానీ కాదు, అని ధృవపరుస్తున్నాను.
 
 4) కథా హక్కుల విషయంలో వివాదం తలెత్తినపుడు కాపీరైట్ యాక్ట్ ప్రకారం కథా బీజంలో మరొక కథాంశంతో పోలికలు ఉన్నంత మాత్రాన సరిపోదు. కథా సంవిధానం విస్తరించిన విధానం మీదనే హక్కులు నిర్ణయించబడతాయి అనే విషయం నేను తెలుసుకున్నాను.
 
@@ -265,7 +311,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
 ఈ పత్రంలోని అన్ని విషయాలు చదివి, అర్ధం చేసుకొని నా అంగీకారంతో సంతకం చేస్తున్నాను.
 
 భవదీయుడు / భవదీయురాలు
-( కథా రచయిత / రచయిత్రి సంతకం )`;
+( ${name || 'రచయిత / రచయిత్రి సంతకం'} )`;
   };
 
   const handleRegisterScript = async (e) => {
