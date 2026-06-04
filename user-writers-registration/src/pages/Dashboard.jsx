@@ -318,9 +318,9 @@ export default function Dashboard({ member, setMember, onLogout }) {
         // Draw light border around the page
         page.drawRectangle({
           x: 25,
-          y: 55,
+          y: 48,
           width: width - 50,
-          height: height - 80,
+          height: height - 73,
           borderColor: rgb(0.7, 0.7, 0.7),
           borderWidth: 1.5,
         });
@@ -337,7 +337,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
         if (stampImage) {
           page.drawImage(stampImage, {
             x: 35,
-            y: 10,
+            y: 8,
             width: 38,
             height: 38,
           });
@@ -347,7 +347,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
         if (signImage) {
           page.drawImage(signImage, {
             x: width - 80,
-            y: 15,
+            y: 12,
             width: 45,
             height: 20,
           });
