@@ -318,9 +318,9 @@ export default function Dashboard({ member, setMember, onLogout }) {
         // Draw light border around the page
         page.drawRectangle({
           x: 25,
-          y: 48,
+          y: 52,
           width: width - 50,
-          height: height - 73,
+          height: height - 77,
           borderColor: rgb(0.7, 0.7, 0.7),
           borderWidth: 1.5,
         });
@@ -337,19 +337,19 @@ export default function Dashboard({ member, setMember, onLogout }) {
         if (stampImage) {
           page.drawImage(stampImage, {
             x: 35,
-            y: 8,
-            width: 38,
-            height: 38,
+            y: 5,
+            width: 45,
+            height: 45,
           });
         }
 
         // Draw signature at the bottom right
         if (signImage) {
           page.drawImage(signImage, {
-            x: width - 80,
-            y: 12,
-            width: 45,
-            height: 20,
+            x: width - 85,
+            y: 10,
+            width: 50,
+            height: 22,
           });
         }
       });
