@@ -238,6 +238,8 @@ export default function Dashboard({ member, setMember, onLogout }) {
     };
 
     const name = member?.name || '';
+    const surname = member?.surname || '';
+    const fullName = [surname, name].filter(Boolean).join(' ');
     const nomineeName = member?.nomineeName || member?.fatherName || member?.fatherOrHusbandName || '';
     const nomineeRelation = member?.nomineeRelation || 'తండ్రి / భర్త';
     const membershipId = member?.membershipId || '';
@@ -326,7 +328,7 @@ ${formattedClauses}
 ఈ పత్రంలోని అన్ని విషయాలు చదివి, అర్ధం చేసుకొని నా అంగీకారంతో సంతకం చేస్తున్నాను.
 
 భవదీయుడు / భవదీయురాలు
-( ${name || 'రచయిత / రచయిత్రి సంతకం'} )`;
+${fullName || 'రచయిత / రచయిత్రి సంతకం'}`;
   };
 
   const handleRegisterScript = async (e) => {
