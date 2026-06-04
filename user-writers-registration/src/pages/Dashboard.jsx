@@ -234,7 +234,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
       }
     }
 
-    const address = member?.address || '';
+    const address = member?.permanentAddress || member?.address || '';
     const cell = member?.mobileNumber || '';
     const title = scriptTitle || '';
     const pages = pageCount || '';
