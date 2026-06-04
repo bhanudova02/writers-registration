@@ -258,22 +258,30 @@ export default function Dashboard({ member, setMember, onLogout }) {
     const title = scriptTitle || '';
     const pages = pageCount || '';
 
+    // Dynamic Title based on selectedCategory
+    let agreementTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
+    
     // Dynamic Role and Script Category strings based on selectedCategory
     let roleStr = '(కథారచయిత / పాటల రచయిత)';
     let scriptCategoryStr = `కథ/కథనం/దృశ్యమాలిక/సంభాషణలతో కూడిన ${formatDottedField(pages, 8)} పేజీల స్క్రిప్ట్ / పాట(లు)`;
+    const isSongCategory = selectedCategory ? selectedCategory.toLowerCase().includes('song') : false;
     
     if (selectedCategory) {
       const catLower = selectedCategory.toLowerCase();
       if (catLower.includes('song')) {
+        agreementTitle = 'పాటల రిజిస్ట్రేషన్ హామీపత్రం';
         roleStr = '(పాటల రచయిత)';
         scriptCategoryStr = `${formatDottedField(pages, 8)} పేజీల పాట(లు)`;
       } else if (catLower.includes('story') || catLower.includes('కథ')) {
+        agreementTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
         roleStr = '(కథారచయిత)';
         scriptCategoryStr = `${formatDottedField(pages, 8)} పేజీల కథా స్క్రిప్ట్`;
       } else if (catLower.includes('screenplay')) {
+        agreementTitle = 'స్క్రీన్ ప్లే రిజిస్ట్రేషన్ హామీపత్రం';
         roleStr = '(కథనం / స్క్రీన్ ప్లే రచయిత)';
         scriptCategoryStr = `${formatDottedField(pages, 8)} పేజీల కథనం / స్క్రీన్ ప్లే స్క్రిప్ట్`;
       } else if (catLower.includes('dialogue') || catLower.includes('సంభాషణ')) {
+        agreementTitle = 'సంభాషణల రిజిస్ట్రేషన్ హామీపత్రం';
         roleStr = '(సంభాషణల రచయిత)';
         scriptCategoryStr = `${formatDottedField(pages, 8)} పేజీల సంభాషణల స్క్రిప్ట్`;
       }
@@ -291,13 +299,12 @@ export default function Dashboard({ member, setMember, onLogout }) {
     const clauses = [];
 
     // Clause 1: Basic registration details
-    clauses.push(`నా పేరు ${formattedName} ${roleStr}, ${formattedNominee} సభ్యత్వం నెం. ${formattedMemberId} ${memberTypeStr}, చిరునామా ${formattedAddress} సెల్ నెం. ${formattedCell} నేను ది. ${formattedDate} నాడు రిజిష్టర్ చేయిస్తున్న ${formattedTitle} అనుపేరుగల ${scriptCategoryStr} పూర్తిగా నా స్వంత రచన.`);
+    clauses.push(`నా పేరు ${formattedName} ${roleStr}, తండ్రి / భర్త ${formattedNominee} సభ్యత్వం నెం. ${formattedMemberId} ${memberTypeStr}, చిరునామా ${formattedAddress} సెల్ నెం. ${formattedCell} నేను ది. ${formattedDate} నాడు రిజిష్టర్ చేయిస్తున్న ${formattedTitle} అనుపేరుగల కథ/కథనం/దృశ్యమాలిక/సంభాషణలతో కూడిన ${scriptCategoryStr} పూర్తిగా నా స్వంత రచన.`);
 
     // Clause 2: Originality warranty
     clauses.push(`ఇది తెలుగు కాని, మరి ఏ ఇతర భాషల్లో గాని వెలువడిన కథ, నవల, సినిమా, టి.వి, రేడియో, నాటకం, నాటిక వంటి ప్రక్రియలకు అనువాదం గానీ, అనుసరణగానీ, పై వాటిలో దేనినుంచైనా కొంత భాగాన్ని గ్రహించడం గానీ కాదని హామీ ఇస్తున్నాను.`);
 
     // Clause 3: Song or Story/Script specific originality warranty
-    const isSongCategory = selectedCategory ? selectedCategory.toLowerCase().includes('song') : false;
     if (isSongCategory) {
       clauses.push(`నేను రాసిన ${formattedTitle} పాటని (పాటల్ని) రిజిష్టర్ చేయిస్తున్నాను. ఇది ఏ ఇతర సినిమా పాటలకు, కవిత్వ ఖండికలకు అనుసరణకానీ, అనుకరణకానీ కాదు, అని ధృవపరుస్తున్నాను.`);
     } else {
@@ -311,19 +318,18 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
     clauses.push(`నేను రిజిష్టరు చేయిస్తున్న వాటిలో కథ, కథనం, సంభాషణలు, పాటలకు సంబందించిన విషయాలు మాత్రమే రిజిష్టరు చేయబడతాయి అని నాకు తెలుసు.`);
 
-    clauses.push(`భవిష్యత్ కాలంలో ఈ కథ / పాటల విషయమై ఎటువంటి అభియోగం వచ్చినా, ఆ అభియోగాన్ని తెలుగు సినీ రచయితల సంఘం కో-ఆర్డినేషన్ కమిటీకి కానీ, కథా హక్కుల వేదికకు కానీ మధ్యంతర నిర్ణయం కోసం పంపించే హక్కు తెలుగు సినీ రచయితల సంఘానికి ఉంది అని నాకు తెలుసు. మధ్యవర్తిత్వం సమయంలో అభియోగానికి గురైన వారు చిత్రం చిత్రీకరణ సమయంలో తన కథాహక్కులకు భంగం కలుగుతుందని అభ్యంతరం వ్యక్తం చేస్తే, చిత్రీకరణ పూర్తయిన పిదప, చిత్రం విడుదలకు ముందే వారి కథను రచయితల సంఘంలో సబ్మిట్ చేయవలసి ఉంటుంది. ఉభయుల కథలను పరిశీలించి, మధ్యవర్తిత్వ నిర్ణయం తెలియజేసే హక్కు తెలుగు సినీ రచయితల సంఘం కథాహక్కుల వేదికకు ఉందని నాకు తెలుసు. చిత్రీకరణ సమయంలోనే సత్వర న్యాయం కావాలని కోరుకుంటే న్యాయస్థానానికి వెళ్ళమని సూచించే హక్కు రచయితల సంఘానికి ఉందని నాకు తెలుసు.`);
+    clauses.push(`భవిష్యత్ కాలంలో ఈ కథ / పాటల విషయమై ఎటువంటి అభియోగం వచ్చినా, ఆ అభియోగాన్ని తెలుగు సినీ రచయితల సంఘం కో-ఆర్డినేషన్ కమిటీకి కానీ, కథా హక్కుల వేదికకు కానీ మధ్యంతర నిర్ణయం కోసం పంపించే హక్కు తెలుగు సినీ రచయితల సంఘానికి ఉంది అని నాకు తెలుసు. మధ్యవర్తిత్వం సమయంలో అభియోగానికి గురైన వారు చిత్రం చిత్రీకరణ సమయంలో తన కథాహక్కులకు భంగం కలుగుతుందని అభ్యంతరం వ్యక్తం చేస్తే, చిత్రీకరణ పూర్తయిన పిదప, చిత్రం విడుదలకు ముందే వారి కథను రచయితల సంఘంలో సబ్మిట్ చేయవలసి ఉంటుంది. ఉభయుల కథలను పరిశీలించి, మధ్యవర్తిత్వ నిర్ణయం తెలియజేసే హక్కు తెలుగు సినీ రచయితల సంఘం కథాహక్కుల వేదికకు ఉందని నాకు తెలుసు. చిత్రీకరణ సమయంలోనే సత్వర న్యాయం కావాలని కోరుకుంటే న్యాయస్థానానికి వెళ్ళమని సూచించే హక్కు రచయితల సంఘానికి ఉందని నాకు తెలుసు. ఈ కథ / పాట విషయమై ఎలాంటి వివాదాలు తలెత్తినా మన సంఘం ఇచ్చే ఆదేశాలకు కట్టుబడి ఉంటానని, కథాహక్కులవేదిక నియమం 16 ప్రకారము నేను చేసిన లేదా నాపై వచ్చిన అభియోగం గురించి సోషల్ మీడియాకు గానీ, ఛానల్స్కుగానీ, పత్రికలకు తెలియజేయననీ, సామాజిక మాధ్యమాలలో ఎలాంటి చర్చలకు వెళ్ళనని వాగ్ధానం చేస్తున్నాను. ఒకవేళ ఈ నియమాన్ని ఉల్లంఘించినట్లైయితే నామీద చర్య తీసుకొనే హక్కు తెలుగు సినీ రచయితల సంఘానికి ఉన్నదని అంగీకరిస్తున్నాను.`);
 
     // Map each clause to a numbered string format
     const formattedClauses = clauses.map((clauseText, index) => `${index + 1}) ${clauseText}`).join('\n\n');
 
-    return `అధ్యక్షులు / ప్రధానకార్యదర్శి
+    return `${agreementTitle}
+అధ్యక్షులు / ప్రధానకార్యదర్శి
 తెలుగు సినీ రచయితల సంఘం వారికి!
 
 అయ్యా!
 
 ${formattedClauses}
-
-ఈ కథ / పాట విషయమై ఎలాంటి వివాదాలు తలెత్తినా మన సంఘం ఇచ్చే ఆదేశాలకు కట్టుబడి ఉంటానని, కథాహక్కులవేదిక నియమం 16 ప్రకారము నేను చేసిన లేదా నాపై వచ్చిన అభియోగం గురించి సోషల్ మీడియాకు గానీ, ఛానల్స్కుగానీ, పత్రికలకు తెలియజేయననీ, సామాజిక మాధ్యమాలలో ఎలాంటి చర్చలకు వెళ్ళనని వాగ్ధానం చేస్తున్నాను. ఒకవేళ ఈ నియమాన్ని ఉల్లంఘించినట్లైయితే నామీద చర్య తీసుకొనే హక్కు తెలుగు సినీ రచయితల సంఘానికి ఉన్నదని అంగీకరిస్తున్నాను.
 
 ఈ పత్రంలోని అన్ని విషయాలు చదివి, అర్ధం చేసుకొని నా అంగీకారంతో సంతకం చేస్తున్నాను.
 
