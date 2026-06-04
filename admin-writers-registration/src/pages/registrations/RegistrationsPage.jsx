@@ -16,118 +16,132 @@ export default function RegistrationsPage() {
     const [viewReceipt, setViewReceipt] = useState(null);
     const [showAgreementViewer, setShowAgreementViewer] = useState(null);
 
-    const handleDownloadAgreementDoc = (reg) => {
+    const handleDownloadAgreementDoc = async (reg) => {
         if (!reg.agreementText) {
             toast.error("No agreement text found for this registration.");
             return;
         }
 
-        const printWindow = window.open("", "_blank");
-        if (!printWindow) {
-            toast.error("Popup blocked! Please allow popups to download the PDF.");
-            return;
-        }
+        const toastId = toast.loading("Generating PDF, please wait...");
 
         const dateStr = reg.agreedAt ? new Date(reg.agreedAt).toLocaleString() : new Date().toLocaleString();
 
-        printWindow.document.write(`
-            <html>
-            <head>
-                <title>TCWA_Agreement_${reg.registrationId || reg.id}</title>
-                <style>
-                    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;855;900&display=swap');
-                    body {
-                        font-family: 'Outfit', sans-serif;
-                        padding: 40px;
-                        color: #1f2937;
-                        line-height: 1.8;
-                        font-size: 14px;
-                    }
-                    .header {
-                        text-align: center;
-                        border-bottom: 2px solid #e5e7eb;
-                        padding-bottom: 20px;
-                        margin-bottom: 30px;
-                    }
-                    .logo-placeholder {
-                        font-size: 26px;
-                        font-weight: 900;
-                        color: #f97316;
-                        margin-bottom: 5px;
-                        letter-spacing: 0.05em;
-                    }
-                    .association-name {
-                        font-size: 20px;
-                        font-weight: 900;
-                        color: #1e3a8a;
-                    }
-                    .title {
-                        font-size: 18px;
-                        font-weight: 900;
-                        text-align: center;
-                        margin-top: 25px;
-                        margin-bottom: 25px;
-                        color: #111827;
-                        text-decoration: underline;
-                    }
-                    .content {
-                        white-space: pre-line;
-                        text-align: justify;
-                        margin-bottom: 35px;
-                        font-size: 13px;
-                    }
-                    .meta-info {
-                        background-color: #f9fafb;
-                        border: 1px solid #e5e7eb;
-                        padding: 18px;
-                        border-radius: 8px;
-                        font-size: 13px;
-                        margin-bottom: 30px;
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 10px;
-                    }
-                    .meta-item {
-                        margin-bottom: 5px;
-                    }
-                    @media print {
-                        body {
-                            padding: 20px;
-                        }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="header">
-                    <div class="logo-placeholder">TCWA</div>
-                    <div class="association-name">TELUGU CINE WRITERS' ASSOCIATION</div>
+        // Build the HTML content
+        const htmlContent = `
+            <div style="font-family: 'Outfit', 'Noto Sans Telugu', sans-serif; padding: 40px; color: #1f2937; line-height: 1.8; font-size: 14px; background: white;">
+                <div style="text-align: center; border-bottom: 2px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 30px;">
+                    <div style="font-size: 26px; font-weight: 900; color: #f97316; margin-bottom: 5px; letter-spacing: 0.05em;">TCWA</div>
+                    <div style="font-size: 20px; font-weight: 900; color: #1e3a8a;">TELUGU CINE WRITERS' ASSOCIATION</div>
                     <div style="font-size: 10px; color: #4b5563; font-weight: bold; margin-top: 5px;">(Regd. No. A741, Registered under Trade Union Act, 1926)</div>
                 </div>
 
-                <div class="meta-info">
-                    <div class="meta-item"><strong>Registration ID:</strong> ${reg.registrationId || reg.id}</div>
-                    <div class="meta-item"><strong>Writer Name:</strong> ${reg.writerName || "N/A"}</div>
-                    <div class="meta-item"><strong>Membership ID:</strong> ${reg.membershipId || "N/A"}</div>
-                    <div class="meta-item"><strong>Date Signed:</strong> ${dateStr}</div>
+                <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; padding: 18px; border-radius: 8px; font-size: 13px; margin-bottom: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div><strong>Registration ID:</strong> ${reg.registrationId || reg.id}</div>
+                    <div><strong>Writer Name:</strong> ${reg.writerName || "N/A"}</div>
+                    <div><strong>Membership ID:</strong> ${reg.membershipId || "N/A"}</div>
+                    <div><strong>Date Signed:</strong> ${dateStr}</div>
                 </div>
 
-                <div class="title">స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం</div>
+                <div style="font-size: 18px; font-weight: 900; text-align: center; margin-top: 25px; margin-bottom: 25px; color: #111827; text-decoration: underline;">
+                    ${reg.category && reg.category.toLowerCase().includes('song') ? 'పాటల రిజిస్ట్రేషన్ హామీపత్రం' : 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం'}
+                </div>
 
-                <div class="content">${reg.agreementText}</div>
+                <div style="white-space: pre-line; text-align: justify; margin-bottom: 35px; font-size: 13px;">
+                    ${reg.agreementText}
+                </div>
+            </div>
+        `;
 
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        setTimeout(function() {
-                            window.close();
-                        }, 500);
-                    };
-                </script>
-            </body>
-            </html>
-        `);
-        printWindow.document.close();
-        toast.success("Agreement PDF print dialog opened.");
+        // Create a temporary container element to let the browser compute the layout height
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'absolute';
+        tempDiv.style.left = '-9999px';
+        tempDiv.style.width = '800px';
+        tempDiv.innerHTML = htmlContent;
+        document.body.appendChild(tempDiv);
+
+        // Wait a small moment for layout calculation
+        setTimeout(async () => {
+            const contentHeight = tempDiv.offsetHeight;
+            document.body.removeChild(tempDiv);
+
+            // Construct SVG
+            const svgString = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="800" height="${contentHeight}">
+                    <foreignObject width="100%" height="100%">
+                        <div xmlns="http://www.w3.org/1999/xhtml">
+                            ${htmlContent}
+                        </div>
+                    </foreignObject>
+                </svg>
+            `;
+
+            const img = new Image();
+            const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+            const URL = window.URL || window.webkitURL || window;
+            const blobURL = URL.createObjectURL(svgBlob);
+
+            img.onload = async () => {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 800;
+                    canvas.height = contentHeight;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+
+                    // Clean up URL
+                    URL.revokeObjectURL(blobURL);
+
+                    const { jsPDF } = await import('jspdf');
+                    // A4 size: 595.28 x 841.89 points
+                    // Scale factor: 595.28 / 800 = 0.7441
+                    const scaleFactor = 595.28 / 800;
+                    const pdfPageHeight = 841.89;
+                    const contentHeightInPdf = contentHeight * scaleFactor;
+
+                    const pdf = new jsPDF('p', 'pt', 'a4');
+                    
+                    let yOffset = 0;
+                    while (yOffset < contentHeight) {
+                        if (yOffset > 0) {
+                            pdf.addPage();
+                        }
+                        
+                        // Create a temporary canvas for this page segment
+                        const pageCanvas = document.createElement('canvas');
+                        pageCanvas.width = 800;
+                        // Limit height to one A4 page equivalent in pixels (841.89 / scaleFactor)
+                        const pageSegmentHeight = Math.min(contentHeight - yOffset, pdfPageHeight / scaleFactor);
+                        pageCanvas.height = pageSegmentHeight;
+                        
+                        const pageCtx = pageCanvas.getContext('2d');
+                        pageCtx.fillStyle = '#ffffff';
+                        pageCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+                        pageCtx.drawImage(canvas, 0, yOffset, 800, pageSegmentHeight, 0, 0, 800, pageSegmentHeight);
+                        
+                        const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+                        pdf.addImage(pageImgData, 'JPEG', 0, 0, 595.28, pageSegmentHeight * scaleFactor);
+                        
+                        yOffset += pageSegmentHeight;
+                    }
+
+                    pdf.save(`TCWA_Agreement_${reg.registrationId || reg.id}.pdf`);
+                    toast.update(toastId, { render: "Agreement PDF downloaded successfully!", type: "success", isLoading: false, autoClose: 3000 });
+                } catch (error) {
+                    console.error("PDF generation failed:", error);
+                    toast.update(toastId, { render: "Failed to generate PDF. Please try again.", type: "error", isLoading: false, autoClose: 3000 });
+                }
+            };
+
+            img.onerror = (e) => {
+                console.error("Failed to load SVG into Image", e);
+                toast.update(toastId, { render: "Failed to load layout image.", type: "error", isLoading: false, autoClose: 3000 });
+            };
+
+            img.src = blobURL;
+        }, 100);
     };
 
     // Pagination states
