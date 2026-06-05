@@ -17,7 +17,8 @@ export default function RegistrationForm({
   isRegistering,
   isAgreed,
   setIsAgreed,
-  setShowAgreementModal
+  setShowAgreementModal,
+  pageValidationError
 }) {
   const validateFormBeforeAgreement = () => {
     if (!scriptTitle || !scriptTitle.trim()) {
@@ -34,6 +35,10 @@ export default function RegistrationForm({
     }
     if (isCalculatingPages || pageCount === 0) {
       toast.error("Please wait for the page count calculation to complete.");
+      return false;
+    }
+    if (pageValidationError) {
+      toast.error(pageValidationError);
       return false;
     }
     return true;
@@ -103,6 +108,12 @@ export default function RegistrationForm({
             className="sr-only"
           />
         </label>
+        {pageValidationError && (
+          <p className="text-xs font-semibold text-red-500 mt-2 flex items-center gap-1.5 bg-red-50/50 border border-red-100 rounded px-3 py-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"></span>
+            <span>{pageValidationError}</span>
+          </p>
+        )}
       </div>
 
       <div className="max-w-xs">
@@ -166,7 +177,7 @@ export default function RegistrationForm({
 
       <button
         type="submit"
-        disabled={isRegistering || isCalculatingPages}
+        disabled={isRegistering || isCalculatingPages || !!pageValidationError}
         className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg text-sm transition shadow-[0_4px_14px_0_rgb(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
       >
         {isRegistering ? (

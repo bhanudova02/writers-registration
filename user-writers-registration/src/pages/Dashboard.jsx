@@ -36,14 +36,16 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const [pageValidationError, setPageValidationError] = useState('');
 
   const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
   const calculatePdfPages = async (file) => {
+    setPageValidationError("");
     // 1. File Size Check (60MB max)
     const maxFileSize = 60 * 1024 * 1024; // 60MB
     if (file.size > maxFileSize) {
-      toast.error("Script file size exceeds 60MB limit. Please upload a smaller file.");
+      setPageValidationError("Script file size exceeds 60MB limit. Please upload a smaller file.");
       setPdfFile(null);
       setPageCount(1);
       return;
@@ -57,9 +59,9 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
       // 2. Max Page Count Check (600 pages max)
       if (numPages > 600) {
-        toast.error(`Script pages exceed the maximum limit of 600 pages. Your file has ${numPages} pages.`);
-        setPdfFile(null);
-        setPageCount(1);
+        setPageValidationError(`Script pages exceed the maximum limit of 600 pages. Your file has ${numPages} pages.`);
+        setPdfFile(file);
+        setPageCount(numPages);
         return;
       }
 
@@ -68,25 +70,26 @@ export default function Dashboard({ member, setMember, onLogout }) {
         const isSongsCategory = selectedCategory.toLowerCase().includes('song');
         if (isSongsCategory) {
           if (numPages < 1) {
-            toast.error("Songs registration requires a minimum of 1 page.");
-            setPdfFile(null);
-            setPageCount(1);
+            setPageValidationError("Songs registration requires a minimum of 1 page.");
+            setPdfFile(file);
+            setPageCount(numPages);
             return;
           }
         } else {
           if (numPages < 20) {
-            toast.error(`Script registration requires a minimum of 20 pages. Your file has ${numPages} pages.`);
-            setPdfFile(null);
-            setPageCount(1);
+            setPageValidationError(`Script registration requires a minimum of 20 pages. Your file has ${numPages} pages.`);
+            setPdfFile(file);
+            setPageCount(numPages);
             return;
           }
         }
       }
 
+      setPdfFile(file);
       setPageCount(numPages);
     } catch (error) {
       console.error("Error calculating PDF pages:", error);
-      toast.error("Could not read PDF page count. Please ensure it is a valid PDF.");
+      setPageValidationError("Could not read PDF page count. Please ensure it is a valid PDF.");
       setPdfFile(null);
       setPageCount(1);
     } finally {
@@ -200,17 +203,19 @@ export default function Dashboard({ member, setMember, onLogout }) {
       const isSongsCategory = selectedCategory.toLowerCase().includes('song');
       if (isSongsCategory) {
         if (pageCount < 1) {
-          toast.error("Songs registration requires a minimum of 1 page.");
-          setPdfFile(null);
-          setPageCount(1);
+          setPageValidationError("Songs registration requires a minimum of 1 page.");
+        } else {
+          setPageValidationError("");
         }
       } else {
         if (pageCount < 20) {
-          toast.error(`Script registration requires a minimum of 20 pages. Your file has ${pageCount} pages.`);
-          setPdfFile(null);
-          setPageCount(1);
+          setPageValidationError(`Script registration requires a minimum of 20 pages. Your file has ${pageCount} pages.`);
+        } else {
+          setPageValidationError("");
         }
       }
+    } else {
+      setPageValidationError("");
     }
   }, [selectedCategory, pageCount, isCalculatingPages, pdfFile]);
 
@@ -366,6 +371,11 @@ ${formattedClauses}
     const maxFileSize = 60 * 1024 * 1024; // 60MB
     if (pdfFile.size > maxFileSize) {
       toast.error("Script file size exceeds 60MB limit. Please upload a smaller file.");
+      return;
+    }
+
+    if (pageValidationError) {
+      toast.error(pageValidationError);
       return;
     }
 
@@ -912,6 +922,7 @@ ${formattedClauses}
             isAgreed={isAgreed}
             setIsAgreed={setIsAgreed}
             setShowAgreementModal={setShowAgreementModal}
+            pageValidationError={pageValidationError}
           />
 
           <ReceiptSidebar
