@@ -96,7 +96,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
   const expiryDetails = useMemo(() => {
     if (!member) return { isExpired: false, daysRemaining: 365, expiryDateStr: '' };
-    
+
     if (member.status === 'Inactive') {
       return { isExpired: true, daysRemaining: 0, expiryDateStr: 'Inactive Account' };
     }
@@ -217,7 +217,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const getAgreementText = () => {
     const today = new Date();
     const dateStr = today.toLocaleDateString('en-GB') || today.toLocaleDateString();
-    
+
     // Helper to format a field centered inside a dotted line
     const formatDottedField = (value, totalLength = 30) => {
       const strVal = value ? String(value).trim() : '';
@@ -236,7 +236,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
     const nomineeName = member?.nomineeName || member?.fatherName || member?.fatherOrHusbandName || '';
     const nomineeRelation = member?.nomineeRelation || 'తండ్రి / భర్త';
     const membershipId = member?.membershipId || '';
-    
+
     let memberTypeStr = 'జీవిత సభ్యులు / అసోసియేట్ సభ్యులు';
     if (member?.memberType) {
       if (member.memberType === 'Life Time Member') {
@@ -285,7 +285,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
     const clauses = [];
 
     // Clause 1: Basic registration details matching the exact image line breaks and labels
-    clauses.push(`నా పేరు ${formattedName} ${roleStr},
+    clauses.push(`నా పేరు ${formattedName} (కథారచయిత / పాటల రచయిత),
 
    తండ్రి / భర్త ${formattedNominee}
 
@@ -403,7 +403,7 @@ ${formattedClauses}
 
     try {
       if (!member) throw new Error("User session not found. Please log in again.");
-      
+
       // Strict Security Check: Verify member still exists in DB before taking payment
       const memberDocSnap = await getDoc(doc(db, 'members', member.membershipId));
       if (!memberDocSnap.exists()) {
@@ -532,7 +532,7 @@ ${formattedClauses}
 
       pages.forEach((page) => {
         const { width, height } = page.getSize();
-        
+
         // Draw light border around the page
         page.drawRectangle({
           x: 25,
@@ -598,18 +598,18 @@ ${formattedClauses}
       await updateDoc(regRef, { downloadCount: 1 });
 
       const docPdf = new jsPDF('p', 'mm', 'a4');
-      
+
       // Draw border (Blue)
       docPdf.setDrawColor(0, 0, 150);
       docPdf.setLineWidth(0.5);
       docPdf.rect(10, 10, 190, 195);
-      
+
       try {
         const logoImg = new Image();
         logoImg.src = '/Logo.png';
         const stampImg = new Image();
         stampImg.src = '/stamp.png';
-        
+
         await Promise.all([
           new Promise((resolve, reject) => {
             logoImg.onload = resolve;
@@ -620,10 +620,10 @@ ${formattedClauses}
             stampImg.onerror = reject;
           })
         ]);
-        
+
         // Draw only logo on the left (moved slightly higher and wider)
         docPdf.addImage(logoImg, 'PNG', 15, 11, 20, 30);
-        
+
         // Draw rounded stamp/seal at the bottom center (replacing the logo)
         docPdf.addImage(stampImg, 'PNG', 95, 180, 20, 20);
       } catch (e) {
@@ -635,11 +635,11 @@ ${formattedClauses}
       docPdf.setFontSize(15);
       docPdf.setFont("helvetica", "bold");
       docPdf.text("TELUGU CINE WRITERS' ASSOCIATION", 38, 20);
-      
+
       docPdf.setFontSize(7.5);
       docPdf.setFont("helvetica", "normal");
       docPdf.text("(Regd. No. A741, Registered under Trade Union Act, 1926, Affiliated to T.S.F.I.E.F.)", 38, 27);
-      
+
       // Address Block (Right aligned)
       docPdf.setFontSize(8);
       docPdf.setFont("helvetica", "bold");
@@ -666,17 +666,17 @@ ${formattedClauses}
       docPdf.setTextColor(0, 0, 150);
       docPdf.text(receiptTitle, 105, 52, { align: "center" });
       const titleWidth = docPdf.getTextWidth(receiptTitle);
-      docPdf.line(105 - (titleWidth/2), 53, 105 + (titleWidth/2), 53);
+      docPdf.line(105 - (titleWidth / 2), 53, 105 + (titleWidth / 2), 53);
 
       // No. & Date
       docPdf.setFontSize(11);
       docPdf.setTextColor(0, 0, 150); // Text color blue for labels
       docPdf.text("No.", 15, 65);
-      
+
       docPdf.setTextColor(200, 0, 0); // Red color for ID
       docPdf.setFontSize(14);
       docPdf.text(reg.registrationId, 25, 65);
-      
+
       docPdf.setTextColor(0, 0, 150);
       docPdf.setFontSize(11);
       docPdf.text("Date: ....................................", 140, 65);
@@ -686,18 +686,18 @@ ${formattedClauses}
       // Dynamic Fields Helper
       const lineStartY = 80;
       const lineGap = 15;
-      
+
       const drawField = (label, value, y, dotStart) => {
         docPdf.setTextColor(0, 0, 150);
         docPdf.setFont("helvetica", "bold");
         docPdf.text(label, 15, y);
-        
+
         // Draw dotted line
         docPdf.setDrawColor(0, 0, 150);
         docPdf.setLineDash([1, 1], 0);
         docPdf.line(dotStart, y, 195, y);
         docPdf.setLineDash([], 0);
-        
+
         // Write value above dotted line
         docPdf.setTextColor(0, 0, 0);
         docPdf.setFont("helvetica", "normal");
@@ -707,7 +707,7 @@ ${formattedClauses}
       drawField("Name of the Writer", reg.writerName, lineStartY, 55);
       drawField("TCWA Membership No.", reg.membershipId, lineStartY + lineGap, 65);
       drawField("Title of the Story:", reg.title, lineStartY + lineGap * 2, 50);
-      
+
       // Extra dotted line for story title
       docPdf.setDrawColor(0, 0, 150);
       docPdf.setLineDash([1, 1], 0);
@@ -716,7 +716,7 @@ ${formattedClauses}
 
       drawField("Pages:", reg.pageCount, lineStartY + lineGap * 3 + 5, 30);
       drawField("Received the Sum of Rupees", reg.amount + " (Online Payment)", lineStartY + lineGap * 4 + 5, 75);
-      
+
       // Extra dotted line for amount
       docPdf.setDrawColor(0, 0, 150);
       docPdf.setLineDash([1, 1], 0);
@@ -726,7 +726,7 @@ ${formattedClauses}
       docPdf.setTextColor(0, 0, 150);
       docPdf.setFont("helvetica", "bold");
       docPdf.text("Cash / Card Swipe", 15, lineStartY + lineGap * 5 + 10);
-      
+
       // Rs Box
       docPdf.setDrawColor(0, 0, 150);
       docPdf.rect(15, lineStartY + lineGap * 5 + 15, 35, 12);
@@ -749,10 +749,10 @@ ${formattedClauses}
           signImg.onerror = reject;
         });
         docPdf.addImage(signImg, 'PNG', 145, 165, 40, 15);
-      } catch (e) {}
+      } catch (e) { }
 
 
-      
+
       docPdf.save(`TCWA_Receipt_${reg.registrationId}.pdf`);
 
       if (successRegistration?.registrationId === reg.registrationId) {
@@ -771,7 +771,7 @@ ${formattedClauses}
       toast.error("Payment configuration is missing.");
       return;
     }
-    
+
     // Strict Security Check: Verify member still exists in DB before taking payment
     const memberDocSnap = await getDoc(doc(db, 'members', member.membershipId));
     if (!memberDocSnap.exists()) {
@@ -852,13 +852,13 @@ ${formattedClauses}
             * This page is locked. Dashboard access will restore automatically once admin records your payment.
           </p>
           <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
-            <button 
+            <button
               onClick={() => setShowSupportModal(true)}
               className="text-xs font-bold text-orange-500 hover:text-orange-600 transition"
             >
               Contact Admin
             </button>
-            <button 
+            <button
               onClick={onLogout}
               className="text-xs font-bold text-zinc-500 hover:text-zinc-800 transition"
             >
@@ -874,7 +874,7 @@ ${formattedClauses}
 
   if (receiptModal?.type === 'download' && receiptModal?.isPaymentSuccess) {
     return (
-      <ReceiptModal 
+      <ReceiptModal
         receiptModal={receiptModal}
         isDownloading={isDownloading}
         closeReceiptModal={closeReceiptModal}
@@ -897,7 +897,7 @@ ${formattedClauses}
 
 
         <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-          <RegistrationForm 
+          <RegistrationForm
             handleRegisterScript={handleRegisterScript}
             scriptTitle={scriptTitle}
             setScriptTitle={setScriptTitle}
@@ -914,7 +914,7 @@ ${formattedClauses}
             setShowAgreementModal={setShowAgreementModal}
           />
 
-          <ReceiptSidebar 
+          <ReceiptSidebar
             selectedCategory={selectedCategory}
             pageCount={pageCount}
             successRegistration={successRegistration}
@@ -924,7 +924,7 @@ ${formattedClauses}
           />
         </div>
 
-        <RegistrationsTable 
+        <RegistrationsTable
           isLoadingMyRegs={isLoadingMyRegs}
           myRegistrations={myRegistrations}
           requestUnlockDownload={requestUnlockDownload}
@@ -934,7 +934,7 @@ ${formattedClauses}
       </div>
 
       {receiptModal?.type && !receiptModal?.isPaymentSuccess && (
-        <ReceiptModal 
+        <ReceiptModal
           receiptModal={receiptModal}
           isDownloading={isDownloading}
           closeReceiptModal={closeReceiptModal}
@@ -948,14 +948,14 @@ ${formattedClauses}
       {showAgreementModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-zinc-900/60 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-zinc-200 overflow-hidden transform scale-100 transition-all duration-300">
-            
+
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50">
               <h3 className="text-sm sm:text-base font-extrabold text-zinc-900 flex items-center gap-2">
                 <span className="size-2.5 rounded-full bg-orange-500 animate-pulse flex-shrink-0"></span>
                 <span>స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం (TCWA Agreement)</span>
               </h3>
-              <button 
+              <button
                 onClick={() => setShowAgreementModal(false)}
                 className="text-zinc-400 hover:text-zinc-600 transition p-1 hover:bg-zinc-100 rounded-lg cursor-pointer"
               >
