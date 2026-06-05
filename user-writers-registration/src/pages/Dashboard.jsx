@@ -251,29 +251,10 @@ export default function Dashboard({ member, setMember, onLogout }) {
     const title = scriptTitle || '';
     const pages = pageCount || '';
 
-    // Dynamic Title based on selectedCategory
-    let agreementTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
-    
-    // Dynamic Role and Script Category strings based on selectedCategory
-    let roleStr = '(కథారచయిత / పాటల రచయిత)';
+    // Static Title and Role as per official template
+    const agreementTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
+    const roleStr = '(కథారచయిత / పాటల రచయిత)';
     const isSongCategory = selectedCategory ? selectedCategory.toLowerCase().includes('song') : false;
-    
-    if (selectedCategory) {
-      const catLower = selectedCategory.toLowerCase();
-      if (catLower.includes('song')) {
-        agreementTitle = 'పాటల రిజిస్ట్రేషన్ హామీపత్రం';
-        roleStr = '(పాటల రచయిత)';
-      } else if (catLower.includes('story') || catLower.includes('కథ')) {
-        agreementTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
-        roleStr = '(కథారచయిత)';
-      } else if (catLower.includes('screenplay')) {
-        agreementTitle = 'స్క్రీన్ ప్లే రిజిస్ట్రేషన్ హామీపత్రం';
-        roleStr = '(కథనం / స్క్రీన్ ప్లే రచయిత)';
-      } else if (catLower.includes('dialogue') || catLower.includes('సంభాషణ')) {
-        agreementTitle = 'సంభాషణల రిజిస్ట్రేషన్ హామీపత్రం';
-        roleStr = '(సంభాషణల రచయిత)';
-      }
-    }
 
     // Format all dotted fields centered inside dots matching the image structure
     const formattedName = formatDottedField(fullName, 45);
@@ -335,7 +316,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
     clauses.push(`నేను రిజిష్టర్  చేస్తున్న  కథ  విషయమై  నేను ఏదైనా ఫిర్యాదు చేసినపుడు, ఆ కథను రచయితల సంఘం పరిశీలించే సమయంలో  ఆ కథను పోలిన పాయింట్ గతంలో ఏ సినిమాలోనైనా, నవలలోనైనా, టి.వి,రేడియో, నాటకం, నాటికలలో వచ్చినదని తెలిసినట్లైయితే, నా ఫిర్యాదును అంతటితో ముగించే హక్కు రచయితల సంఘానికి ఉందని నాకు తెలుసు.`);
 
     // Clause 6: External unions jurisdiction clause
-    clauses.push(`కథాచౌర్యం విషయమై  అభియోగం మోపబడిన వ్యక్తి  తెలుగు చలనచిత్ర కార్మిక సమాఖ్య అనుబంధ సంస్థలైన 24 యూనియన్లలో  కానీ, తెలుగు  ఫిలిం  ఛాంబర్లో కానీ,  తెలుగు  చలనచిత్ర నిర్మాతల  మండలిలో  కానీ  సభ్యుడు  కాని పక్షాన నా ఫిర్యాదు  స్వీకరించబదదు అని నాకు తెలుసు.`);
+    clauses.push(`కథాచౌర్యం విషయమై  అభియోగం మోపబడిన వ్యక్తి  తెలుగు చలనచిత్ర కార్మిక సమాఖ్య అనుబంధ సంస్థలైన 24 యూనియన్లలో  కానీ, తెలుగు  ఫిలిం  ఛాంబర్లో కానీ,  తెలుగు  చలనచిత్ర నిర్మాతల  మండలిలో  కానీ  సభ్యుడు  కాని పక్షాన నా ఫిర్యాదు  స్వీకరించబడదు అని నాకు తెలుసు.`);
 
     // Clause 7: Scope of registration clause
     clauses.push(`నేను రిజిష్టరు చేయిస్తున్న వాటిలో కథ, కథనం, సంభాషణలు, పాటలకు సంబందించిన విషయాలు మాత్రమే రిజిష్టరు చేయబడతాయి అని 	నాకు తెలుసు.`);
