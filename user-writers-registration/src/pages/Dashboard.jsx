@@ -564,13 +564,16 @@ ${formattedClauses}
       // Load stamp and signature images
       let stampImage = null;
       let signImage = null;
+      let officialStampTextImage = null;
       try {
-        const [stampBytes, signBytes] = await Promise.all([
+        const [stampBytes, signBytes, officialTextBytes] = await Promise.all([
           fetch('/stamp.png').then(res => res.arrayBuffer()),
-          fetch('/signature.png').then(res => res.arrayBuffer())
+          fetch('/signature.png').then(res => res.arrayBuffer()),
+          fetch('/officialstamptext.png').then(res => res.arrayBuffer())
         ]);
         stampImage = await pdfDoc.embedPng(stampBytes);
         signImage = await pdfDoc.embedPng(signBytes);
+        officialStampTextImage = await pdfDoc.embedPng(officialTextBytes);
       } catch (err) {
         console.warn("Could not load stamp/signature images:", err);
       }
@@ -615,11 +618,21 @@ ${formattedClauses}
           });
         }
 
-        // Draw signature at the bottom right
+        // Draw official stamp text at bottom right
+        if (officialStampTextImage) {
+          page.drawImage(officialStampTextImage, {
+            x: width - 100,
+            y: 10,
+            width: 80,
+            height: 20,
+          });
+        }
+
+        // Draw signature above the official stamp text
         if (signImage) {
           page.drawImage(signImage, {
             x: width - 85,
-            y: 10,
+            y: 30,
             width: 50,
             height: 22,
           });
