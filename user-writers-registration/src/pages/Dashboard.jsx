@@ -37,7 +37,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const [isAgreed, setIsAgreed] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [pageValidationError, setPageValidationError] = useState('');
-  const [nomineeRelation, setNomineeRelation] = useState('Father');
+  const [nomineeRelation, setNomineeRelation] = useState('');
   const [nomineeName, setNomineeName] = useState('');
 
   const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;

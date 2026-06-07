@@ -154,18 +154,14 @@ export default function RegistrationForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
-            Nominee Relation *
-          </label>
-          <select
+          <CustomSelect
+            label="Nominee Relation *"
+            dropdownData={['Father', 'Husband']}
             value={nomineeRelation}
-            onChange={(e) => setNomineeRelation(e.target.value)}
-            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-orange-500 transition-colors"
-            required
-          >
-            <option value="Father">Father</option>
-            <option value="Husband">Husband</option>
-          </select>
+            onChange={setNomineeRelation}
+            buttonClassName="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-orange-500 transition-colors h-auto min-h-[42px]"
+            className="z-40"
+          />
         </div>
         <div>
           <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
