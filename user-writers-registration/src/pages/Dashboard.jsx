@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { AlertTriangle } from 'lucide-react';
-import { doc, updateDoc, collection, query, where, onSnapshot, setDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection, query, where, onSnapshot, setDoc, getDoc, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase';
 import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'react-toastify';
@@ -434,7 +434,7 @@ ${formattedClauses}
         return;
       }
 
-      const regId = `REG-TCWA-${Date.now().toString().slice(-8)}${Math.floor(1000 + Math.random() * 9000)}`;
+      const tempRegId = `TEMP-REG-${Date.now()}`;
       const amount = pageCount * 10;
       await loadRazorpayCheckout();
 
@@ -451,7 +451,7 @@ ${formattedClauses}
             contact: String(member.mobileNumber || '').replace(/\D/g, '').slice(-10),
           },
           notes: {
-            registrationId: regId,
+            registrationId: tempRegId,
             membershipId: member.membershipId,
             category: selectedCategory,
           },
@@ -464,9 +464,28 @@ ${formattedClauses}
         checkout.open();
       });
 
-      const regRef = doc(db, 'registrations', regId);
+      let sequentialId = '';
+      await runTransaction(db, async (transaction) => {
+        const counterRef = doc(db, 'counters', 'registration_counter');
+        const counterDoc = await transaction.get(counterRef);
+        
+        let newSequence = 1001;
+        if (counterDoc.exists()) {
+          newSequence = (counterDoc.data().lastSequence || 1000) + 1;
+        }
+
+        const date = new Date();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = String(date.getFullYear()).slice(-2);
+        
+        sequentialId = `${month}-${year}-${newSequence}`;
+        
+        transaction.set(counterRef, { lastSequence: newSequence }, { merge: true });
+      });
+
+      const regRef = doc(db, 'registrations', sequentialId);
       const newRegData = {
-        registrationId: regId,
+        registrationId: sequentialId,
         membershipId: member.membershipId,
         writerName: member.name,
         title: scriptTitle.trim(),
@@ -482,7 +501,9 @@ ${formattedClauses}
         createdAt: new Date().toISOString(),
         agreementText: getAgreementText(),
         agreedAt: new Date().toISOString(),
-        agreementSigned: true
+        agreementSigned: true,
+        nomineeRelation: nomineeRelation,
+        nomineeName: nomineeName
       };
 
       await setDoc(regRef, newRegData);
