@@ -583,11 +583,12 @@ ${formattedClauses}
 
         // Add Background Watermark Text "TCWA"
         page.drawText("TCWA", {
-          x: width / 2 - 160, // center horizontally
-          y: height / 2 - 30, // center vertically
+          x: width / 2 - 130, // center horizontally roughly
+          y: height / 2 - 50, // center vertically roughly
           size: 110,
           color: rgb(0.92, 0.92, 0.92), // Very light gray so text is readable
           opacity: 0.6,
+          rotate: degrees(45), // Diagonal watermark
         });
 
         // Draw light border around the page
