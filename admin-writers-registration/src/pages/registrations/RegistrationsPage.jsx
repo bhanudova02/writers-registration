@@ -233,11 +233,11 @@ export default function RegistrationsPage() {
             // No. & Date
             docPdf.setFontSize(11);
             docPdf.setTextColor(0, 0, 150);
-            docPdf.text("No.", 15, 65);
+            docPdf.text("Registration ID:", 15, 65);
 
             docPdf.setTextColor(200, 0, 0); // Red color for ID
             docPdf.setFontSize(14);
-            docPdf.text(reg.registrationId || reg.id, 25, 65);
+            docPdf.text(reg.registrationId || reg.id, 48, 65);
 
             docPdf.setTextColor(0, 0, 150);
             docPdf.setFontSize(11);
