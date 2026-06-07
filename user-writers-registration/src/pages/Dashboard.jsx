@@ -221,7 +221,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
     }
   }, [selectedCategory, pageCount, isCalculatingPages, pdfFile]);
 
-  const getAgreementText = () => {
+  const getAgreementText = (regId = '') => {
     const today = new Date();
     const dateStr = today.toLocaleDateString('en-GB') || today.toLocaleDateString();
 
@@ -334,9 +334,13 @@ export default function Dashboard({ member, setMember, onLogout }) {
     // Map each clause to a numbered string format
     const formattedClauses = clauses.map((clauseText, index) => `${index + 1}) ${clauseText}`).join('\n\n');
 
+    const regNoDisplay = regId ? regId : '[ Generated upon successful payment ]';
+
     return `${agreementTitle}
 అధ్యక్షులు / ప్రధానకార్యదర్శి
 తెలుగు సినీ రచయితల సంఘం వారికి!
+
+Registration No: ${regNoDisplay}
 
 అయ్యా!
 
@@ -499,7 +503,7 @@ ${formattedClauses}
         status: 'Approved',
         downloadCount: 0,
         createdAt: new Date().toISOString(),
-        agreementText: getAgreementText(),
+        agreementText: getAgreementText(sequentialId),
         agreedAt: new Date().toISOString(),
         agreementSigned: true,
         nomineeRelation: nomineeRelation,
