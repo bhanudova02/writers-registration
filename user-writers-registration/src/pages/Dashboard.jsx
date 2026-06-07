@@ -369,6 +369,16 @@ ${formattedClauses}
       return;
     }
 
+    if (!nomineeRelation) {
+      toast.error("Please select a Nominee Relation.");
+      return;
+    }
+
+    if (!nomineeName || !nomineeName.trim()) {
+      toast.error("Please enter Nominee Name.");
+      return;
+    }
+
     // 1. File Size Check (60MB max)
     const maxFileSize = 60 * 1024 * 1024; // 60MB
     if (pdfFile.size > maxFileSize) {
