@@ -5,7 +5,7 @@ import { db } from '../firebase';
 import * as pdfjsLib from 'pdfjs-dist';
 import { toast } from 'react-toastify';
 import { jsPDF } from 'jspdf';
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, rgb, degrees } from 'pdf-lib';
 import { normalizeTitle, loadRazorpayCheckout } from '../lib/utils';
 
 // Use locally hosted worker from the public directory.
@@ -577,6 +577,16 @@ ${formattedClauses}
 
       pages.forEach((page) => {
         const { width, height } = page.getSize();
+
+        // Add Background Watermark Text "TCWA"
+        page.drawText("TCWA", {
+          x: width / 2 - 130, // center horizontally roughly
+          y: height / 2 - 50, // center vertically roughly
+          size: 110,
+          color: rgb(0.92, 0.92, 0.92), // Very light gray so text is readable
+          opacity: 0.6,
+          rotate: degrees(45), // Diagonal watermark
+        });
 
         // Draw light border around the page
         page.drawRectangle({
