@@ -18,7 +18,11 @@ export default function RegistrationForm({
   isAgreed,
   setIsAgreed,
   setShowAgreementModal,
-  pageValidationError
+  pageValidationError,
+  nomineeRelation,
+  setNomineeRelation,
+  nomineeName,
+  setNomineeName
 }) {
   const validateFormBeforeAgreement = () => {
     if (!scriptTitle || !scriptTitle.trim()) {
@@ -39,6 +43,14 @@ export default function RegistrationForm({
     }
     if (pageValidationError) {
       toast.error(pageValidationError);
+      return false;
+    }
+    if (!nomineeRelation) {
+      toast.error("Please select a Nominee Relation.");
+      return false;
+    }
+    if (!nomineeName || !nomineeName.trim()) {
+      toast.error("Please enter Nominee Name.");
       return false;
     }
     return true;
@@ -138,6 +150,36 @@ export default function RegistrationForm({
         <p className="text-[10px] text-zinc-500 mt-1.5 font-medium italic">
           * Pages are automatically calculated from the uploaded PDF.
         </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
+            Nominee Relation *
+          </label>
+          <select
+            value={nomineeRelation}
+            onChange={(e) => setNomineeRelation(e.target.value)}
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-orange-500 transition-colors"
+            required
+          >
+            <option value="Father">Father</option>
+            <option value="Husband">Husband</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-[11px] font-bold text-zinc-600 uppercase tracking-wider mb-2">
+            Nominee Name *
+          </label>
+          <input
+            type="text"
+            value={nomineeName}
+            onChange={(e) => setNomineeName(e.target.value)}
+            placeholder="Enter nominee name"
+            className="w-full bg-zinc-50 border border-zinc-200 rounded px-3 py-2.5 text-sm text-zinc-900 focus:outline-none focus:border-orange-500 transition-colors"
+            required
+          />
+        </div>
       </div>
 
       {/* Agreement Checkbox */}

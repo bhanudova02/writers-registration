@@ -37,6 +37,8 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const [isAgreed, setIsAgreed] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
   const [pageValidationError, setPageValidationError] = useState('');
+  const [nomineeRelation, setNomineeRelation] = useState('Father');
+  const [nomineeName, setNomineeName] = useState('');
 
   const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID;
 
@@ -238,8 +240,8 @@ export default function Dashboard({ member, setMember, onLogout }) {
     const name = member?.name || '';
     const surname = member?.surname || '';
     const fullName = [surname, name].filter(Boolean).join(' ');
-    const nomineeName = member?.nomineeName || member?.fatherName || member?.fatherOrHusbandName || '';
-    const nomineeRelation = member?.nomineeRelation || 'తండ్రి / భర్త';
+    const nomineeNameLocal = nomineeName || '';
+    const nomineeRelationLocal = nomineeRelation === 'Father' ? 'తండ్రి' : (nomineeRelation === 'Husband' ? 'భర్త' : 'తండ్రి / భర్త');
     const membershipId = member?.membershipId || '';
 
     let memberTypeStr = 'జీవిత సభ్యులు / అసోసియేట్ సభ్యులు';
@@ -263,7 +265,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
     // Format all dotted fields centered inside dots matching the image structure
     const formattedName = formatDottedField(fullName, 45);
-    const formattedNominee = formatDottedField(nomineeName, 40);
+    const formattedNominee = formatDottedField(nomineeNameLocal, 40);
     const formattedMemberId = formatDottedField(membershipId, 12);
     const formattedCell = formatDottedField(cell, 25);
     const formattedDate = formatDottedField(dateStr, 20);
@@ -292,7 +294,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
     // Clause 1: Basic registration details matching the exact image line breaks and labels
     clauses.push(`నా పేరు ${formattedName} (కథారచయిత / పాటల రచయిత),
 
-   తండ్రి / భర్త ${formattedNominee}
+   ${nomineeRelationLocal} ${formattedNominee}
 
    సభ్యత్వం నెం. ${formattedMemberId} ${memberTypeStr},
 
@@ -923,6 +925,10 @@ ${formattedClauses}
             setIsAgreed={setIsAgreed}
             setShowAgreementModal={setShowAgreementModal}
             pageValidationError={pageValidationError}
+            nomineeRelation={nomineeRelation}
+            setNomineeRelation={setNomineeRelation}
+            nomineeName={nomineeName}
+            setNomineeName={setNomineeName}
           />
 
           <ReceiptSidebar
