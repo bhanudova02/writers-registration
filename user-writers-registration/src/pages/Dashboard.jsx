@@ -718,7 +718,7 @@ ${formattedClauses}
 
       drawField("Name of the Writer", reg.writerName, lineStartY, 55);
       drawField("TCWA Membership No.", reg.membershipId, lineStartY + lineGap, 65);
-      drawField("Title of the Story:", reg.title, lineStartY + lineGap * 2, 50);
+      drawField("Title:", reg.title, lineStartY + lineGap * 2, 50);
 
       // Extra dotted line for story title
       docPdf.setDrawColor(0, 0, 150);
