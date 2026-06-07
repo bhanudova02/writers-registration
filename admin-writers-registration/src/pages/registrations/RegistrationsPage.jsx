@@ -157,6 +157,163 @@ export default function RegistrationsPage() {
         }
     };
 
+    const handleDownloadReceipt = async (reg) => {
+        const toastId = toast.loading("Downloading Receipt...");
+        try {
+            const docPdf = new jsPDF('p', 'mm', 'a4');
+
+            // Draw border (Blue)
+            docPdf.setDrawColor(0, 0, 150);
+            docPdf.setLineWidth(0.5);
+            docPdf.rect(10, 10, 190, 195);
+
+            try {
+                const logoImg = new Image();
+                logoImg.src = '/Logo.png';
+                const stampImg = new Image();
+                stampImg.src = '/stamp.png';
+
+                await Promise.all([
+                    new Promise((resolve, reject) => {
+                        logoImg.onload = resolve;
+                        logoImg.onerror = reject;
+                    }),
+                    new Promise((resolve, reject) => {
+                        stampImg.onload = resolve;
+                        stampImg.onerror = reject;
+                    })
+                ]);
+
+                // Draw only logo on the left
+                docPdf.addImage(logoImg, 'PNG', 15, 11, 20, 30);
+                // Draw rounded stamp/seal at the bottom center
+                docPdf.addImage(stampImg, 'PNG', 95, 180, 20, 20);
+            } catch (e) {
+                console.error("Could not load logo/stamp images", e);
+            }
+
+            // Header Text
+            docPdf.setTextColor(0, 0, 150); // Dark Blue
+            docPdf.setFontSize(15);
+            docPdf.setFont("helvetica", "bold");
+            docPdf.text("TELUGU CINE WRITERS' ASSOCIATION", 38, 20);
+
+            docPdf.setFontSize(7.5);
+            docPdf.setFont("helvetica", "normal");
+            docPdf.text("(Regd. No. A741, Registered under Trade Union Act, 1926, Affiliated to T.S.F.I.E.F.)", 38, 27);
+
+            // Address Block (Right aligned)
+            docPdf.setFontSize(8);
+            docPdf.setFont("helvetica", "bold");
+            const addressLines = [
+                "H.No.8-3-720/9/2, Shalivahana Nagar",
+                "Yellareddy Guda, Srinagar Colony",
+                "Hyderabad - 500 073",
+                "Cell: 9989990229",
+                "e-mail: apcwa93@yahoo.co.in",
+                "tcwa93@gmail.com"
+            ];
+            addressLines.forEach((line, i) => {
+                const w = docPdf.getTextWidth(line);
+                docPdf.text(line, 195 - w, 15 + (i * 4));
+            });
+
+            // Horizontal line
+            docPdf.setDrawColor(0, 0, 150);
+            docPdf.line(10, 42, 200, 42);
+
+            // Receipt Title
+            const receiptTitle = `${reg.category || 'Story'} Registration Receipt`;
+            docPdf.setFontSize(14);
+            docPdf.setTextColor(0, 0, 150);
+            docPdf.text(receiptTitle, 105, 52, { align: "center" });
+            const titleWidth = docPdf.getTextWidth(receiptTitle);
+            docPdf.line(105 - (titleWidth / 2), 53, 105 + (titleWidth / 2), 53);
+
+            // No. & Date
+            docPdf.setFontSize(11);
+            docPdf.setTextColor(0, 0, 150);
+            docPdf.text("No.", 15, 65);
+
+            docPdf.setTextColor(200, 0, 0); // Red color for ID
+            docPdf.setFontSize(14);
+            docPdf.text(reg.registrationId || reg.id, 25, 65);
+
+            docPdf.setTextColor(0, 0, 150);
+            docPdf.setFontSize(11);
+            docPdf.text("Date: ....................................", 140, 65);
+            docPdf.setTextColor(0, 0, 0);
+            docPdf.text(new Date(reg.createdAt).toLocaleDateString(), 152, 64);
+
+            // Dynamic Fields Helper
+            const lineStartY = 80;
+            const lineGap = 15;
+
+            const drawField = (label, value, y, dotStart) => {
+                docPdf.setTextColor(0, 0, 150);
+                docPdf.setFont("helvetica", "bold");
+                docPdf.text(label, 15, y);
+
+                docPdf.setDrawColor(0, 0, 150);
+                docPdf.setLineDash([1, 1], 0);
+                docPdf.line(dotStart, y, 195, y);
+                docPdf.setLineDash([], 0);
+
+                docPdf.setTextColor(0, 0, 0);
+                docPdf.setFont("helvetica", "normal");
+                docPdf.text(String(value || ''), dotStart + 5, y - 2);
+            };
+
+            drawField("Name of the Writer", reg.writerName, lineStartY, 55);
+            drawField("TCWA Membership No.", reg.membershipId, lineStartY + lineGap, 65);
+            drawField("Title of the Story:", reg.title, lineStartY + lineGap * 2, 50);
+
+            docPdf.setDrawColor(0, 0, 150);
+            docPdf.setLineDash([1, 1], 0);
+            docPdf.line(15, lineStartY + lineGap * 2 + 10, 195, lineStartY + lineGap * 2 + 10);
+            docPdf.setLineDash([], 0);
+
+            drawField("Pages:", reg.pageCount, lineStartY + lineGap * 3 + 5, 30);
+            drawField("Received the Sum of Rupees", reg.amount + " (Online Payment)", lineStartY + lineGap * 4 + 5, 75);
+
+            docPdf.setDrawColor(0, 0, 150);
+            docPdf.setLineDash([1, 1], 0);
+            docPdf.line(15, lineStartY + lineGap * 4 + 15, 195, lineStartY + lineGap * 4 + 15);
+            docPdf.setLineDash([], 0);
+
+            docPdf.setTextColor(0, 0, 150);
+            docPdf.setFont("helvetica", "bold");
+            docPdf.text("Cash / Card Swipe", 15, lineStartY + lineGap * 5 + 10);
+
+            docPdf.setDrawColor(0, 0, 150);
+            docPdf.rect(15, lineStartY + lineGap * 5 + 15, 35, 12);
+            docPdf.text("Rs.", 18, lineStartY + lineGap * 5 + 23);
+            docPdf.setTextColor(0, 0, 0);
+            docPdf.text(String(reg.amount), 28, lineStartY + lineGap * 5 + 23);
+
+            docPdf.setTextColor(0, 0, 150);
+            docPdf.setFontSize(10);
+            docPdf.setFont("helvetica", "bold");
+            docPdf.text("GENERAL SECRETARY", 165, 185, { align: "center" });
+
+            try {
+                const signImg = new Image();
+                signImg.src = '/signature.png';
+                await new Promise((resolve, reject) => {
+                    signImg.onload = resolve;
+                    signImg.onerror = reject;
+                });
+                docPdf.addImage(signImg, 'PNG', 145, 165, 40, 15);
+            } catch (e) { }
+
+            docPdf.save(`TCWA_Receipt_${reg.registrationId || reg.id}.pdf`);
+            toast.update(toastId, { render: "Receipt PDF downloaded successfully!", type: "success", isLoading: false, autoClose: 3000 });
+        } catch (error) {
+            console.error(error);
+            toast.update(toastId, { render: "Failed to download receipt. Please try again.", type: "error", isLoading: false, autoClose: 3000 });
+        }
+    };
+
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -449,7 +606,8 @@ export default function RegistrationsPage() {
                         )}
 
                         </div>
-                        <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-end">
+                        <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-between items-center">
+                            <button onClick={() => handleDownloadReceipt(viewReceipt)} className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-semibold hover:bg-blue-700 transition cursor-pointer flex items-center gap-1.5"><FaFileSignature className="text-white" /> Download Receipt</button>
                             <button onClick={() => setViewReceipt(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>
                         </div>
                     </div>
