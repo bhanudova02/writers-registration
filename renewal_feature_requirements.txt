@@ -6,17 +6,25 @@ TCWA MEMBERSHIP RENEWAL & COMMUNICATION FEATURE REQUIREMENTS
 - Based on the user's Joining Date, automatically send an SMS and Email reminder exactly one year later (e.g., Joined Jun 5, 2026 -> Reminder on Jun 5, 2027).
 - The reminder should clearly state the remaining validity time before their actual expiration date.
 
-2. EXPIRATION & 3-YEAR INACTIVE PERIOD:
-- When a user's account expires, they enter a 3-year "Inactive" period.
-- During these 3 years, they CAN login, but they CANNOT access any features (they are restricted to only viewing a renewal prompt/payment page).
+2. AUTOMATIC INACTIVE STATE & 3-YEAR WINDOW:
+- If a user does not renew on time, their account automatically enters an "Inactive" state.
+- They remain in this inactive state for a maximum of 3 years.
+- During these 3 years, they can still login but cannot access any features (restricted to only the renewal prompt/payment page).
 - Send automated reminders every year during this 3-year inactive phase.
 
-3. ACCOUNT DISABLE (POST 3 YEARS):
-- If the user fails to renew even after the 3-year inactive period, the account becomes completely "DISABLED".
-- DISABLED means the user cannot login, and they cannot create a new account with the same credentials.
-- IMPORTANT: The user's information MUST NOT be deleted from the database. It should just be marked as "disabled: true".
+3. ACCOUNT DISABLE STATE (POST 3 YEARS):
+- If the 3-year inactive period completes and the user still has not renewed, the account automatically moves to a "Disabled" state.
+- DISABLED means the user can no longer login with their previous details.
+- To use the platform again, the user will need to create a completely new account from scratch.
+- IMPORTANT: The user's previous information must not be deleted from the database; it should just be marked as "disabled: true" for historical records.
 
-4. SMS & EMAIL TRACKING (ADMIN PAGE):
+4. LATE RENEWAL PENALTY FEES:
+- If a user does not renew on time, a late fee penalty of ₹500 is added for every year they are late.
+- The penalty increases by ₹500 for each subsequent year they remain inactive.
+- When the user logs in during the inactive period, a popup must be shown displaying the total renewal amount including these accumulated penalty charges.
+- The automated SMS and Email reminders must also clearly mention the total pending amount including the penalty.
+
+5. SMS & EMAIL TRACKING (ADMIN PAGE):
 - Maintain a separate page on the Admin Side called "Communication Logs".
 - This page must track every SMS and Email sent.
 - Data to track: Date, Time, Member ID, Message Type (SMS/Email), Delivery Status (Success/Failed), and Error reason (if failed).
@@ -38,4 +46,3 @@ C. AUTOMATION & TRACKING LOGIC:
 - Firebase Cloud Functions (Cron Jobs): Set up a daily function (pub/sub scheduled function) that runs every day at 9 AM, checks the 'members' collection for matching joining/expiry dates, and triggers the SMS/Email APIs.
 - Database Tracking: Create a new Firestore collection called 'communication_logs'. Whenever an SMS/Email API returns a success/fail response, save that response directly into this collection to display on the Admin dashboard.
 
-If User Not Renewal After Next Year It Will Charge 500 every year 500 incrase it show popup and and it send message that amount also
