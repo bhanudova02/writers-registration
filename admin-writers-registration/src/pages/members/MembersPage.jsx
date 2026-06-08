@@ -11,7 +11,9 @@ import { db, auth } from '../../firebase';
 import { logAdminActivity } from '../../lib/logger';
 import EditMemberModal from "../../components/members/EditMemberModal";
 import ViewMemberModal from "../../components/members/ViewMemberModal";
+import SendMemberMessageModal from "../../components/members/SendMemberMessageModal";
 import { TableSkeleton } from "../../components/Skeletons";
+import { FaPaperPlane } from "react-icons/fa";
 
 const memberTypeOptions = [
     { value: "", label: "Select Member Type" },
@@ -69,6 +71,10 @@ export default function MembersPage() {
     // View Member Modal States
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
     const [viewMember, setViewMember] = useState(null);
+
+    // Message Modal States
+    const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+    const [messageMember, setMessageMember] = useState(null);
 
     const isSubmitDisabled = useMemo(() => {
         return !(formData.membershipId || "").trim()
@@ -695,6 +701,18 @@ export default function MembersPage() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {
+                                                                    setMessageMember(member);
+                                                                    setIsMessageModalOpen(true);
+                                                                }}
+                                                                className="inline-flex items-center gap-1 rounded bg-orange-50 hover:bg-orange-100 text-orange-600 px-2 py-1 text-xs font-semibold border border-orange-200 transition-colors cursor-pointer"
+                                                                title="Send Custom Message"
+                                                            >
+                                                                <FaPaperPlane className="text-[10px]" />
+                                                                <span>Message</span>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
                                                                     setViewMember(member);
                                                                     setIsViewModalOpen(true);
                                                                 }}
@@ -793,6 +811,15 @@ export default function MembersPage() {
                     setViewMember(null);
                 }}
                 member={viewMember}
+            />
+
+            <SendMemberMessageModal 
+                isOpen={isMessageModalOpen}
+                onClose={() => {
+                    setIsMessageModalOpen(false);
+                    setMessageMember(null);
+                }}
+                member={messageMember}
             />
         </div>
     );
