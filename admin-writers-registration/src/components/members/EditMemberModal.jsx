@@ -76,11 +76,6 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
             case "dateOfJoining":
             case "name":
             case "surname":
-            case "dateOfBirth":
-            case "qualification":
-            case "bloodGroup":
-            case "nomineeName":
-            case "nomineeRelation":
             case "permanentAddress":
                 return trimmedValue ? "" : "Field is required.";
             case "mobileNumber":
@@ -89,12 +84,10 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                 return "";
             case "aadharNo":
             case "nomineeAadharNo":
-                if (!trimmedValue) return "Field is required.";
-                if (!/^\d{12}$/.test(trimmedValue)) return "Aadhar number must be exactly 12 digits.";
+                if (trimmedValue && !/^\d{12}$/.test(trimmedValue)) return "Aadhar number must be exactly 12 digits.";
                 return "";
             case "panCardNo":
-                if (!trimmedValue) return "Field is required.";
-                if (!/^[A-Za-z]{5}\d{4}[A-Za-z]{1}$/.test(trimmedValue)) return "Invalid PAN format.";
+                if (trimmedValue && !/^[A-Za-z]{5}\d{4}[A-Za-z]{1}$/.test(trimmedValue)) return "Invalid PAN format.";
                 return "";
             case "email":
                 if (!trimmedValue) return "Field is required.";
@@ -184,17 +177,9 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
             || !formData.dateOfJoining
             || !(formData.name || "").trim()
             || !(formData.surname || "").trim()
-            || !formData.dateOfBirth
-            || !(formData.qualification || "").trim()
-            || !(formData.bloodGroup || "").trim()
-            || (formData.mobileNumber || "").length !== 10
-            || (formData.aadharNo || "").length !== 12
-            || (formData.nomineeAadharNo || "").length !== 12
-            || !(formData.panCardNo || "").trim()
-            || !(formData.nomineeName || "").trim()
-            || !(formData.nomineeRelation || "").trim()
-            || !(formData.permanentAddress || "").trim()
             || !(formData.email || "").trim()
+            || !(formData.permanentAddress || "").trim()
+            || (formData.mobileNumber || "").length !== 10
             || (formData.alternateMobileNumber && formData.alternateMobileNumber.length !== 10)
             || Object.values(errors).some(Boolean);
     }, [errors, formData]);
@@ -211,9 +196,9 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <CustomInput label="Full Name *" value={formData.name} onChange={(e) => handleTextChange("name", e.target.value)} error={errors.name} />
                         <CustomInput label="Surname *" value={formData.surname} onChange={(e) => handleTextChange("surname", e.target.value)} error={errors.surname} />
-                        <CustomInput label="Date of Birth (dd/mm/yyyy) *" type="date" value={formData.dateOfBirth} onChange={(e) => handleTextChange("dateOfBirth", e.target.value)} error={errors.dateOfBirth} />
-                        <CustomInput label="Qualification *" value={formData.qualification} onChange={(e) => handleTextChange("qualification", e.target.value)} error={errors.qualification} />
-                        <CustomInput label="Blood Group *" value={formData.bloodGroup} onChange={(e) => handleTextChange("bloodGroup", e.target.value)} error={errors.bloodGroup} />
+                        <CustomInput label="Date of Birth (dd/mm/yyyy)" type="date" value={formData.dateOfBirth} onChange={(e) => handleTextChange("dateOfBirth", e.target.value)} error={errors.dateOfBirth} />
+                        <CustomInput label="Qualification" value={formData.qualification} onChange={(e) => handleTextChange("qualification", e.target.value)} error={errors.qualification} />
+                        <CustomInput label="Blood Group" value={formData.bloodGroup} onChange={(e) => handleTextChange("bloodGroup", e.target.value)} error={errors.bloodGroup} />
                     </div>
                 </div>
 
@@ -224,8 +209,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                         <CustomInput label="Mobile Number *" value={formData.mobileNumber} onChange={(e) => handleNumberChange("mobileNumber", e.target.value, 10)} error={errors.mobileNumber} />
                         <CustomInput label="Alternate Mobile Number (Optional)" value={formData.alternateMobileNumber} onChange={(e) => handleNumberChange("alternateMobileNumber", e.target.value, 10)} error={errors.alternateMobileNumber} />
                         <CustomInput label="Email Address *" value={formData.email} onChange={(e) => handleTextChange("email", e.target.value)} error={errors.email} />
-                        <CustomInput label="Aadhar Number *" value={formData.aadharNo} onChange={(e) => handleNumberChange("aadharNo", e.target.value, 12)} error={errors.aadharNo} />
-                        <CustomInput label="PAN Card Number *" value={formData.panCardNo} onChange={(e) => handleTextChange("panCardNo", e.target.value.toUpperCase())} error={errors.panCardNo} />
+                        <CustomInput label="Aadhar Number" value={formData.aadharNo} onChange={(e) => handleNumberChange("aadharNo", e.target.value, 12)} error={errors.aadharNo} />
+                        <CustomInput label="PAN Card Number" value={formData.panCardNo} onChange={(e) => handleTextChange("panCardNo", e.target.value.toUpperCase())} error={errors.panCardNo} />
                         <div className="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                             <CustomTextArea label="Permanent Address *" value={formData.permanentAddress} onChange={(e) => handleTextChange("permanentAddress", e.target.value)} error={errors.permanentAddress} rows={2} />
                             <CustomTextArea label="Temporary Address (Optional)" value={formData.temporaryAddress} onChange={(e) => handleTextChange("temporaryAddress", e.target.value)} error={errors.temporaryAddress} rows={2} />
@@ -287,9 +272,9 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                 <div className="mb-2 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
                     <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">4. Nominee Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <CustomInput label="Nominee Name *" value={formData.nomineeName} onChange={(e) => handleTextChange("nomineeName", e.target.value)} error={errors.nomineeName} />
-                        <CustomInput label="Relation with Nominee *" value={formData.nomineeRelation} onChange={(e) => handleTextChange("nomineeRelation", e.target.value)} error={errors.nomineeRelation} />
-                        <CustomInput label="Nominee Aadhar Number *" value={formData.nomineeAadharNo} onChange={(e) => handleNumberChange("nomineeAadharNo", e.target.value, 12)} error={errors.nomineeAadharNo} />
+                        <CustomInput label="Nominee Name" value={formData.nomineeName} onChange={(e) => handleTextChange("nomineeName", e.target.value)} error={errors.nomineeName} />
+                        <CustomInput label="Relation with Nominee" value={formData.nomineeRelation} onChange={(e) => handleTextChange("nomineeRelation", e.target.value)} error={errors.nomineeRelation} />
+                        <CustomInput label="Nominee Aadhar Number" value={formData.nomineeAadharNo} onChange={(e) => handleNumberChange("nomineeAadharNo", e.target.value, 12)} error={errors.nomineeAadharNo} />
                     </div>
                 </div>
             </div>
