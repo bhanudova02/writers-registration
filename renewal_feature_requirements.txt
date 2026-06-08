@@ -37,3 +37,5 @@ B. EMAIL API:
 C. AUTOMATION & TRACKING LOGIC:
 - Firebase Cloud Functions (Cron Jobs): Set up a daily function (pub/sub scheduled function) that runs every day at 9 AM, checks the 'members' collection for matching joining/expiry dates, and triggers the SMS/Email APIs.
 - Database Tracking: Create a new Firestore collection called 'communication_logs'. Whenever an SMS/Email API returns a success/fail response, save that response directly into this collection to display on the Admin dashboard.
+
+If User Not Renewal After Next Year It Will Charge 500 every year 500 incrase it show popup and and it send message that amount also
