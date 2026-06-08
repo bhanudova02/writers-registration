@@ -158,16 +158,16 @@ export default function CommunicationLogsPage() {
             <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
                 {/* Balance Cards */}
                 <div className="flex flex-row flex-1 gap-3 sm:gap-4">
-                    <div className="flex-1 bg-blue-50 p-2 sm:p-4 rounded-md shadow-sm border border-blue-200 flex flex-col sm:flex-row items-start justify-between">
+                    <div className="flex-1 bg-blue-50 p-2 sm:p-4 rounded-md shadow-sm border border-blue-200 flex flex-row items-start justify-between">
                         <div>
-                            <h3 className="text-blue-600 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Fast2SMS Wallet</h3>
+                            <h3 className="text-blue-600 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">Fast2SMS Wallet</h3>
                             <p className="text-sm sm:text-xl font-bold text-blue-800 mt-1">{balances.sms}</p>
                         </div>
                         <FaWallet className="text-blue-300 text-base sm:text-2xl mt-0.5" />
                     </div>
-                    <div className="flex-1 bg-orange-50 p-2 sm:p-4 rounded-md shadow-sm border border-orange-200 flex flex-col sm:flex-row items-start justify-between">
+                    <div className="flex-1 bg-orange-50 p-2 sm:p-4 rounded-md shadow-sm border border-orange-200 flex flex-row items-start justify-between">
                         <div>
-                            <h3 className="text-orange-600 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Resend Limit</h3>
+                            <h3 className="text-orange-600 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">Resend Limit</h3>
                             <p className="text-sm sm:text-xl font-bold text-orange-800 mt-1">{balances.email}</p>
                         </div>
                         <FaEnvelope className="text-orange-300 text-base sm:text-2xl mt-0.5" />
@@ -365,16 +365,21 @@ export default function CommunicationLogsPage() {
                                         <td className="border border-zinc-200 py-3 px-3 text-[12px] font-medium text-zinc-500 whitespace-nowrap">
                                             {log.date?.toDate ? log.date.toDate().toLocaleString() : 'Just now'}
                                         </td>
-                                        <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-800">
+                                        <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-800 whitespace-nowrap">
                                             {log.memberId}
                                             {log.isCustom && <span className="ml-2 text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded border border-purple-200">Custom</span>}
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
-                                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 w-fit ${
-                                                log.type === 'SMS' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
-                                            }`}>
-                                                {log.type === 'SMS' ? <FaSms /> : <FaEnvelope />} {log.type}
-                                            </span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className={`px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 w-fit ${
+                                                    log.type === 'SMS' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
+                                                }`}>
+                                                    {log.type === 'SMS' ? <FaSms /> : <FaEnvelope />} {log.type}
+                                                </span>
+                                                <span className="text-[11px] text-zinc-500 font-medium whitespace-nowrap">
+                                                    {log.recipient || ""}
+                                                </span>
+                                            </div>
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
                                             <span className={`px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 w-fit ${

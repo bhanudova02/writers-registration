@@ -127,7 +127,8 @@ exports.dailyRenewalCheck = onSchedule("every day 09:00", async (event) => {
                             date: new Date(),
                             status: smsResult.success ? "Success" : "Failed",
                             error: smsResult.error || null,
-                            messageSent: message
+                            messageSent: message,
+                            recipient: member.mobileNumber
                         });
                     }
 
@@ -140,7 +141,8 @@ exports.dailyRenewalCheck = onSchedule("every day 09:00", async (event) => {
                             date: new Date(),
                             status: emailResult.success ? "Success" : "Failed",
                             error: emailResult.error || null,
-                            messageSent: message
+                            messageSent: message,
+                            recipient: member.emailAddress
                         });
                     }
                 }
@@ -210,7 +212,8 @@ exports.sendCustomMessage = onCall(async (request) => {
             error: smsResult.error || null,
             messageSent: message,
             isCustom: true,
-            sentBy: request.auth.token.email
+            sentBy: request.auth.token.email,
+            recipient: phone
         });
     }
 
@@ -224,7 +227,8 @@ exports.sendCustomMessage = onCall(async (request) => {
             error: emailResult.error || null,
             messageSent: message,
             isCustom: true,
-            sentBy: request.auth.token.email
+            sentBy: request.auth.token.email,
+            recipient: emailAddress
         });
     }
 
