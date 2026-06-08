@@ -155,37 +155,39 @@ export default function CommunicationLogsPage() {
             </div>
 
             {/* Metrics cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-6 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                <div className="bg-white p-3 sm:p-4 rounded-md shadow-sm border border-zinc-200 flex flex-col justify-center lg:col-span-1">
-                    <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Total Msgs</h3>
-                    <p className="text-xl sm:text-2xl font-bold text-zinc-800 mt-1">{logs.length}</p>
-                </div>
-                <div className="bg-white p-3 sm:p-4 rounded-md shadow-sm border border-zinc-200 flex flex-col justify-center lg:col-span-1">
-                    <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">SMS Sent</h3>
-                    <p className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">{smsCount}</p>
-                </div>
-                <div className="bg-white p-3 sm:p-4 rounded-md shadow-sm border border-zinc-200 flex flex-col justify-center lg:col-span-1">
-                    <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Emails Sent</h3>
-                    <p className="text-xl sm:text-2xl font-bold text-orange-600 mt-1">{emailCount}</p>
-                </div>
-                <div className="bg-white p-3 sm:p-4 rounded-md shadow-sm border border-zinc-200 flex flex-col justify-center lg:col-span-1">
-                    <h3 className="text-zinc-500 text-[10px] sm:text-xs font-bold uppercase tracking-wider">Success Rate</h3>
-                    <p className="text-xl sm:text-2xl font-bold text-green-600 mt-1">{logs.length > 0 ? Math.round((successCount/logs.length)*100) : 0}%</p>
-                </div>
+            <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
                 {/* Balance Cards */}
-                <div className="bg-blue-50 p-3 sm:p-4 rounded-md shadow-sm border border-blue-200 flex items-center justify-between lg:col-span-1">
-                    <div>
-                        <h3 className="text-blue-600 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Fast2SMS Wallet</h3>
-                        <p className="text-lg sm:text-xl font-bold text-blue-800 mt-1">{balances.sms}</p>
+                <div className="flex flex-row flex-1 gap-3 sm:gap-4">
+                    <div className="flex-1 bg-blue-50 p-2 sm:p-4 rounded-md shadow-sm border border-blue-200 flex flex-col sm:flex-row items-start justify-between">
+                        <div>
+                            <h3 className="text-blue-600 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Fast2SMS Wallet</h3>
+                            <p className="text-sm sm:text-xl font-bold text-blue-800 mt-1">{balances.sms}</p>
+                        </div>
+                        <FaWallet className="text-blue-300 text-base sm:text-2xl mt-0.5" />
                     </div>
-                    <FaWallet className="text-blue-300 text-lg sm:text-2xl" />
+                    <div className="flex-1 bg-orange-50 p-2 sm:p-4 rounded-md shadow-sm border border-orange-200 flex flex-col sm:flex-row items-start justify-between">
+                        <div>
+                            <h3 className="text-orange-600 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Resend Limit</h3>
+                            <p className="text-sm sm:text-xl font-bold text-orange-800 mt-1">{balances.email}</p>
+                        </div>
+                        <FaEnvelope className="text-orange-300 text-base sm:text-2xl mt-0.5" />
+                    </div>
                 </div>
-                <div className="bg-orange-50 p-3 sm:p-4 rounded-md shadow-sm border border-orange-200 flex items-center justify-between lg:col-span-1">
-                    <div>
-                        <h3 className="text-orange-600 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">Resend Limit</h3>
-                        <p className="text-lg sm:text-xl font-bold text-orange-800 mt-1">{balances.email}</p>
+                
+                {/* Stats Cards */}
+                <div className="flex flex-row gap-2 sm:gap-4 w-full lg:w-auto">
+                    <div className="flex-1 lg:flex-none lg:w-32 bg-white p-2 sm:p-4 rounded-md shadow-sm border border-zinc-200 flex flex-col justify-center text-center">
+                        <h3 className="text-zinc-500 text-[9px] sm:text-xs font-bold uppercase tracking-wider">SMS Sent</h3>
+                        <p className="text-base sm:text-2xl font-bold text-blue-600 mt-1">{smsCount}</p>
                     </div>
-                    <FaEnvelope className="text-orange-300 text-lg sm:text-2xl" />
+                    <div className="flex-1 lg:flex-none lg:w-32 bg-white p-2 sm:p-4 rounded-md shadow-sm border border-zinc-200 flex flex-col justify-center text-center">
+                        <h3 className="text-zinc-500 text-[9px] sm:text-xs font-bold uppercase tracking-wider">Emails Sent</h3>
+                        <p className="text-base sm:text-2xl font-bold text-orange-600 mt-1">{emailCount}</p>
+                    </div>
+                    <div className="flex-1 lg:flex-none lg:w-32 bg-white p-2 sm:p-4 rounded-md shadow-sm border border-zinc-200 flex flex-col justify-center text-center">
+                        <h3 className="text-zinc-500 text-[9px] sm:text-xs font-bold uppercase tracking-wider">Success Rate</h3>
+                        <p className="text-base sm:text-2xl font-bold text-green-600 mt-1">{logs.length > 0 ? Math.round((successCount/logs.length)*100) : 0}%</p>
+                    </div>
                 </div>
             </div>
 
