@@ -45,7 +45,12 @@ export default function DashboardHomePage() {
 
                 // Check pending renewals for associate members
                 if (data.memberType === "Associate Member") {
-                    const createdDate = data.createdAt ? new Date(data.createdAt) : new Date();
+                    let baseDateValue = data.lastRenewalDate || data.dateOfJoining || data.createdAt;
+                    let createdDate = new Date();
+                    if (baseDateValue) {
+                        createdDate = typeof baseDateValue.toDate === 'function' ? baseDateValue.toDate() : new Date(baseDateValue);
+                        if (isNaN(createdDate.getTime())) createdDate = new Date();
+                    }
                     const expiryDate = new Date(createdDate);
                     expiryDate.setFullYear(expiryDate.getFullYear() + 1);
                     const now = new Date();

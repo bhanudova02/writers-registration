@@ -658,7 +658,7 @@ export default function MembersPage() {
                                     <table className="w-full min-w-[900px] border-collapse border border-zinc-200">
                                         <thead>
                                             <tr className="bg-zinc-100 border-b border-zinc-200">
-                                                {["S No", "Membership ID", "Name", "Member Type", "Mobile", "Email", "Added On", "Status", "Actions"].map((head) => (
+                                                {["S No", "Membership ID", "Name", "Member Type", "Mobile", "Email", "Joined On", "Status", "Actions"].map((head) => (
                                                     <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                                         {head}
                                                     </th>
@@ -689,7 +689,9 @@ export default function MembersPage() {
                                                         {member.email || "-"}
                                                     </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 text-[11px] font-semibold text-zinc-500 whitespace-nowrap w-32">
-                                                        {member.createdAt ? new Date(member.createdAt).toLocaleString([], { dateStyle: "short", timeStyle: "short" }) : "-"}
+                                                        {member.dateOfJoining 
+                                                            ? new Date(member.dateOfJoining).toLocaleDateString() 
+                                                            : (member.createdAt ? new Date(member.createdAt).toLocaleString([], { dateStyle: "short" }) : "-")}
                                                     </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 w-28 text-center">
                                                         <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${member.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>

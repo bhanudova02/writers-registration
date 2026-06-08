@@ -51,11 +51,17 @@ export default function RenewalsPage() {
                 let status = data.status || "Active";
                 let amountDue = "-";
 
+                let baseDateValue = data.lastRenewalDate || data.dateOfJoining || data.createdAt;
+                let createdDate = new Date();
+                if (baseDateValue) {
+                    createdDate = typeof baseDateValue.toDate === 'function' ? baseDateValue.toDate() : new Date(baseDateValue);
+                    if (isNaN(createdDate.getTime())) createdDate = new Date();
+                }
+
                 if (status === "Inactive") {
                     status = "Inactive";
                     // Still calculate expiry date for display
                     if (data.memberType === "Associate Member") {
-                        const createdDate = data.createdAt ? new Date(data.createdAt) : new Date();
                         const expDate = new Date(createdDate);
                         expDate.setFullYear(expDate.getFullYear() + 1);
                         expiryDate = expDate.toLocaleDateString();
@@ -65,8 +71,7 @@ export default function RenewalsPage() {
                         expiryDate = "No Expiry";
                     }
                 } else if (data.memberType === "Associate Member") {
-                    // Expiry is 1 year from createdAt
-                    const createdDate = data.createdAt ? new Date(data.createdAt) : new Date();
+                    // Expiry is 1 year from base date
                     const expDate = new Date(createdDate);
                     expDate.setFullYear(expDate.getFullYear() + 1);
                     expiryDate = expDate.toLocaleDateString();
@@ -169,17 +174,20 @@ export default function RenewalsPage() {
             const now = new Date();
             let newCreatedAtDate = now;
 
-            if (memberToRenew && memberToRenew.createdAt) {
-                const currentCreatedDate = new Date(memberToRenew.createdAt);
-                const currentExpiryDate = new Date(currentCreatedDate);
-                currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
+            let baseDateValue = memberToRenew.lastRenewalDate || memberToRenew.dateOfJoining || memberToRenew.createdAt;
+            if (memberToRenew && baseDateValue) {
+                const currentCreatedDate = new Date(baseDateValue);
+                if (!isNaN(currentCreatedDate.getTime())) {
+                    const currentExpiryDate = new Date(currentCreatedDate);
+                    currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
 
-                // If not expired yet, start the new term from the current expiry date
-                if (currentExpiryDate > now) {
-                    newCreatedAtDate = new Date(currentExpiryDate);
-                    newCreatedAtDate.setFullYear(newCreatedAtDate.getFullYear() + (years - 1));
-                } else {
-                    newCreatedAtDate.setFullYear(newCreatedAtDate.getFullYear() + (years - 1));
+                    // If not expired yet, start the new term from the current expiry date
+                    if (currentExpiryDate > now) {
+                        newCreatedAtDate = new Date(currentExpiryDate);
+                        newCreatedAtDate.setFullYear(newCreatedAtDate.getFullYear() + (years - 1));
+                    } else {
+                        newCreatedAtDate.setFullYear(newCreatedAtDate.getFullYear() + (years - 1));
+                    }
                 }
             } else {
                 newCreatedAtDate.setFullYear(newCreatedAtDate.getFullYear() + (years - 1));
@@ -191,7 +199,7 @@ export default function RenewalsPage() {
             const memberRef = doc(db, "members", memberId);
             
             await updateDoc(memberRef, {
-                createdAt: newCreatedAtStr,
+                lastRenewalDate: newCreatedAtStr,
                 status: "Active"
             });
 
@@ -381,8 +389,15 @@ export default function RenewalsPage() {
                                                         {renew.memberType === 'Life Time Member' ? 'Life Time' : 'Associate'}
                                                     </span>
                                                 </td>
-                                                <td className="border border-zinc-200 py-3 px-3 text-[12px] font-medium text-zinc-500 whitespace-nowrap">
-                                                    {renew.expiryDate}
+                                                <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
+                                                    <div className="flex flex-col items-start gap-0.5">
+                                                        <span className="text-[12px] font-bold text-zinc-700">{renew.expiryDate}</span>
+                                                        {renew.memberType === "Associate Member" && renew.daysRemaining !== Infinity && (
+                                                            <span className={`text-[10px] font-bold ${renew.daysRemaining < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
+                                                                {renew.daysRemaining > 0 ? `${renew.daysRemaining} days left` : `${Math.abs(renew.daysRemaining)} days overdue`}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-800 whitespace-nowrap">
                                                     {renew.amountDue}
@@ -507,13 +522,16 @@ export default function RenewalsPage() {
                 let willExtendFrom = "today";
                 let baseDateForCalc = new Date();
 
-                if (modalMember && modalMember.createdAt) {
-                    const currentCreatedDate = new Date(modalMember.createdAt);
-                    const currentExpiryDate = new Date(currentCreatedDate);
-                    currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
-                    if (currentExpiryDate > new Date()) {
-                        willExtendFrom = "their current expiry date";
-                        baseDateForCalc = new Date(currentExpiryDate);
+                let baseDateValue = modalMember?.lastRenewalDate || modalMember?.dateOfJoining || modalMember?.createdAt;
+                if (modalMember && baseDateValue) {
+                    const currentCreatedDate = new Date(baseDateValue);
+                    if (!isNaN(currentCreatedDate.getTime())) {
+                        const currentExpiryDate = new Date(currentCreatedDate);
+                        currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
+                        if (currentExpiryDate > new Date()) {
+                            willExtendFrom = "their current expiry date";
+                            baseDateForCalc = new Date(currentExpiryDate);
+                        }
                     }
                 }
 

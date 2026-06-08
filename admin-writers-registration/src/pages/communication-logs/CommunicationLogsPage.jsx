@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { FaSms, FaEnvelope, FaHistory, FaCheckCircle, FaTimesCircle, FaPaperPlane, FaWallet } from "react-icons/fa";
+import { FaSms, FaEnvelope, FaHistory, FaCheckCircle, FaTimesCircle, FaPaperPlane, FaWallet, FaSearch } from "react-icons/fa";
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { db } from "../../firebase";
 import { TableSkeleton } from "../../components/Skeletons";
 import SendMemberMessageModal from "../../components/members/SendMemberMessageModal";
+import { CustomSelect } from "../../components/custom/CustomSelect";
 import { toast } from "react-toastify";
 
 export default function CommunicationLogsPage() {
@@ -17,6 +18,8 @@ export default function CommunicationLogsPage() {
     const [members, setMembers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const pageSizeOptions = [5, 10, 25, 50];
 
     // Modal State
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -61,7 +64,62 @@ export default function CommunicationLogsPage() {
         const unsubscribeMembers = onSnapshot(qMembers, (snapshot) => {
             const list = [];
             snapshot.forEach((docSnap) => {
-                list.push({ id: docSnap.id, ...docSnap.data() });
+                const data = docSnap.data();
+                const memberId = docSnap.id;
+                
+                let daysRemaining = Infinity;
+                let status = data.status || "Active";
+
+                // Robust date parsing
+                let createdDate = new Date();
+                let baseDateValue = data.lastRenewalDate || data.dateOfJoining || data.createdAt;
+                if (baseDateValue) {
+                    createdDate = typeof baseDateValue.toDate === 'function' 
+                        ? baseDateValue.toDate() 
+                        : new Date(baseDateValue);
+                    
+                    if (isNaN(createdDate.getTime())) {
+                        createdDate = new Date();
+                    }
+                }
+
+                if (status === "Inactive") {
+                    status = "Inactive";
+                    if (data.memberType === "Associate Member") {
+                        const expDate = new Date(createdDate);
+                        expDate.setFullYear(expDate.getFullYear() + 1);
+                        const now = new Date();
+                        daysRemaining = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                    }
+                } else if (data.memberType === "Associate Member") {
+                    const expDate = new Date(createdDate);
+                    expDate.setFullYear(expDate.getFullYear() + 1);
+
+                    const now = new Date();
+                    const diffTime = expDate.getTime() - now.getTime();
+                    daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    
+                    if (daysRemaining <= 0) {
+                        if (daysRemaining < -1825) {
+                            status = "Inactive";
+                        } else if (daysRemaining < -30) {
+                            status = "Overdue";
+                        } else {
+                            status = "Grace Period";
+                        }
+                    } else {
+                        status = "Active";
+                    }
+                } else if (data.memberType === "Life Time Member") {
+                    status = "Life Member";
+                }
+
+                list.push({ 
+                    id: memberId, 
+                    ...data, 
+                    daysRemaining, 
+                    status 
+                });
             });
             setMembers(list);
         });
@@ -81,8 +139,11 @@ export default function CommunicationLogsPage() {
         (m.membershipId || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
         (m.mobileNumber || "").includes(searchQuery)
     );
-    const paginatedMembers = filteredMembers.slice((page-1)*5, page*5);
-    const totalPages = Math.max(1, Math.ceil(filteredMembers.length / 5));
+    const totalPages = Math.max(1, Math.ceil(filteredMembers.length / pageSize));
+    const startIndex = (page - 1) * pageSize;
+    const paginatedMembers = filteredMembers.slice(startIndex, startIndex + pageSize);
+    const showingFrom = filteredMembers.length === 0 ? 0 : startIndex + 1;
+    const showingTo = Math.min(startIndex + pageSize, filteredMembers.length);
 
     return (
         <div className="p-3 sm:p-6 relative">
@@ -138,22 +199,27 @@ export default function CommunicationLogsPage() {
                         </h3>
                         <p className="text-xs text-zinc-500 mt-0.5">Select a member to instantly send SMS or Email.</p>
                     </div>
-                    <input 
-                        type="text"
-                        placeholder="Search by ID, Name or Mobile..."
-                        className="px-3 py-1.5 border border-zinc-300 rounded text-sm min-w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        value={searchQuery}
-                        onChange={(e) => {
-                            setSearchQuery(e.target.value);
-                            setPage(1);
-                        }}
-                    />
+                    <div className="relative flex-1 md:w-64 max-w-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FaSearch className="text-zinc-400 text-sm" />
+                        </div>
+                        <input
+                            type="text"
+                            className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 bg-zinc-50 text-zinc-800 placeholder-zinc-400"
+                            placeholder="Search by ID, Name or Mobile..."
+                            value={searchQuery}
+                            onChange={(e) => {
+                                setSearchQuery(e.target.value);
+                                setPage(1);
+                            }}
+                        />
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[700px] border-collapse border border-zinc-200">
                         <thead>
                             <tr className="bg-zinc-100 border-b border-zinc-200">
-                                {["Member ID", "Name", "Mobile", "Email", "Action"].map((head) => (
+                                {["Member ID", "Name", "Mobile", "Email", "Status / Days", "Action"].map((head) => (
                                     <th key={head} className="border border-zinc-200 py-2.5 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                         {head}
                                     </th>
@@ -163,19 +229,31 @@ export default function CommunicationLogsPage() {
                         <tbody>
                             {paginatedMembers.map((member) => (
                                 <tr key={member.id} className="hover:bg-zinc-50 transition-colors">
-                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-blue-700 w-32">
+                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-blue-700 whitespace-nowrap w-32">
                                         {member.membershipId}
                                     </td>
-                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-zinc-800 capitalize">
+                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-zinc-800 capitalize whitespace-nowrap">
                                         {member.name}
                                     </td>
-                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-semibold text-zinc-700 w-32">
+                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-semibold text-zinc-700 whitespace-nowrap w-32">
                                         {member.mobileNumber || "-"}
                                     </td>
-                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-medium text-zinc-600">
+                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-medium text-zinc-600 whitespace-nowrap">
                                         {member.email || "-"}
                                     </td>
-                                    <td className="border border-zinc-200 py-2.5 px-3 w-28 text-center">
+                                    <td className="border border-zinc-200 py-2.5 px-3 whitespace-nowrap min-w-[120px]">
+                                        <div className="flex flex-col items-start gap-1">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${member.status === 'Active' || member.status === 'Life Member' ? 'bg-green-100 text-green-700' : member.status === 'Grace Period' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                {member.status}
+                                            </span>
+                                            {member.memberType === "Associate Member" && member.daysRemaining !== Infinity && (
+                                                <span className={`text-[10px] font-semibold ${member.daysRemaining < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
+                                                    {member.daysRemaining > 0 ? `${member.daysRemaining} days left` : `${Math.abs(member.daysRemaining)} days overdue`}
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="border border-zinc-200 py-2.5 px-3 whitespace-nowrap w-28 text-center">
                                         <button
                                             type="button"
                                             onClick={() => {
@@ -200,23 +278,53 @@ export default function CommunicationLogsPage() {
                         </tbody>
                     </table>
                 </div>
-                {totalPages > 1 && (
-                    <div className="flex items-center justify-between mt-3 px-1">
-                        <span className="text-xs font-bold text-zinc-500">Page {page} of {totalPages}</span>
-                        <div className="flex gap-2">
-                            <button 
-                                onClick={() => setPage(p => Math.max(1, p-1))}
-                                disabled={page === 1}
-                                className="px-3 py-1 rounded border border-zinc-300 text-xs font-bold disabled:opacity-50"
-                            >Prev</button>
-                            <button 
-                                onClick={() => setPage(p => Math.min(totalPages, p+1))}
-                                disabled={page === totalPages}
-                                className="px-3 py-1 rounded border border-zinc-300 text-xs font-bold disabled:opacity-50"
-                            >Next</button>
+                <div className="mt-4 rounded border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm md:flex md:items-center md:justify-between md:gap-3">
+                    <div className="flex items-center justify-between gap-2 md:flex-1">
+                        <p className="font-semibold text-zinc-600">
+                            Showing {showingFrom}-{showingTo} Of {filteredMembers.length}
+                        </p>
+                        <div className="flex shrink-0 items-center gap-2">
+                            <div className="flex items-center gap-1">
+                                <label className="text-xs font-bold uppercase text-zinc-500" htmlFor="page-size">
+                                    Rows
+                                </label>
+                                <CustomSelect
+                                    dropdownData={pageSizeOptions.map(size => ({ value: size, label: size }))}
+                                    value={pageSize}
+                                    onChange={(val) => {
+                                        setPageSize(Number(val));
+                                        setPage(1);
+                                    }}
+                                    buttonClassName="h-8 py-0 min-w-16 bg-white !text-xs"
+                                    label={null}
+                                />
+                            </div>
+                            <span className="rounded-sm bg-white px-2 py-1.5 text-xs font-bold text-zinc-700 border border-zinc-200 sm:text-sm">
+                                Page {page} of {totalPages}
+                            </span>
                         </div>
                     </div>
-                )}
+                    <div className="mt-3 flex flex-col gap-3 md:mt-0 md:flex-row md:items-center md:justify-end">
+                        <div className="grid grid-cols-2 gap-2 md:flex md:items-center">
+                            <button
+                                type="button"
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                disabled={page === 1}
+                                className="h-10 rounded-sm border border-zinc-300 bg-white px-3 text-sm font-bold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 md:h-9"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={page === totalPages}
+                                className="h-10 rounded-sm border border-zinc-300 bg-white px-3 text-sm font-bold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 md:h-9"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             {/* Logs Table */}
