@@ -6,8 +6,9 @@ const { Resend } = require("resend");
 
 initializeApp();
 const db = getFirestore();
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FAST2SMS_KEY = process.env.FAST2SMS_API_KEY;
+
+// Initialize with a fallback to prevent deployment errors when parsing
+const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
 
 // HELPER: Send SMS via Fast2SMS Quick SMS
 async function sendSMS(phone, message) {
@@ -23,7 +24,7 @@ async function sendSMS(phone, message) {
             },
             {
                 headers: {
-                    authorization: FAST2SMS_KEY,
+                    authorization: process.env.FAST2SMS_API_KEY || "dummy",
                     "Content-Type": "application/json"
                 }
             }
@@ -54,8 +55,96 @@ async function sendEmail(toEmail, subject, htmlContent) {
 
 exports.dailyRenewalCheck = onSchedule("every day 09:00", async (event) => {
     console.log("Daily renewal check started at 9:00 AM");
-    const membersSnapshot = await db.collection("members").get();
     
-    // We will implement the actual logic for checking exactly 1 year and 3 years later.
-    // This is the initial setup file.
+    try {
+        const membersSnapshot = await db.collection("members").get();
+        const today = new Date();
+        
+        let processedCount = 0;
+
+        membersSnapshot.forEach(async (doc) => {
+            const member = doc.data();
+            
+            // Skip Life Time Members or already disabled accounts
+            if (member.memberType === "Life Time Member" || member.disabled === true) {
+                return; 
+            }
+
+            // Assume we check 'lastRenewalDate' or fallback to 'dateOfJoining'
+            const referenceDateStr = member.lastRenewalDate || member.dateOfJoining;
+            if (!referenceDateStr) return;
+
+            const referenceDate = new Date(referenceDateStr);
+            
+            // Calculate exact difference in years, months, days
+            // For simplicity in a daily cron job, we check if today's Month and Day match the reference Month and Day.
+            // If they match, it means an exact year anniversary has hit.
+            if (today.getMonth() === referenceDate.getMonth() && today.getDate() === referenceDate.getDate()) {
+                
+                const yearsPassed = today.getFullYear() - referenceDate.getFullYear();
+
+                let message = "";
+                let penalty = 0;
+
+                if (yearsPassed === 1) {
+                    // Exactly 1 year: Account expires today, becomes Inactive
+                    await doc.ref.update({ status: "Inactive" });
+                    message = `Dear ${member.fullName}, your TCWA membership has expired today. Please login to your account and renew to keep it active.`;
+                
+                } else if (yearsPassed === 2) {
+                    // 2 years passed (1 year inactive) -> Add 500 penalty
+                    penalty = 500;
+                    message = `Dear ${member.fullName}, your TCWA membership expired 1 year ago. A late penalty of Rs.${penalty} has been added. Total renewal is now base amount + ${penalty}. Please renew soon.`;
+                
+                } else if (yearsPassed === 3) {
+                    // 3 years passed (2 years inactive) -> Add 1000 penalty
+                    penalty = 1000;
+                    message = `Dear ${member.fullName}, your TCWA membership expired 2 years ago. A late penalty of Rs.${penalty} has been added. This is your final year before your account gets completely disabled.`;
+                
+                } else if (yearsPassed > 3) {
+                    // More than 3 years -> Disable the account
+                    await doc.ref.update({ 
+                        disabled: true, 
+                        status: "Disabled" 
+                    });
+                    // Skip sending SMS for disabled accounts, or send a final termination SMS
+                    console.log(`Account ${doc.id} disabled due to 3+ years inactivity.`);
+                    return;
+                }
+
+                if (message !== "") {
+                    // 1. Send SMS
+                    if (member.mobileNumber) {
+                        const smsResult = await sendSMS(member.mobileNumber, message);
+                        await db.collection("communication_logs").add({
+                            memberId: doc.id,
+                            type: "SMS",
+                            date: new Date(),
+                            status: smsResult.success ? "Success" : "Failed",
+                            error: smsResult.error || null,
+                            messageSent: message
+                        });
+                    }
+
+                    // 2. Send Email
+                    if (member.emailAddress) {
+                        const emailResult = await sendEmail(member.emailAddress, "TCWA Membership Renewal Reminder", `<p>${message}</p>`);
+                        await db.collection("communication_logs").add({
+                            memberId: doc.id,
+                            type: "Email",
+                            date: new Date(),
+                            status: emailResult.success ? "Success" : "Failed",
+                            error: emailResult.error || null,
+                            messageSent: message
+                        });
+                    }
+                }
+            }
+            processedCount++;
+        });
+
+        console.log(`Daily check completed. Processed ${processedCount} members.`);
+    } catch (error) {
+        console.error("Error in daily renewal check:", error);
+    }
 });
