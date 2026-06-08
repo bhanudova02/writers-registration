@@ -2,13 +2,19 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { getFirestore } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
 const axios = require("axios");
-const { Resend } = require("resend");
+const nodemailer = require("nodemailer");
 
 initializeApp();
 const db = getFirestore();
 
-// Initialize with a fallback to prevent deployment errors when parsing
-const resend = new Resend(process.env.RESEND_API_KEY || "dummy_key");
+// Initialize Nodemailer transporter
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: "telugucinewritersassociation1@gmail.com",
+        pass: process.env.GMAIL_APP_PASSWORD || "dummy_password"
+    }
+});
 
 // HELPER: Send SMS via Fast2SMS Quick SMS
 async function sendSMS(phone, message) {
@@ -36,17 +42,16 @@ async function sendSMS(phone, message) {
     }
 }
 
-// HELPER: Send Email via Resend
+// HELPER: Send Email via Nodemailer (Gmail)
 async function sendEmail(toEmail, subject, htmlContent) {
     try {
-        const { data, error } = await resend.emails.send({
-            from: "TCWA <updates@yourdomain.com>", // TODO: Change to verified domain email
-            to: [toEmail],
+        const info = await transporter.sendMail({
+            from: '"TCWA Updates" <telugucinewritersassociation1@gmail.com>',
+            to: toEmail,
             subject: subject,
             html: htmlContent,
         });
-        if (error) throw new Error(error.message);
-        return { success: true, data };
+        return { success: true, data: info };
     } catch (err) {
         console.error("Email Error:", err.message);
         return { success: false, error: err.message };
@@ -161,7 +166,7 @@ exports.getCommunicationBalances = onCall(async (request) => {
     }
 
     try {
-        const response = await axios.get("https://www.fast2sms.com/dev/wallet", {
+        const response = await axios.post("https://www.fast2sms.com/dev/wallet", {}, {
             headers: {
                 authorization: process.env.FAST2SMS_API_KEY || "dummy"
             }

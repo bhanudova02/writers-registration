@@ -1,0 +1,318 @@
+[debug] [2026-06-08T06:27:52.120Z] ----------------------------------------------------------------------
+[debug] [2026-06-08T06:27:52.123Z] Command:       /home/mr-bhanu/.nvm/versions/node/v20.20.1/bin/node /usr/bin/firebase functions:shell
+[debug] [2026-06-08T06:27:52.123Z] CLI Version:   15.19.1
+[debug] [2026-06-08T06:27:52.124Z] Platform:      linux
+[debug] [2026-06-08T06:27:52.124Z] Node Version:  v20.20.1
+[debug] [2026-06-08T06:27:52.124Z] Time:          Mon Jun 08 2026 11:57:52 GMT+0530 (India Standard Time)
+[debug] [2026-06-08T06:27:52.124Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-06-08T06:27:53.389Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-06-08T06:27:53.390Z] > authorizing via signed-in user (telugucinewritersassociation1@gmail.com)
+[debug] [2026-06-08T06:27:53.390Z] [iam] checking project writers-registration for permissions ["firebase.projects.get"]
+[debug] [2026-06-08T06:27:53.391Z] Checked if tokens are valid: true, expires at: 1780901153535
+[debug] [2026-06-08T06:27:53.391Z] Checked if tokens are valid: true, expires at: 1780901153535
+[debug] [2026-06-08T06:27:53.393Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/writers-registration:testIamPermissions [none]
+[debug] [2026-06-08T06:27:53.393Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/writers-registration:testIamPermissions  x-goog-user-project=writers-registration
+[debug] [2026-06-08T06:27:53.393Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/writers-registration:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-06-08T06:27:53.991Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/writers-registration:testIamPermissions 200
+[debug] [2026-06-08T06:27:53.991Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/writers-registration:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-06-08T06:27:54.006Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-06-08T06:27:57.029Z] defaultcredentials: writing to file /home/mr-bhanu/.config/firebase/telugucinewritersassociation1_gmail_com_application_default_credentials.json
+[debug] [2026-06-08T06:27:57.038Z] DEBUG: Setting GAC to /home/mr-bhanu/.config/firebase/telugucinewritersassociation1_gmail_com_application_default_credentials.json
+[debug] [2026-06-08T06:27:57.039Z] Checked if tokens are valid: true, expires at: 1780901153535
+[debug] [2026-06-08T06:27:57.039Z] Checked if tokens are valid: true, expires at: 1780901153535
+[debug] [2026-06-08T06:27:57.039Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/writers-registration/adminSdkConfig [none]
+[debug] [2026-06-08T06:28:13.832Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/writers-registration/adminSdkConfig 200
+[debug] [2026-06-08T06:28:13.833Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/writers-registration/adminSdkConfig {"projectId":"writers-registration","storageBucket":"writers-registration.firebasestorage.app"}
+[debug] [2026-06-08T06:28:13.865Z] [functions] Watching "/home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions" for Cloud Functions...
+[debug] [2026-06-08T06:28:13.870Z] Validating nodejs source
+[debug] [2026-06-08T06:28:23.905Z] checkFunctionsSDKVersion was unable to fetch information from NPM Error: spawnSync npm ETIMEDOUT
+    at Object.spawnSync (node:internal/child_process:1123:20)
+    at Object.spawnSync (node:child_process:877:24)
+    at Function.spawnSync [as sync] (/usr/lib/node_modules/firebase-tools/node_modules/cross-spawn/index.js:26:23)
+    at Object.getLatestSDKVersion (/usr/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/versioning.js:55:25)
+    at Object.checkFunctionsSDKVersion (/usr/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/versioning.js:74:32)
+    at Delegate.validate (/usr/lib/node_modules/firebase-tools/lib/deploy/functions/runtimes/node/index.js:88:20)
+    at FunctionsEmulator.discoverTriggers (/usr/lib/node_modules/firebase-tools/lib/emulator/functionsEmulator.js:352:35)
+    at async FunctionsEmulator.loadTriggers (/usr/lib/node_modules/firebase-tools/lib/emulator/functionsEmulator.js:399:34)
+    at async FunctionsEmulator.connect (/usr/lib/node_modules/firebase-tools/lib/emulator/functionsEmulator.js:274:13)
+    at async FunctionsServer.connect (/usr/lib/node_modules/firebase-tools/lib/serve/functions.js:65:9)
+[debug] [2026-06-08T06:28:23.907Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "axios": "^1.6.0",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-06-08T06:28:23.908Z] Building nodejs source
+[debug] [2026-06-08T06:28:23.910Z] Failed to find version of module node: reached end of search path /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2026-06-08T06:28:23.923Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-06-08T06:28:23.938Z] Found firebase-functions binary at '/home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8059
+
+[debug] [2026-06-08T06:28:24.400Z] Got response from /__/functions.yaml {"endpoints":{"dailyRenewalCheck":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"every day 09:00","retryConfig":{"retryCount":null,"maxDoublings":null,"maxRetrySeconds":null,"minBackoffSeconds":null,"maxBackoffSeconds":null},"timeZone":null},"entryPoint":"dailyRenewalCheck"},"getCommunicationBalances":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getCommunicationBalances"},"sendCustomMessage":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"sendCustomMessage"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[debug] [2026-06-08T06:28:28.457Z] [functions] Loaded functions definitions from source: dailyRenewalCheck, getCommunicationBalances, sendCustomMessage.
+[debug] [2026-06-08T06:28:28.459Z] [functions[us-central1-dailyRenewalCheck]] function ignored because the pubsub emulator does not exist or is not running.
+[debug] [2026-06-08T06:28:28.460Z] [functions[us-central1-getCommunicationBalances]] http function initialized (http://127.0.0.1:5000/writers-registration/us-central1/getCommunicationBalances).
+[debug] [2026-06-08T06:28:28.460Z] [functions[us-central1-sendCustomMessage]] http function initialized (http://127.0.0.1:5000/writers-registration/us-central1/sendCustomMessage).
+[info] i  functions: Loaded functions: dailyRenewalCheck, getCommunicationBalances, sendCustomMessage 
+[warn] ⚠  functions: The following emulators are not running, calls to these services will affect production: firestore, database, pubsub, storage, eventarc, tasks 
+[debug] [2026-06-08T06:29:13.070Z] DEBUG: File /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/index.js changed, reloading triggers
+[debug] [2026-06-08T06:29:14.073Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-06-08T06:29:15.332Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "axios": "^1.6.0",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-06-08T06:29:15.332Z] Building nodejs source
+[debug] [2026-06-08T06:29:15.332Z] Failed to find version of module node: reached end of search path /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2026-06-08T06:29:15.335Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-06-08T06:29:15.339Z] Found firebase-functions binary at '/home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8819
+
+[debug] [2026-06-08T06:29:16.182Z] Got response from /__/functions.yaml {"endpoints":{"dailyRenewalCheck":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"every day 09:00","retryConfig":{"retryCount":null,"maxDoublings":null,"maxRetrySeconds":null,"minBackoffSeconds":null,"maxBackoffSeconds":null},"timeZone":null},"entryPoint":"dailyRenewalCheck"},"getCommunicationBalances":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getCommunicationBalances"},"sendCustomMessage":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"sendCustomMessage"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[debug] [2026-06-08T06:29:20.235Z] [functions] Loaded functions definitions from source: dailyRenewalCheck, getCommunicationBalances, sendCustomMessage.
+[debug] [2026-06-08T06:30:03.084Z] DEBUG: File /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/test.js changed, reloading triggers
+[debug] [2026-06-08T06:30:04.087Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-06-08T06:30:05.065Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "axios": "^1.6.0",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-06-08T06:30:05.065Z] Building nodejs source
+[debug] [2026-06-08T06:30:05.065Z] Failed to find version of module node: reached end of search path /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2026-06-08T06:30:05.067Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-06-08T06:30:05.069Z] Found firebase-functions binary at '/home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8065
+
+[debug] [2026-06-08T06:30:05.965Z] Got response from /__/functions.yaml {"endpoints":{"dailyRenewalCheck":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"every day 09:00","retryConfig":{"retryCount":null,"maxDoublings":null,"maxRetrySeconds":null,"minBackoffSeconds":null,"maxBackoffSeconds":null},"timeZone":null},"entryPoint":"dailyRenewalCheck"},"getCommunicationBalances":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getCommunicationBalances"},"sendCustomMessage":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"sendCustomMessage"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[debug] [2026-06-08T06:30:10.041Z] [functions] Loaded functions definitions from source: dailyRenewalCheck, getCommunicationBalances, sendCustomMessage.
+[debug] [2026-06-08T06:46:07.999Z] DEBUG: File /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/package.json changed, reloading triggers
+[debug] [2026-06-08T06:46:08.181Z] DEBUG: File /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/package-lock.json changed, reloading triggers
+[debug] [2026-06-08T06:46:09.182Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-06-08T06:46:10.621Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "nodemailer": "^8.0.10",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-06-08T06:46:10.621Z] Building nodejs source
+[debug] [2026-06-08T06:46:10.622Z] Failed to find version of module node: reached end of search path /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2026-06-08T06:46:10.624Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-06-08T06:46:10.628Z] Found firebase-functions binary at '/home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8290
+
+[debug] [2026-06-08T06:46:11.552Z] Got response from /__/functions.yaml {"endpoints":{"dailyRenewalCheck":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"every day 09:00","retryConfig":{"retryCount":null,"maxDoublings":null,"maxRetrySeconds":null,"minBackoffSeconds":null,"maxBackoffSeconds":null},"timeZone":null},"entryPoint":"dailyRenewalCheck"},"getCommunicationBalances":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getCommunicationBalances"},"sendCustomMessage":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"sendCustomMessage"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[debug] [2026-06-08T06:46:14.541Z] DEBUG: File /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/index.js changed, reloading triggers
+[debug] [2026-06-08T06:46:15.542Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-06-08T06:46:16.642Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "nodemailer": "^8.0.10",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-06-08T06:46:16.643Z] Building nodejs source
+[debug] [2026-06-08T06:46:16.643Z] Failed to find version of module node: reached end of search path /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2026-06-08T06:46:16.645Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-06-08T06:46:16.649Z] Found firebase-functions binary at '/home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules/.bin/firebase-functions'
+[debug] [2026-06-08T06:46:16.678Z] [functions] Loaded functions definitions from source: dailyRenewalCheck, getCommunicationBalances, sendCustomMessage.
+[info] Serving at port 8290
+
+[debug] [2026-06-08T06:46:17.305Z] Got response from /__/functions.yaml {"endpoints":{"dailyRenewalCheck":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"every day 09:00","retryConfig":{"retryCount":null,"maxDoublings":null,"maxRetrySeconds":null,"minBackoffSeconds":null,"maxBackoffSeconds":null},"timeZone":null},"entryPoint":"dailyRenewalCheck"},"getCommunicationBalances":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getCommunicationBalances"},"sendCustomMessage":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"sendCustomMessage"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[debug] [2026-06-08T06:46:21.342Z] [functions] Loaded functions definitions from source: dailyRenewalCheck, getCommunicationBalances, sendCustomMessage.
+[debug] [2026-06-08T06:46:30.561Z] DEBUG: File /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/test.js changed, reloading triggers
+[debug] [2026-06-08T06:46:31.563Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-06-08T06:46:32.817Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "nodemailer": "^8.0.10",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-06-08T06:46:32.818Z] Building nodejs source
+[debug] [2026-06-08T06:46:32.818Z] Failed to find version of module node: reached end of search path /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2026-06-08T06:46:32.822Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-06-08T06:46:32.826Z] Found firebase-functions binary at '/home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8986
+
+[debug] [2026-06-08T06:46:33.339Z] Got response from /__/functions.yaml {"endpoints":{"dailyRenewalCheck":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"every day 09:00","retryConfig":{"retryCount":null,"maxDoublings":null,"maxRetrySeconds":null,"minBackoffSeconds":null,"maxBackoffSeconds":null},"timeZone":null},"entryPoint":"dailyRenewalCheck"},"getCommunicationBalances":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getCommunicationBalances"},"sendCustomMessage":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"sendCustomMessage"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[debug] [2026-06-08T06:46:37.377Z] [functions] Loaded functions definitions from source: dailyRenewalCheck, getCommunicationBalances, sendCustomMessage.
+[debug] [2026-06-08T06:46:41.739Z] DEBUG: File /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/test.js changed, reloading triggers
+[debug] [2026-06-08T06:46:42.740Z] Validating nodejs source
+[warn] ⚠  functions: package.json indicates an outdated version of firebase-functions. Please upgrade using npm install --save firebase-functions@latest in your functions directory. 
+[warn] ⚠  functions: Please note that there will be breaking changes when you upgrade. 
+[debug] [2026-06-08T06:46:44.205Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "20"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "firebase-admin": "^12.0.0",
+    "firebase-functions": "^5.0.0",
+    "nodemailer": "^8.0.10",
+    "resend": "^3.2.0"
+  },
+  "devDependencies": {
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2026-06-08T06:46:44.206Z] Building nodejs source
+[debug] [2026-06-08T06:46:44.206Z] Failed to find version of module node: reached end of search path /home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules
+[info] ✔  functions: Using node@20 from host. 
+[info] i  functions: Loaded environment variables from .env. 
+[debug] [2026-06-08T06:46:44.223Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-06-08T06:46:44.238Z] Found firebase-functions binary at '/home/mr-bhanu/Mr_Bhanu/Projects/Freelancing Projects/MovieScriptProject/writers-registration/functions/node_modules/.bin/firebase-functions'
+[info] Serving at port 8991
+
+[debug] [2026-06-08T06:46:44.903Z] Got response from /__/functions.yaml {"endpoints":{"dailyRenewalCheck":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"scheduleTrigger":{"schedule":"every day 09:00","retryConfig":{"retryCount":null,"maxDoublings":null,"maxRetrySeconds":null,"minBackoffSeconds":null,"maxBackoffSeconds":null},"timeZone":null},"entryPoint":"dailyRenewalCheck"},"getCommunicationBalances":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"getCommunicationBalances"},"sendCustomMessage":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"sendCustomMessage"}},"specVersion":"v1alpha1","requiredAPIs":[{"api":"cloudscheduler.googleapis.com","reason":"Needed for scheduled functions."}],"extensions":{}}
+[debug] [2026-06-08T06:46:48.946Z] [functions] Loaded functions definitions from source: dailyRenewalCheck, getCommunicationBalances, sendCustomMessage.
