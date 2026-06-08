@@ -100,26 +100,43 @@ export default function Dashboard({ member, setMember, onLogout }) {
   };
 
   const expiryDetails = useMemo(() => {
-    if (!member) return { isExpired: false, daysRemaining: 365, expiryDateStr: '' };
-
-    if (member.status === 'Inactive') {
-      return { isExpired: true, daysRemaining: 0, expiryDateStr: 'Inactive Account' };
-    }
+    if (!member) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0, totalAmount: 1000 };
 
     if (member.memberType === 'Life Time Member') {
-      return { isExpired: false, daysRemaining: 9999, expiryDateStr: 'Never (Life Time)' };
+      return { isExpired: false, daysRemaining: 9999, expiryDateStr: 'Never (Life Time)', penalty: 0, totalAmount: 0 };
     }
-    const createdDate = member.createdAt ? new Date(member.createdAt) : new Date();
-    const expiryDate = new Date(createdDate);
+
+    const referenceDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
+    const referenceDate = referenceDateStr ? new Date(referenceDateStr) : new Date();
+    
+    const expiryDate = new Date(referenceDate);
     expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-    const now = new Date();
-    const diffTime = expiryDate.getTime() - now.getTime();
+    
+    const today = new Date();
+    const diffTime = expiryDate.getTime() - today.getTime();
     const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const isExpired = daysRemaining <= 0;
+
+    let penalty = 0;
+    if (isExpired) {
+        const msPerYear = 1000 * 60 * 60 * 24 * 365.25;
+        const timeExpired = today.getTime() - expiryDate.getTime();
+        const expiredYears = Math.floor(timeExpired / msPerYear);
+        
+        if (expiredYears === 1) {
+            penalty = 500;
+        } else if (expiredYears >= 2) {
+            penalty = 1000;
+        }
+    }
+
     return {
       isExpired,
       daysRemaining,
-      expiryDateStr: expiryDate.toLocaleDateString([], { dateStyle: 'medium' })
+      expiryDateStr: expiryDate.toLocaleDateString([], { dateStyle: 'medium' }),
+      baseAmount: 1000,
+      penalty: penalty,
+      totalAmount: 1000 + penalty
     };
   }, [member]);
 
@@ -898,26 +915,62 @@ ${formattedClauses}
     }
   };
 
-  if (expiryDetails.isExpired) {
+  if (member?.disabled) {
     return (
       <main className="min-h-screen bg-[#111111] overflow-y-auto py-12 px-4 flex items-center justify-center font-sans">
         <div className="bg-white border border-red-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5">
           <div className="mx-auto size-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-2">
             <AlertTriangle size={36} />
           </div>
+          <h2 className="text-xl font-extrabold text-zinc-900 uppercase tracking-wider">Account Disabled</h2>
+          <p className="text-sm text-zinc-600 leading-relaxed">
+            Dear <span className="text-zinc-900 font-bold">{member?.name}</span>, your membership has been disabled due to 3+ years of inactivity.
+          </p>
+          <div className="pt-2 border-t border-zinc-100 flex items-center justify-center">
+            <button onClick={onLogout} className="text-xs font-bold text-zinc-500 hover:text-zinc-800 transition">Logout</button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (expiryDetails.isExpired) {
+    return (
+      <main className="min-h-screen bg-[#111111] overflow-y-auto py-12 px-4 flex items-center justify-center font-sans">
+        <div className="bg-white border border-amber-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5">
+          <div className="mx-auto size-16 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full flex items-center justify-center mb-2">
+            <AlertTriangle size={36} />
+          </div>
           <h2 className="text-xl font-extrabold text-zinc-900 uppercase tracking-wider">Membership Renewal Required</h2>
           <p className="text-sm text-zinc-600 leading-relaxed">
-            Dear <span className="text-zinc-900 font-bold">{member?.name}</span>, your Associate Membership has expired or renewals are overdue.
-            Under the <span className="text-red-400 font-bold">Strict 5-Years Rule</span>, you must pay your annual renewal fee offline to the TCWA Admin to restore active status.
+            Dear <span className="text-zinc-900 font-bold">{member?.name}</span>, your Associate Membership expired on <span className="font-bold text-zinc-800">{expiryDetails.expiryDateStr}</span>. 
+            You must renew your membership to continue using the dashboard.
           </p>
-          <div className="bg-zinc-50 p-4 border border-zinc-200 text-left rounded text-xs space-y-1.5 text-zinc-600">
-            <p className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider">Account Metrics</p>
-            <p>• Membership ID: <span className="text-amber-600 font-bold">{member?.membershipId}</span></p>
-            <p>• Status: <span className="text-red-500 font-extrabold">{member?.status || "Expired"}</span></p>
-            <p>• Action: Contact TCWA Employee/Admin for payment registry.</p>
+          <div className="bg-zinc-50 p-4 border border-zinc-200 text-left rounded text-sm space-y-2 text-zinc-800">
+            <p className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider border-b border-zinc-200 pb-1 mb-2">Renewal Breakdown</p>
+            <div className="flex justify-between items-center font-medium text-zinc-600">
+              <span>Base Renewal Fee:</span>
+              <span>₹{expiryDetails.baseAmount}</span>
+            </div>
+            {expiryDetails.penalty > 0 && (
+              <div className="flex justify-between items-center font-bold text-red-500">
+                <span>Late Penalty Fee:</span>
+                <span>+ ₹{expiryDetails.penalty}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center font-bold text-lg pt-2 border-t border-zinc-200 mt-2">
+              <span>Total Payable:</span>
+              <span>₹{expiryDetails.totalAmount}</span>
+            </div>
           </div>
+          <button
+            onClick={() => toast.info("Online renewal payment integration pending. Please contact admin.", { icon: "💳" })}
+            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-md transition duration-200"
+          >
+            Pay ₹{expiryDetails.totalAmount} to Renew
+          </button>
           <p className="text-[10px] text-zinc-500 italic font-semibold">
-            * This page is locked. Dashboard access will restore automatically once admin records your payment.
+            * Dashboard access is locked until renewal is completed.
           </p>
           <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
             <button
