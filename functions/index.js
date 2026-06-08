@@ -148,3 +148,80 @@ exports.dailyRenewalCheck = onSchedule("every day 09:00", async (event) => {
         console.error("Error in daily renewal check:", error);
     }
 });
+
+const { onCall, HttpsError } = require("firebase-functions/v2/https");
+
+exports.getCommunicationBalances = onCall(async (request) => {
+    if (!request.auth || !request.auth.token.email) {
+        throw new HttpsError('unauthenticated', 'Must be logged in');
+    }
+    const adminDoc = await db.collection("admins").doc(request.auth.token.email).get();
+    if (!adminDoc.exists) {
+        throw new HttpsError('permission-denied', 'Must be an admin');
+    }
+
+    try {
+        const response = await axios.get("https://www.fast2sms.com/dev/wallet", {
+            headers: {
+                authorization: process.env.FAST2SMS_API_KEY || "dummy"
+            }
+        });
+        const walletBalance = response.data.wallet;
+        return { 
+            smsWalletBalance: walletBalance,
+            emailBalance: "Unlimited"
+        };
+    } catch (error) {
+        console.error("Wallet Error:", error.message);
+        throw new HttpsError('internal', 'Failed to fetch balances');
+    }
+});
+
+exports.sendCustomMessage = onCall(async (request) => {
+    if (!request.auth || !request.auth.token.email) {
+        throw new HttpsError('unauthenticated', 'Must be logged in');
+    }
+    const adminDoc = await db.collection("admins").doc(request.auth.token.email).get();
+    if (!adminDoc.exists) {
+        throw new HttpsError('permission-denied', 'Must be an admin');
+    }
+
+    const { memberId, phone, emailAddress, message, sendToSms, sendToEmail } = request.data;
+    
+    if (!message) {
+        throw new HttpsError('invalid-argument', 'Message is required');
+    }
+
+    let smsResult = null;
+    let emailResult = null;
+
+    if (sendToSms && phone) {
+        smsResult = await sendSMS(phone, message);
+        await db.collection("communication_logs").add({
+            memberId: memberId || "Custom",
+            type: "SMS",
+            date: new Date(),
+            status: smsResult.success ? "Success" : "Failed",
+            error: smsResult.error || null,
+            messageSent: message,
+            isCustom: true,
+            sentBy: request.auth.token.email
+        });
+    }
+
+    if (sendToEmail && emailAddress) {
+        emailResult = await sendEmail(emailAddress, "TCWA Notification", `<p>${message}</p>`);
+        await db.collection("communication_logs").add({
+            memberId: memberId || "Custom",
+            type: "Email",
+            date: new Date(),
+            status: emailResult.success ? "Success" : "Failed",
+            error: emailResult.error || null,
+            messageSent: message,
+            isCustom: true,
+            sentBy: request.auth.token.email
+        });
+    }
+
+    return { success: true, smsResult, emailResult };
+});

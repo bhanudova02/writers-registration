@@ -1,0 +1,16 @@
+[debug] [2026-06-08T06:17:40.465Z] ----------------------------------------------------------------------
+[debug] [2026-06-08T06:17:40.468Z] Command:       /usr/bin/node /usr/bin/firebase deploy --only functions
+[debug] [2026-06-08T06:17:40.468Z] CLI Version:   15.19.1
+[debug] [2026-06-08T06:17:40.468Z] Platform:      linux
+[debug] [2026-06-08T06:17:40.468Z] Node Version:  v24.16.0
+[debug] [2026-06-08T06:17:40.469Z] Time:          Mon Jun 08 2026 11:47:40 GMT+0530 (India Standard Time)
+[debug] [2026-06-08T06:17:40.469Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-06-08T06:17:42.429Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-06-08T06:17:42.429Z] > authorizing via signed-in user (telugucinewritersassociation1@gmail.com)
+[debug] [2026-06-08T06:17:42.429Z] [iam] checking project writers-registration for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2026-06-08T06:17:42.431Z] Checked if tokens are valid: true, expires at: 1780901153535
+[debug] [2026-06-08T06:17:42.431Z] Checked if tokens are valid: true, expires at: 1780901153535
+[debug] [2026-06-08T06:17:42.432Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/writers-registration:testIamPermissions [none]
+[debug] [2026-06-08T06:17:42.432Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/writers-registration:testIamPermissions  x-goog-user-project=writers-registration
+[debug] [2026-06-08T06:17:42.432Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/writers-registration:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
