@@ -4,6 +4,7 @@ import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestor
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { db } from "../../firebase";
 import { TableSkeleton } from "../../components/Skeletons";
+import SendMemberMessageModal from "../../components/members/SendMemberMessageModal";
 import { toast } from "react-toastify";
 
 export default function CommunicationLogsPage() {
@@ -12,17 +13,14 @@ export default function CommunicationLogsPage() {
     const [errorMsg, setErrorMsg] = useState(null);
     const [balances, setBalances] = useState({ sms: "Loading...", email: "Loading..." });
     
+    // Members Table State
+    const [members, setMembers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [page, setPage] = useState(1);
+
     // Modal State
-    const [showModal, setShowModal] = useState(false);
-    const [isSending, setIsSending] = useState(false);
-    const [formData, setFormData] = useState({
-        memberId: "",
-        phone: "",
-        emailAddress: "",
-        message: "",
-        sendToSms: true,
-        sendToEmail: true
-    });
+    const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
+    const [messageMember, setMessageMember] = useState(null);
 
     useEffect(() => {
         const q = query(collection(db, "communication_logs"), orderBy("date", "desc"), limit(100));
@@ -59,69 +57,40 @@ export default function CommunicationLogsPage() {
             console.error("Functions init error:", e);
         }
 
-        return () => unsubscribeLogs();
+        const qMembers = query(collection(db, "members"), orderBy("createdAt", "desc"));
+        const unsubscribeMembers = onSnapshot(qMembers, (snapshot) => {
+            const list = [];
+            snapshot.forEach((docSnap) => {
+                list.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            setMembers(list);
+        });
+
+        return () => {
+            unsubscribeLogs();
+            unsubscribeMembers();
+        };
     }, []);
 
     const smsCount = logs.filter(log => log.type === "SMS").length;
     const emailCount = logs.filter(log => log.type === "Email").length;
     const successCount = logs.filter(log => log.status === "Success").length;
 
-    const handleSendCustomMessage = async (e) => {
-        e.preventDefault();
-        if (!formData.sendToSms && !formData.sendToEmail) {
-            toast.error("Please select at least one method (SMS or Email).");
-            return;
-        }
-        if (formData.sendToSms && !formData.phone) {
-            toast.error("Phone number is required for SMS.");
-            return;
-        }
-        if (formData.sendToEmail && !formData.emailAddress) {
-            toast.error("Email address is required for Email.");
-            return;
-        }
-
-        setIsSending(true);
-        try {
-            const functions = getFunctions();
-            const sendMsg = httpsCallable(functions, "sendCustomMessage");
-            const result = await sendMsg(formData);
-            
-            if (result.data.success) {
-                toast.success("Message sent successfully!");
-                setShowModal(false);
-                setFormData({
-                    memberId: "",
-                    phone: "",
-                    emailAddress: "",
-                    message: "",
-                    sendToSms: true,
-                    sendToEmail: true
-                });
-            } else {
-                toast.error("Failed to send message.");
-            }
-        } catch (error) {
-            console.error("Send custom message error:", error);
-            toast.error(error.message || "Failed to send message.");
-        } finally {
-            setIsSending(false);
-        }
-    };
+    const filteredMembers = members.filter(m => 
+        (m.name || "").toLowerCase().includes(searchQuery.toLowerCase()) || 
+        (m.membershipId || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (m.mobileNumber || "").includes(searchQuery)
+    );
+    const paginatedMembers = filteredMembers.slice((page-1)*5, page*5);
+    const totalPages = Math.max(1, Math.ceil(filteredMembers.length / 5));
 
     return (
         <div className="p-3 sm:p-6 relative">
             <div className="flex items-center justify-between mb-4 sm:mb-6 flex-wrap gap-4">
                 <div className="flex items-center gap-2">
                     <FaHistory className="text-lg md:text-xl text-zinc-700 -mt-0.5" />
-                    <h1 className="text-base sm:text-xl font-bold text-gray-800">Communication Logs</h1>
+                    <h1 className="text-base sm:text-xl font-bold text-gray-800">Communication Center</h1>
                 </div>
-                <button 
-                    onClick={() => setShowModal(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-bold py-2 px-4 rounded-md shadow-sm transition-colors flex items-center gap-2"
-                >
-                    <FaPaperPlane /> Send Custom Message
-                </button>
             </div>
 
             {/* Metrics cards */}
@@ -159,11 +128,102 @@ export default function CommunicationLogsPage() {
                 </div>
             </div>
 
+            {/* Quick Messaging Members Table */}
+            <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                    <div>
+                        <h3 className="text-base font-bold text-zinc-800 flex items-center gap-2">
+                            <FaPaperPlane className="text-blue-500 text-sm -mt-0.5" />
+                            <span>Quick Messaging</span>
+                        </h3>
+                        <p className="text-xs text-zinc-500 mt-0.5">Select a member to instantly send SMS or Email.</p>
+                    </div>
+                    <input 
+                        type="text"
+                        placeholder="Search by ID, Name or Mobile..."
+                        className="px-3 py-1.5 border border-zinc-300 rounded text-sm min-w-64 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        value={searchQuery}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setPage(1);
+                        }}
+                    />
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full min-w-[700px] border-collapse border border-zinc-200">
+                        <thead>
+                            <tr className="bg-zinc-100 border-b border-zinc-200">
+                                {["Member ID", "Name", "Mobile", "Email", "Action"].map((head) => (
+                                    <th key={head} className="border border-zinc-200 py-2.5 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
+                                        {head}
+                                    </th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {paginatedMembers.map((member) => (
+                                <tr key={member.id} className="hover:bg-zinc-50 transition-colors">
+                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-blue-700 w-32">
+                                        {member.membershipId}
+                                    </td>
+                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-zinc-800 capitalize">
+                                        {member.name}
+                                    </td>
+                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-semibold text-zinc-700 w-32">
+                                        {member.mobileNumber || "-"}
+                                    </td>
+                                    <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-medium text-zinc-600">
+                                        {member.email || "-"}
+                                    </td>
+                                    <td className="border border-zinc-200 py-2.5 px-3 w-28 text-center">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setMessageMember(member);
+                                                setIsMessageModalOpen(true);
+                                            }}
+                                            className="inline-flex items-center gap-1 rounded bg-orange-50 hover:bg-orange-100 text-orange-600 px-3 py-1.5 text-xs font-semibold border border-orange-200 transition-colors cursor-pointer"
+                                        >
+                                            <FaPaperPlane className="text-[10px]" />
+                                            <span>Send Message</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                            {paginatedMembers.length === 0 && (
+                                <tr>
+                                    <td colSpan="5" className="border border-zinc-200 py-6 text-center text-xs text-zinc-500 font-bold">
+                                        No members found.
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-3 px-1">
+                        <span className="text-xs font-bold text-zinc-500">Page {page} of {totalPages}</span>
+                        <div className="flex gap-2">
+                            <button 
+                                onClick={() => setPage(p => Math.max(1, p-1))}
+                                disabled={page === 1}
+                                className="px-3 py-1 rounded border border-zinc-300 text-xs font-bold disabled:opacity-50"
+                            >Prev</button>
+                            <button 
+                                onClick={() => setPage(p => Math.min(totalPages, p+1))}
+                                disabled={page === totalPages}
+                                className="px-3 py-1 rounded border border-zinc-300 text-xs font-bold disabled:opacity-50"
+                            >Next</button>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* Logs Table */}
             <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm">
                 <h3 className="text-base font-bold text-zinc-800 mb-2 flex items-center gap-2">
                     <FaHistory className="text-zinc-500 text-sm -mt-0.5" />
-                    <span>Recent Communications</span>
+                    <span>Recent Communication Logs</span>
                 </h3>
                 <p className="text-xs text-zinc-500 mb-4">View recent SMS and Email messages sent to members.</p>
 
@@ -229,115 +289,14 @@ export default function CommunicationLogsPage() {
             </div>
 
             {/* Custom Message Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
-                        <div className="px-6 py-4 border-b border-zinc-200 flex justify-between items-center bg-zinc-50">
-                            <h2 className="text-lg font-bold text-zinc-800 flex items-center gap-2">
-                                <FaPaperPlane className="text-blue-500" /> Send Custom Message
-                            </h2>
-                            <button onClick={() => setShowModal(false)} className="text-zinc-400 hover:text-red-500 transition">
-                                <FaTimesCircle size={20} />
-                            </button>
-                        </div>
-                        <form onSubmit={handleSendCustomMessage} className="p-6 space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2 sm:col-span-1">
-                                    <label className="block text-xs font-bold text-zinc-600 mb-1">Member ID (Optional)</label>
-                                    <input 
-                                        type="text" 
-                                        placeholder="e.g. TCWA-101"
-                                        value={formData.memberId}
-                                        onChange={(e) => setFormData({...formData, memberId: e.target.value})}
-                                        className="w-full px-3 py-2 border border-zinc-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                    />
-                                </div>
-                                <div className="col-span-2 sm:col-span-1 flex items-center gap-4 mt-6">
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={formData.sendToSms}
-                                            onChange={(e) => setFormData({...formData, sendToSms: e.target.checked})}
-                                            className="w-4 h-4 text-blue-600"
-                                        />
-                                        <span className="text-sm font-bold text-zinc-700 flex items-center gap-1"><FaSms className="text-blue-500"/> SMS</span>
-                                    </label>
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={formData.sendToEmail}
-                                            onChange={(e) => setFormData({...formData, sendToEmail: e.target.checked})}
-                                            className="w-4 h-4 text-blue-600"
-                                        />
-                                        <span className="text-sm font-bold text-zinc-700 flex items-center gap-1"><FaEnvelope className="text-orange-500"/> Email</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2 sm:col-span-1">
-                                    <label className="block text-xs font-bold text-zinc-600 mb-1">Phone Number {formData.sendToSms && <span className="text-red-500">*</span>}</label>
-                                    <input 
-                                        type="tel" 
-                                        placeholder="e.g. 9876543210"
-                                        value={formData.phone}
-                                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                                        className="w-full px-3 py-2 border border-zinc-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                        required={formData.sendToSms}
-                                    />
-                                </div>
-                                <div className="col-span-2 sm:col-span-1">
-                                    <label className="block text-xs font-bold text-zinc-600 mb-1">Email Address {formData.sendToEmail && <span className="text-red-500">*</span>}</label>
-                                    <input 
-                                        type="email" 
-                                        placeholder="e.g. member@email.com"
-                                        value={formData.emailAddress}
-                                        onChange={(e) => setFormData({...formData, emailAddress: e.target.value})}
-                                        className="w-full px-3 py-2 border border-zinc-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                                        required={formData.sendToEmail}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-zinc-600 mb-1">Custom Message <span className="text-red-500">*</span></label>
-                                <textarea 
-                                    placeholder="Type your message here..."
-                                    rows="4"
-                                    value={formData.message}
-                                    onChange={(e) => setFormData({...formData, message: e.target.value})}
-                                    className="w-full px-3 py-2 border border-zinc-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
-                                    required
-                                ></textarea>
-                                <p className="text-[10px] text-zinc-500 mt-1 text-right">{formData.message.length} characters</p>
-                            </div>
-
-                            <div className="pt-2 flex justify-end gap-3">
-                                <button 
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    className="px-4 py-2 text-sm font-bold text-zinc-600 hover:bg-zinc-100 rounded transition"
-                                >
-                                    Cancel
-                                </button>
-                                <button 
-                                    type="submit"
-                                    disabled={isSending}
-                                    className={`px-4 py-2 text-sm font-bold text-white rounded shadow-sm flex items-center gap-2 transition ${
-                                        isSending ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-                                    }`}
-                                >
-                                    {isSending ? (
-                                        <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div> Sending...</>
-                                    ) : (
-                                        <><FaPaperPlane /> Send Now</>
-                                    )}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+            <SendMemberMessageModal 
+                isOpen={isMessageModalOpen}
+                onClose={() => {
+                    setIsMessageModalOpen(false);
+                    setMessageMember(null);
+                }}
+                member={messageMember}
+            />
         </div>
     );
 }
