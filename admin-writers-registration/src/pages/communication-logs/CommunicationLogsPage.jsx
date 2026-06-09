@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { FaSms, FaEnvelope, FaHistory, FaCheckCircle, FaTimesCircle, FaPaperPlane, FaWallet, FaSearch, FaSyncAlt } from "react-icons/fa";
+import { FaSms, FaEnvelope, FaHistory, FaCheckCircle, FaTimesCircle, FaExclamationCircle, FaPaperPlane, FaWallet, FaSearch, FaSyncAlt } from "react-icons/fa";
 import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { db } from "../../firebase";
@@ -144,8 +144,8 @@ export default function CommunicationLogsPage() {
         };
     }, []);
 
-    const smsCount = logs.filter(log => log.type === "SMS").length;
-    const emailCount = logs.filter(log => log.type === "Email").length;
+    const smsCount = logs.filter(log => log.type === "SMS" || log.type === "Both").length;
+    const emailCount = logs.filter(log => log.type === "Email" || log.type === "Both").length;
     const successCount = logs.filter(log => log.status === "Success").length;
 
     const filteredMembers = members.filter(m => 
@@ -438,26 +438,55 @@ export default function CommunicationLogsPage() {
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
                                             <div className="flex flex-col gap-1">
-                                                <span className={`px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 w-fit ${
-                                                    log.type === 'SMS' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'
-                                                }`}>
-                                                    {log.type === 'SMS' ? <FaSms /> : <FaEnvelope />} {log.type}
-                                                </span>
-                                                <span className="text-[11px] text-zinc-500 font-medium whitespace-nowrap">
-                                                    {log.recipient || ""}
-                                                </span>
+                                                {/* Badges inline */}
+                                                <div className="flex flex-row items-center gap-1">
+                                                    {(log.type === 'SMS' || log.type === 'Both') && (
+                                                        <span className="px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 w-fit bg-blue-100 text-blue-700">
+                                                            <FaSms /> SMS
+                                                        </span>
+                                                    )}
+                                                    {(log.type === 'Email' || log.type === 'Both') && (
+                                                        <span className="px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 w-fit bg-orange-100 text-orange-700">
+                                                            <FaEnvelope /> Email
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {/* Recipients */}
+                                                {log.type === 'Both' ? (
+                                                    <span className="text-[11px] text-zinc-500 font-medium whitespace-nowrap">
+                                                        {log.smsRecipient || ""} · {log.emailRecipient || ""}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[11px] text-zinc-500 font-medium whitespace-nowrap">
+                                                        {log.recipient || ""}
+                                                    </span>
+                                                )}
                                             </div>
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
                                             <span className={`px-2 py-0.5 rounded text-[11px] font-bold flex items-center gap-1 w-fit ${
-                                                log.status === 'Success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                log.status === 'Success' ? 'bg-green-100 text-green-700'
+                                                : log.status === 'Partial' ? 'bg-yellow-100 text-yellow-700'
+                                                : 'bg-red-100 text-red-700'
                                             }`}>
-                                                {log.status === 'Success' ? <FaCheckCircle /> : <FaTimesCircle />} {log.status}
+                                                {log.status === 'Success' ? <FaCheckCircle />
+                                                : log.status === 'Partial' ? <FaExclamationCircle />
+                                                : <FaTimesCircle />} {log.status}
                                             </span>
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 text-[12px] text-zinc-600">
                                             {log.status === 'Success' ? (
                                                 <div className="line-clamp-2" title={log.messageSent}>{log.messageSent}</div>
+                                            ) : log.status === 'Partial' ? (
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="line-clamp-2 text-zinc-700" title={log.messageSent}>{log.messageSent}</div>
+                                                    {log.smsStatus === 'Failed' && (
+                                                        <span className="text-red-600 font-semibold text-[11px]">❌ SMS Failed{log.smsError ? `: ${log.smsError}` : ''}</span>
+                                                    )}
+                                                    {log.emailStatus === 'Failed' && (
+                                                        <span className="text-red-600 font-semibold text-[11px]">❌ Email Failed{log.emailError ? `: ${log.emailError}` : ''}</span>
+                                                    )}
+                                                </div>
                                             ) : (
                                                 <div className="text-red-600 font-medium" title={log.error}>{log.error || "Unknown Error"}</div>
                                             )}
@@ -529,6 +558,8 @@ export default function CommunicationLogsPage() {
                 }}
                 onSuccess={() => {
                     fetchBalances();
+                    setLogsPage(1);
+                    setLogsSearchQuery("");
                 }}
                 member={messageMember}
             />
