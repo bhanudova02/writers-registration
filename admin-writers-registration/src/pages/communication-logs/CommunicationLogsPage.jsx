@@ -19,12 +19,13 @@ export default function CommunicationLogsPage() {
     const [members, setMembers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(5);
     const pageSizeOptions = [5, 10, 25, 50];
 
     // Logs Table Pagination State
     const [logsPage, setLogsPage] = useState(1);
-    const [logsPageSize, setLogsPageSize] = useState(10);
+    const [logsPageSize, setLogsPageSize] = useState(5);
+    const [logsSearchQuery, setLogsSearchQuery] = useState("");
 
     // Modal State
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
@@ -156,11 +157,18 @@ export default function CommunicationLogsPage() {
     const startIndex = (page - 1) * pageSize;
 
     // Logs pagination
-    const logsTotalPages = Math.max(1, Math.ceil(logs.length / logsPageSize));
+    const filteredLogs = logs.filter(log =>
+        (log.memberId || "").toLowerCase().includes(logsSearchQuery.toLowerCase()) ||
+        (log.type || "").toLowerCase().includes(logsSearchQuery.toLowerCase()) ||
+        (log.status || "").toLowerCase().includes(logsSearchQuery.toLowerCase()) ||
+        (log.recipient || "").toLowerCase().includes(logsSearchQuery.toLowerCase()) ||
+        (log.messageSent || "").toLowerCase().includes(logsSearchQuery.toLowerCase())
+    );
+    const logsTotalPages = Math.max(1, Math.ceil(filteredLogs.length / logsPageSize));
     const logsStartIndex = (logsPage - 1) * logsPageSize;
-    const paginatedLogs = logs.slice(logsStartIndex, logsStartIndex + logsPageSize);
-    const logsShowingFrom = logs.length === 0 ? 0 : logsStartIndex + 1;
-    const logsShowingTo = Math.min(logsStartIndex + logsPageSize, logs.length);
+    const paginatedLogs = filteredLogs.slice(logsStartIndex, logsStartIndex + logsPageSize);
+    const logsShowingFrom = filteredLogs.length === 0 ? 0 : logsStartIndex + 1;
+    const logsShowingTo = Math.min(logsStartIndex + logsPageSize, filteredLogs.length);
     const paginatedMembers = filteredMembers.slice(startIndex, startIndex + pageSize);
     const showingFrom = filteredMembers.length === 0 ? 0 : startIndex + 1;
     const showingTo = Math.min(startIndex + pageSize, filteredMembers.length);
@@ -290,7 +298,7 @@ export default function CommunicationLogsPage() {
                                                 {member.status}
                                             </span>
                                             {member.memberType === "Associate Member" && member.daysRemaining !== Infinity && (
-                                                <span className={`text-[10px] font-semibold ${member.daysRemaining < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
+                                                <span className={`text-[12px] font-semibold ${member.daysRemaining < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
                                                     {member.daysRemaining > 0 ? `${member.daysRemaining} days left` : `${Math.abs(member.daysRemaining)} days overdue`}
                                                 </span>
                                             )}
@@ -372,11 +380,30 @@ export default function CommunicationLogsPage() {
 
             {/* Logs Table */}
             <div className="border border-zinc-200 bg-white px-4 md:px-6 pt-5 pb-6 rounded-md shadow-sm">
-                <h3 className="text-base font-bold text-zinc-800 mb-2 flex items-center gap-2">
-                    <FaHistory className="text-zinc-500 text-sm -mt-0.5" />
-                    <span>Recent Communication Logs</span>
-                </h3>
-                <p className="text-xs text-zinc-500 mb-4">View recent SMS and Email messages sent to members.</p>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                    <div>
+                        <h3 className="text-base font-bold text-zinc-800 flex items-center gap-2">
+                            <FaHistory className="text-zinc-500 text-sm -mt-0.5" />
+                            <span>Recent Communication Logs</span>
+                        </h3>
+                        <p className="text-xs text-zinc-500 mt-0.5">View recent SMS and Email messages sent to members.</p>
+                    </div>
+                    <div className="relative flex-1 md:w-64 max-w-sm">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <FaSearch className="text-zinc-400 text-sm" />
+                        </div>
+                        <input
+                            type="text"
+                            className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 bg-zinc-50 text-zinc-800 placeholder-zinc-400"
+                            placeholder="Search by ID, Type, Status..."
+                            value={logsSearchQuery}
+                            onChange={(e) => {
+                                setLogsSearchQuery(e.target.value);
+                                setLogsPage(1);
+                            }}
+                        />
+                    </div>
+                </div>
 
                 {isLoading ? (
                     <TableSkeleton rowCount={5} colCount={5} />
@@ -442,11 +469,11 @@ export default function CommunicationLogsPage() {
                     </div>
                 )}
                 {/* Logs Pagination */}
-                {logs.length > 0 && (
+                {filteredLogs.length > 0 && (
                     <div className="mt-4 rounded border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm md:flex md:items-center md:justify-between md:gap-3">
                         <div className="flex items-center justify-between gap-2 md:flex-1">
                             <p className="font-semibold text-zinc-600">
-                                Showing {logsShowingFrom}-{logsShowingTo} Of {logs.length}
+                                Showing {logsShowingFrom}-{logsShowingTo} Of {filteredLogs.length}{logsSearchQuery && ` (filtered from ${logs.length})`}
                             </p>
                             <div className="flex shrink-0 items-center gap-2">
                                 <div className="flex items-center gap-1">
