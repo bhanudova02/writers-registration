@@ -953,8 +953,10 @@ ${formattedClauses}
               </div>
             </div>
           )}
-          <div className="w-full bg-amber-50 border border-amber-300 rounded-md py-4 px-4 text-center">
-            <p className="text-amber-800 font-bold text-sm">🏢 Please visit the TCWA Office to renew your membership.</p>
+          <div className="w-full bg-amber-50 border border-amber-300 rounded-md py-4 px-4 text-left">
+            <p className="text-amber-900 font-bold text-sm leading-relaxed">
+              *Remainder: Hai {member?.name} garu Your Membership Renewal Due amount is Rs. {expiryDetails.penalty}. Kindly make the payment by D.D/Account trasnfer/Debit Card -Telugu Cine Writers Association
+            </p>
           </div>
           <p className="text-[10px] text-zinc-500 italic font-semibold">
             * Dashboard access is locked until renewal is completed.
