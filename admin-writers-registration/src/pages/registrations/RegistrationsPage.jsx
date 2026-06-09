@@ -41,6 +41,14 @@ export default function RegistrationsPage() {
             // Split the agreement text by newlines into paragraphs
             const paragraphsList = reg.agreementText.split('\n');
 
+            // Preload stamp image
+            const sealImg = new Image();
+            sealImg.src = '/stamp.png';
+            await new Promise((resolve) => {
+                sealImg.onload = resolve;
+                sealImg.onerror = resolve;
+            });
+
             // Create a temporary hidden container to measure paragraph heights
             const tempMeasureDiv = document.createElement('div');
             tempMeasureDiv.style.position = 'fixed';
@@ -51,6 +59,53 @@ export default function RegistrationsPage() {
             tempMeasureDiv.style.boxSizing = 'border-box';
             tempMeasureDiv.style.padding = '50px 60px'; // Matching page padding
             tempMeasureDiv.style.zIndex = '-9999';
+
+            // Add Header with Agreement ID and Seal
+            const headerDiv = document.createElement('div');
+            headerDiv.style.display = 'flex';
+            headerDiv.style.justifyContent = 'space-between';
+            headerDiv.style.alignItems = 'flex-start';
+            headerDiv.style.marginBottom = '24px';
+            headerDiv.style.borderBottom = '1px solid #e4e4e7';
+            headerDiv.style.paddingBottom = '16px';
+            headerDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
+
+            const idContainer = document.createElement('div');
+            const label = document.createElement('h4');
+            label.textContent = 'హామీపత్రం నంబర్:';
+            label.style.fontSize = '12px';
+            label.style.fontWeight = 'bold';
+            label.style.color = '#71717a';
+            label.style.textTransform = 'uppercase';
+            label.style.letterSpacing = '0.05em';
+            label.style.marginBottom = '4px';
+
+            const idSpan = document.createElement('span');
+            idSpan.textContent = reg.agreementId || 'N/A';
+            idSpan.style.color = '#dc2626';
+            idSpan.style.fontWeight = '800';
+            idSpan.style.fontSize = '16px';
+            idSpan.style.letterSpacing = '0.025em';
+            idSpan.style.backgroundColor = '#fef2f2';
+            idSpan.style.padding = '4px 10px';
+            idSpan.style.borderRadius = '6px';
+            idSpan.style.border = '1px solid #fee2e2';
+
+            idContainer.appendChild(label);
+            idContainer.appendChild(idSpan);
+
+            const imgContainer = document.createElement('div');
+            const sealImgElement = document.createElement('img');
+            sealImgElement.src = sealImg.src;
+            sealImgElement.style.width = '64px';
+            sealImgElement.style.height = '64px';
+            sealImgElement.style.opacity = '0.95';
+            imgContainer.appendChild(sealImgElement);
+
+            headerDiv.appendChild(idContainer);
+            headerDiv.appendChild(imgContainer);
+
+            tempMeasureDiv.appendChild(headerDiv);
 
             // Insert each paragraph inside its own div to measure offsetHeight
             paragraphsList.forEach((para) => {
@@ -596,7 +651,7 @@ export default function RegistrationsPage() {
                                         Download Agreement PDF
                                     </button>
                                     <button 
-                                        onClick={() => setShowAgreementViewer(viewReceipt.agreementText)}
+                                        onClick={() => setShowAgreementViewer(viewReceipt)}
                                         className="px-3 py-1.5 bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 text-xs font-bold rounded transition cursor-pointer"
                                     >
                                         View Agreement Text
@@ -628,7 +683,16 @@ export default function RegistrationsPage() {
                         </div>
                         <div className="p-5 overflow-y-auto flex-1 text-xs sm:text-sm text-zinc-700 whitespace-pre-line leading-relaxed font-sans">
                             <div className="bg-zinc-50 p-4 border border-zinc-200 rounded font-sans leading-relaxed text-justify">
-                                {showAgreementViewer}
+                                <div className="flex justify-between items-start mb-6 border-b border-zinc-200 pb-4">
+                                  <div>
+                                    <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">హామీపత్రం నంబర్:</h4>
+                                    <span className="text-red-600 font-extrabold text-base tracking-wide bg-red-50 px-2.5 py-1 rounded-md border border-red-100">{showAgreementViewer.agreementId || 'N/A'}</span>
+                                  </div>
+                                  <div className="relative">
+                                    <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95 drop-shadow-sm mix-blend-multiply" />
+                                  </div>
+                                </div>
+                                {showAgreementViewer.agreementText}
                             </div>
                         </div>
                         <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-end">
