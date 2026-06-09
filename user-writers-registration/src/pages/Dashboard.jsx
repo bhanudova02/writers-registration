@@ -36,6 +36,8 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [isAgreed, setIsAgreed] = useState(false);
   const [showAgreementModal, setShowAgreementModal] = useState(false);
+  const [agreementId, setAgreementId] = useState('');
+  const [isGeneratingAgreementId, setIsGeneratingAgreementId] = useState(false);
   const [pageValidationError, setPageValidationError] = useState('');
   const [nomineeRelation, setNomineeRelation] = useState('');
   const [nomineeName, setNomineeName] = useState('');
@@ -234,6 +236,43 @@ export default function Dashboard({ member, setMember, onLogout }) {
       setPageValidationError("");
     }
   }, [selectedCategory, pageCount, isCalculatingPages, pdfFile]);
+
+  const handleOpenAgreementModal = async () => {
+    if (agreementId) {
+      setShowAgreementModal(true);
+      return;
+    }
+
+    setIsGeneratingAgreementId(true);
+    try {
+      let newAgreementId = '';
+      await runTransaction(db, async (transaction) => {
+        const counterRef = doc(db, 'counters', 'agreement_counter');
+        const counterDoc = await transaction.get(counterRef);
+        
+        let newSequence = 1;
+        if (counterDoc.exists()) {
+          newSequence = (counterDoc.data().lastSequence || 0) + 1;
+        }
+
+        const date = new Date();
+        const day = String(date.getDate()).padStart(2, '0');
+        const year = String(date.getFullYear()).slice(-2);
+        
+        newAgreementId = `${day}${year}-${newSequence}`;
+        
+        transaction.set(counterRef, { lastSequence: newSequence }, { merge: true });
+      });
+
+      setAgreementId(newAgreementId);
+      setShowAgreementModal(true);
+    } catch (error) {
+      console.error("Failed to generate Agreement ID:", error);
+      toast.error("Failed to open Agreement. Please try again.");
+    } finally {
+      setIsGeneratingAgreementId(false);
+    }
+  };
 
   const getAgreementText = (regId = '') => {
     const today = new Date();
@@ -516,6 +555,7 @@ ${formattedClauses}
         downloadCount: 0,
         createdAt: new Date().toISOString(),
         agreementText: getAgreementText(sequentialId),
+        agreementId: agreementId,
         agreedAt: new Date().toISOString(),
         agreementSigned: true,
         nomineeRelation: nomineeRelation,
@@ -531,6 +571,7 @@ ${formattedClauses}
       setPageCount(1);
       setPdfFile(null);
       setIsAgreed(false);
+      setAgreementId('');
       toast.success("Script Registered & Approved Successfully!");
     } catch (error) {
       console.error("Script submission failed:", error);
@@ -1061,7 +1102,8 @@ ${formattedClauses}
             isRegistering={isRegistering}
             isAgreed={isAgreed}
             setIsAgreed={setIsAgreed}
-            setShowAgreementModal={setShowAgreementModal}
+            onOpenAgreementModal={handleOpenAgreementModal}
+            isGeneratingAgreementId={isGeneratingAgreementId}
             pageValidationError={pageValidationError}
             nomineeRelation={nomineeRelation}
             setNomineeRelation={setNomineeRelation}
@@ -1123,6 +1165,17 @@ ${formattedClauses}
             {/* Modal Scrollable Body */}
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 text-xs sm:text-sm text-zinc-700 leading-relaxed font-sans bg-zinc-50/30">
               <div className="bg-white border border-zinc-200/80 p-5 rounded-lg shadow-sm whitespace-pre-line text-justify font-sans leading-relaxed tracking-normal">
+                
+                <div className="flex justify-between items-start mb-6 border-b border-zinc-100 pb-4">
+                  <div>
+                    <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">హామీపత్రం నంబర్:</h4>
+                    <span className="text-red-600 font-extrabold text-base tracking-wide bg-red-50 px-2.5 py-1 rounded-md border border-red-100">{agreementId}</span>
+                  </div>
+                  <div className="relative">
+                    <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95 drop-shadow-sm mix-blend-multiply" />
+                  </div>
+                </div>
+
                 {getAgreementText()}
               </div>
             </div>

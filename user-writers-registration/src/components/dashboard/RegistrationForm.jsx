@@ -17,7 +17,8 @@ export default function RegistrationForm({
   isRegistering,
   isAgreed,
   setIsAgreed,
-  setShowAgreementModal,
+  onOpenAgreementModal,
+  isGeneratingAgreementId,
   pageValidationError,
   nomineeRelation,
   setNomineeRelation,
@@ -187,7 +188,7 @@ export default function RegistrationForm({
           onChange={(e) => {
             if (e.target.checked) {
               if (validateFormBeforeAgreement()) {
-                setShowAgreementModal(true);
+                onOpenAgreementModal();
               } else {
                 setIsAgreed(false);
               }
@@ -195,27 +196,36 @@ export default function RegistrationForm({
               setIsAgreed(false);
             }
           }}
-          className="size-4.5 rounded border-zinc-300 text-orange-500 focus:ring-orange-500 cursor-pointer mt-0.5"
+          disabled={isGeneratingAgreementId}
+          className="size-4.5 rounded border-zinc-300 text-orange-500 focus:ring-orange-500 cursor-pointer mt-0.5 disabled:opacity-50"
         />
-        <label htmlFor="agreeAgreement" className="text-xs text-zinc-600 leading-normal cursor-pointer select-none font-medium">
-          I read and agree to the{" "}
-          <span 
-            onClick={(e) => {
-              e.preventDefault();
-              if (validateFormBeforeAgreement()) {
-                setShowAgreementModal(true);
-              }
-            }} 
-            className="text-orange-500 font-bold hover:underline cursor-pointer"
-          >
-            TCWA Story Registration Agreement (హామీపత్రం)
-          </span> *
+        <label htmlFor="agreeAgreement" className="text-xs text-zinc-600 leading-normal cursor-pointer select-none font-medium flex items-center gap-2">
+          <span>I read and agree to the</span>
+          {isGeneratingAgreementId ? (
+            <span className="text-orange-500 font-bold flex items-center gap-1">
+              <RefreshCw size={12} className="animate-spin" />
+              Generating Agreement...
+            </span>
+          ) : (
+            <span 
+              onClick={(e) => {
+                e.preventDefault();
+                if (validateFormBeforeAgreement()) {
+                  onOpenAgreementModal();
+                }
+              }} 
+              className="text-orange-500 font-bold hover:underline cursor-pointer"
+            >
+              TCWA Story Registration Agreement (హామీపత్రం)
+            </span>
+          )}
+          <span>*</span>
         </label>
       </div>
 
       <button
         type="submit"
-        disabled={isRegistering || isCalculatingPages || !!pageValidationError}
+        disabled={isRegistering || isCalculatingPages || isGeneratingAgreementId || !!pageValidationError}
         className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg text-sm transition shadow-[0_4px_14px_0_rgb(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
       >
         {isRegistering ? (
