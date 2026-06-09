@@ -984,6 +984,44 @@ ${formattedClauses}
     );
   }
 
+  if (member?.status === 'Inactive' && !expiryDetails.isExpired) {
+    return (
+      <main className="min-h-screen bg-[#111111] overflow-y-auto py-10 px-4 font-sans">
+        <div className="bg-white border border-red-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5 mx-auto mt-4 md:mt-16 mb-10">
+          <div className="mx-auto size-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-2">
+            <AlertTriangle size={36} />
+          </div>
+          <h2 className="text-xl font-extrabold text-zinc-900 uppercase tracking-wider">Account Inactive</h2>
+          <p className="text-sm text-zinc-600 leading-relaxed">
+            Dear <span className="text-zinc-900 font-bold">{member?.name}</span>, your membership account is currently marked as <span className="text-red-600 font-bold">Inactive</span>.
+          </p>
+          <div className="w-full bg-red-50 border border-red-200 rounded-md py-4 px-4 text-center">
+            <p className="text-red-800 font-bold text-sm">Please contact the TCWA Admin to reactivate your account.</p>
+          </div>
+          <p className="text-[10px] text-zinc-500 italic font-semibold">
+            * Dashboard access is locked until your account is active.
+          </p>
+          <div className="pt-2 border-t border-zinc-100 flex items-center justify-between">
+            <button
+              onClick={() => setShowSupportModal(true)}
+              className="text-xs font-bold text-orange-500 hover:text-orange-600 transition"
+            >
+              Contact Admin
+            </button>
+            <button
+              onClick={onLogout}
+              className="text-xs font-bold text-zinc-500 hover:text-zinc-800 transition"
+            >
+              Logout from account
+            </button>
+          </div>
+        </div>
+
+        {showSupportModal && <SupportModal onClose={() => setShowSupportModal(false)} />}
+      </main>
+    );
+  }
+
   if (receiptModal?.type === 'download' && receiptModal?.isPaymentSuccess) {
     return (
       <ReceiptModal

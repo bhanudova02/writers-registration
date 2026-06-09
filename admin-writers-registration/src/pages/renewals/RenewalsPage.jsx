@@ -443,13 +443,25 @@ export default function RenewalsPage() {
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-40 whitespace-nowrap text-center">
                                                     <div className="flex justify-center gap-2">
-                                                        <CustomButton
-                                                            label={renew.status === "Inactive" ? "Make Active" : "Make Inactive"}
-                                                            bgColor={renew.status === "Inactive" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
-                                                            textColor="text-white"
-                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
-                                                            onClick={() => handleToggleStatus(renew.id, renew.status, renew.name)}
-                                                        />
+                                                        {renew.memberType === "Associate Member" && renew.daysRemaining <= 0 ? (
+                                                            <div className="group relative">
+                                                                <CustomButton
+                                                                    label="Renewal Due"
+                                                                    bgColor="bg-zinc-300"
+                                                                    textColor="text-zinc-500"
+                                                                    className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm cursor-not-allowed"
+                                                                    onClick={() => setWarningModalData({ isOpen: true, message: `Cannot change status. ${renew.name} has a pending renewal.`})}
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            <CustomButton
+                                                                label={renew.status === "Inactive" ? "Make Active" : "Make Inactive"}
+                                                                bgColor={renew.status === "Inactive" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                                                                textColor="text-white"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
+                                                                onClick={() => handleToggleStatus(renew.id, renew.status, renew.name)}
+                                                            />
+                                                        )}
                                                         {renew.memberType === "Associate Member" ? (
                                                             <CustomButton
                                                                 label="Upgrade to Life"
