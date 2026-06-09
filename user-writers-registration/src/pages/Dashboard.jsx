@@ -452,7 +452,7 @@ ${formattedClauses}
       }
 
       const tempRegId = `TEMP-REG-${Date.now()}`;
-      const amount = pageCount * 10;
+      const amount = pageCount > 0 ? Math.ceil(pageCount / 25) * 300 : 0;
       await loadRazorpayCheckout();
 
       const paymentResult = await new Promise((resolve, reject) => {
