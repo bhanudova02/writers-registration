@@ -35,10 +35,18 @@ async function sendSMS(phone, message) {
                 }
             }
         );
+        // Fast2SMS returns { return: true/false, request_id, message[] }
+        const apiSuccess = response.data && response.data.return === true;
+        console.log("Fast2SMS response:", JSON.stringify(response.data));
+        if (!apiSuccess) {
+            const errMsg = (response.data?.message || []).join(", ") || "Fast2SMS rejected the request";
+            return { success: false, error: errMsg };
+        }
         return { success: true, response: response.data };
     } catch (error) {
-        console.error("SMS Error:", error.response ? error.response.data : error.message);
-        return { success: false, error: error.message };
+        const errDetail = error.response ? JSON.stringify(error.response.data) : error.message;
+        console.error("SMS Error:", errDetail);
+        return { success: false, error: errDetail };
     }
 }
 

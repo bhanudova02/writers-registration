@@ -3,7 +3,7 @@ import { FaPaperPlane, FaTimesCircle, FaSms, FaEnvelope } from "react-icons/fa";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { toast } from "react-toastify";
 
-export default function SendMemberMessageModal({ isOpen, onClose, member }) {
+export default function SendMemberMessageModal({ isOpen, onClose, onSuccess, member }) {
     const [isSending, setIsSending] = useState(false);
     const [formData, setFormData] = useState({
         message: "",
@@ -57,6 +57,7 @@ export default function SendMemberMessageModal({ isOpen, onClose, member }) {
             
             if (result.data.success) {
                 toast.success("Message sent successfully!");
+                if (onSuccess) onSuccess();
                 onClose();
             } else {
                 toast.error("Failed to send message.");

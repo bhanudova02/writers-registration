@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { FaSms, FaEnvelope, FaHistory, FaCheckCircle, FaTimesCircle, FaPaperPlane, FaWallet, FaSearch } from "react-icons/fa";
-import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
+import { useState, useEffect, useCallback } from "react";
+import { FaSms, FaEnvelope, FaHistory, FaCheckCircle, FaTimesCircle, FaPaperPlane, FaWallet, FaSearch, FaSyncAlt } from "react-icons/fa";
+import { collection, onSnapshot, query, orderBy } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { db } from "../../firebase";
 import { TableSkeleton } from "../../components/Skeletons";
@@ -12,7 +12,8 @@ export default function CommunicationLogsPage() {
     const [logs, setLogs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [errorMsg, setErrorMsg] = useState(null);
-    const [balances, setBalances] = useState({ sms: "Loading...", email: "Loading..." });
+    const [balances, setBalances] = useState({ sms: null, email: null });
+    const [isBalanceLoading, setIsBalanceLoading] = useState(true);
     
     // Members Table State
     const [members, setMembers] = useState([]);
@@ -21,12 +22,40 @@ export default function CommunicationLogsPage() {
     const [pageSize, setPageSize] = useState(10);
     const pageSizeOptions = [5, 10, 25, 50];
 
+    // Logs Table Pagination State
+    const [logsPage, setLogsPage] = useState(1);
+    const [logsPageSize, setLogsPageSize] = useState(10);
+
     // Modal State
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [messageMember, setMessageMember] = useState(null);
 
+    const fetchBalances = useCallback(() => {
+        setIsBalanceLoading(true);
+        try {
+            const functions = getFunctions();
+            const getBalances = httpsCallable(functions, "getCommunicationBalances");
+            getBalances().then(result => {
+                if (result.data) {
+                    setBalances({
+                        sms: `₹ ${result.data.smsWalletBalance}`,
+                        email: result.data.emailBalance
+                    });
+                }
+                setIsBalanceLoading(false);
+            }).catch(err => {
+                console.error("Failed to load balances:", err);
+                setBalances({ sms: "Error", email: "Error" });
+                setIsBalanceLoading(false);
+            });
+        } catch(e) {
+            console.error("Functions init error:", e);
+            setIsBalanceLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
-        const q = query(collection(db, "communication_logs"), orderBy("date", "desc"), limit(100));
+        const q = query(collection(db, "communication_logs"), orderBy("date", "desc"));
         const unsubscribeLogs = onSnapshot(q, (snapshot) => {
             const list = [];
             snapshot.forEach((docSnap) => {
@@ -42,23 +71,7 @@ export default function CommunicationLogsPage() {
         });
 
         // Fetch balances
-        try {
-            const functions = getFunctions();
-            const getBalances = httpsCallable(functions, "getCommunicationBalances");
-            getBalances().then(result => {
-                if (result.data) {
-                    setBalances({
-                        sms: `₹ ${result.data.smsWalletBalance}`,
-                        email: result.data.emailBalance
-                    });
-                }
-            }).catch(err => {
-                console.error("Failed to load balances:", err);
-                setBalances({ sms: "Error", email: "Error" });
-            });
-        } catch(e) {
-            console.error("Functions init error:", e);
-        }
+        fetchBalances();
 
         const qMembers = query(collection(db, "members"), orderBy("createdAt", "desc"));
         const unsubscribeMembers = onSnapshot(qMembers, (snapshot) => {
@@ -141,6 +154,13 @@ export default function CommunicationLogsPage() {
     );
     const totalPages = Math.max(1, Math.ceil(filteredMembers.length / pageSize));
     const startIndex = (page - 1) * pageSize;
+
+    // Logs pagination
+    const logsTotalPages = Math.max(1, Math.ceil(logs.length / logsPageSize));
+    const logsStartIndex = (logsPage - 1) * logsPageSize;
+    const paginatedLogs = logs.slice(logsStartIndex, logsStartIndex + logsPageSize);
+    const logsShowingFrom = logs.length === 0 ? 0 : logsStartIndex + 1;
+    const logsShowingTo = Math.min(logsStartIndex + logsPageSize, logs.length);
     const paginatedMembers = filteredMembers.slice(startIndex, startIndex + pageSize);
     const showingFrom = filteredMembers.length === 0 ? 0 : startIndex + 1;
     const showingTo = Math.min(startIndex + pageSize, filteredMembers.length);
@@ -158,17 +178,38 @@ export default function CommunicationLogsPage() {
             <div className="flex flex-col lg:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
                 {/* Balance Cards */}
                 <div className="flex flex-row flex-1 gap-3 sm:gap-4">
+                    {/* Fast2SMS Wallet */}
                     <div className="flex-1 bg-blue-50 p-2 sm:p-4 rounded-md shadow-sm border border-blue-200 flex flex-row items-start justify-between">
-                        <div>
-                            <h3 className="text-blue-600 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">Fast2SMS Wallet</h3>
-                            <p className="text-sm sm:text-xl font-bold text-blue-800 mt-1">{balances.sms}</p>
+                        <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-blue-600 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">Fast2SMS Wallet</h3>
+                                <button
+                                    type="button"
+                                    onClick={fetchBalances}
+                                    disabled={isBalanceLoading}
+                                    title="Refresh balance"
+                                    className="text-blue-400 hover:text-blue-600 disabled:opacity-40 transition-colors cursor-pointer"
+                                >
+                                    <FaSyncAlt className={`text-[10px] ${isBalanceLoading ? 'animate-spin' : ''}`} />
+                                </button>
+                            </div>
+                            {isBalanceLoading ? (
+                                <div className="mt-2 h-5 w-24 bg-blue-200 rounded animate-pulse" />
+                            ) : (
+                                <p className="text-sm sm:text-xl font-bold text-blue-800 mt-1">{balances.sms}</p>
+                            )}
                         </div>
                         <FaWallet className="text-blue-300 text-base sm:text-2xl mt-0.5" />
                     </div>
+                    {/* Resend Limit */}
                     <div className="flex-1 bg-orange-50 p-2 sm:p-4 rounded-md shadow-sm border border-orange-200 flex flex-row items-start justify-between">
-                        <div>
+                        <div className="flex-1">
                             <h3 className="text-orange-600 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">Resend Limit</h3>
-                            <p className="text-sm sm:text-xl font-bold text-orange-800 mt-1">{balances.email}</p>
+                            {isBalanceLoading ? (
+                                <div className="mt-2 h-5 w-20 bg-orange-200 rounded animate-pulse" />
+                            ) : (
+                                <p className="text-sm sm:text-xl font-bold text-orange-800 mt-1">{balances.email}</p>
+                            )}
                         </div>
                         <FaEnvelope className="text-orange-300 text-base sm:text-2xl mt-0.5" />
                     </div>
@@ -360,14 +401,13 @@ export default function CommunicationLogsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {logs.map((log) => (
+                                {paginatedLogs.map((log) => (
                                     <tr key={log.id} className="hover:bg-zinc-50 transition-colors">
                                         <td className="border border-zinc-200 py-3 px-3 text-[12px] font-medium text-zinc-500 whitespace-nowrap">
                                             {log.date?.toDate ? log.date.toDate().toLocaleString() : 'Just now'}
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-800 whitespace-nowrap">
                                             {log.memberId}
-                                            {log.isCustom && <span className="ml-2 text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded border border-purple-200">Custom</span>}
                                         </td>
                                         <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
                                             <div className="flex flex-col gap-1">
@@ -401,6 +441,56 @@ export default function CommunicationLogsPage() {
                         </table>
                     </div>
                 )}
+                {/* Logs Pagination */}
+                {logs.length > 0 && (
+                    <div className="mt-4 rounded border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm md:flex md:items-center md:justify-between md:gap-3">
+                        <div className="flex items-center justify-between gap-2 md:flex-1">
+                            <p className="font-semibold text-zinc-600">
+                                Showing {logsShowingFrom}-{logsShowingTo} Of {logs.length}
+                            </p>
+                            <div className="flex shrink-0 items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                    <label className="text-xs font-bold uppercase text-zinc-500" htmlFor="logs-page-size">
+                                        Rows
+                                    </label>
+                                    <CustomSelect
+                                        dropdownData={pageSizeOptions.map(size => ({ value: size, label: size }))}
+                                        value={logsPageSize}
+                                        onChange={(val) => {
+                                            setLogsPageSize(Number(val));
+                                            setLogsPage(1);
+                                        }}
+                                        buttonClassName="h-8 py-0 min-w-16 bg-white !text-xs"
+                                        label={null}
+                                    />
+                                </div>
+                                <span className="rounded-sm bg-white px-2 py-1.5 text-xs font-bold text-zinc-700 border border-zinc-200 sm:text-sm">
+                                    Page {logsPage} of {logsTotalPages}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="mt-3 flex flex-col gap-3 md:mt-0 md:flex-row md:items-center md:justify-end">
+                            <div className="grid grid-cols-2 gap-2 md:flex md:items-center">
+                                <button
+                                    type="button"
+                                    onClick={() => setLogsPage((p) => Math.max(1, p - 1))}
+                                    disabled={logsPage === 1}
+                                    className="h-10 rounded-sm border border-zinc-300 bg-white px-3 text-sm font-bold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 md:h-9"
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setLogsPage((p) => Math.min(logsTotalPages, p + 1))}
+                                    disabled={logsPage === logsTotalPages}
+                                    className="h-10 rounded-sm border border-zinc-300 bg-white px-3 text-sm font-bold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 md:h-9"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Custom Message Modal */}
@@ -409,6 +499,9 @@ export default function CommunicationLogsPage() {
                 onClose={() => {
                     setIsMessageModalOpen(false);
                     setMessageMember(null);
+                }}
+                onSuccess={() => {
+                    fetchBalances();
                 }}
                 member={messageMember}
             />
