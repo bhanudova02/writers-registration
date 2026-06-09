@@ -100,10 +100,10 @@ export default function Dashboard({ member, setMember, onLogout }) {
   };
 
   const expiryDetails = useMemo(() => {
-    if (!member) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0, totalAmount: 1000 };
+    if (!member) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
 
     if (member.memberType === 'Life Time Member') {
-      return { isExpired: false, daysRemaining: 9999, expiryDateStr: 'Never (Life Time)', penalty: 0, totalAmount: 0 };
+      return { isExpired: false, daysRemaining: 9999, expiryDateStr: 'Never (Life Time)', penalty: 0 };
     }
 
     const referenceDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
@@ -134,9 +134,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
       isExpired,
       daysRemaining,
       expiryDateStr: expiryDate.toLocaleDateString([], { dateStyle: 'medium' }),
-      baseAmount: 1000,
-      penalty: penalty,
-      totalAmount: 1000 + penalty
+      penalty
     };
   }, [member]);
 

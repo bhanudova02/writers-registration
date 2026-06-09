@@ -81,16 +81,28 @@ export default function RenewalsPage() {
                     daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                     
                     if (daysRemaining <= 0) {
-                        // 5 Years rule (approx 1825 days)
-                        if (daysRemaining < -1825) {
+                        const daysOverdue = Math.abs(daysRemaining);
+
+                        if (daysOverdue > 1095) {
+                            // 3+ years overdue → disabled territory
                             status = "Inactive";
                             amountDue = "Expired";
-                        } else if (daysRemaining < -30) {
+                        } else if (daysOverdue > 730) {
+                            // 2–3 years overdue → ₹1,000 penalty
                             status = "Overdue";
-                            amountDue = "₹1,200";
+                            amountDue = "₹1,000 Penalty";
+                        } else if (daysOverdue > 365) {
+                            // 1–2 years overdue → ₹500 penalty
+                            status = "Overdue";
+                            amountDue = "₹500 Penalty";
+                        } else if (daysOverdue > 30) {
+                            // 30 days to 1 year → overdue, no penalty yet
+                            status = "Overdue";
+                            amountDue = "-";
                         } else {
+                            // Within 30 days of expiry → grace period, no penalty
                             status = "Grace Period";
-                            amountDue = "₹1,200";
+                            amountDue = "-";
                         }
                     } else {
                         status = "Active";
