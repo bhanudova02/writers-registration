@@ -99,14 +99,14 @@ exports.dailyRenewalCheck = onSchedule("every day 09:00", async (event) => {
 
             // ─── CASE 1: 7 days before expiry ───
             if (daysUntilExpiry === 7) {
-                message = `Dear ${member.fullName}, your TCWA membership will expire in 7 days (on ${nextExpiry.toDateString()}). Please login and renew your membership to avoid interruption.`;
+                message = `Dear ${member.fullName}, your TCWA membership will expire in 7 days (on ${nextExpiry.toDateString()}). Please visit the TCWA office to renew your membership before the due date. - TCWA`;
                 logType = "7-Day Reminder";
             }
 
             // ─── CASE 2: Expiry day ───
             else if (daysUntilExpiry === 0) {
                 await doc.ref.update({ status: "Inactive" });
-                message = `Dear ${member.fullName}, your TCWA membership has expired today. Please login to your account and renew immediately to restore your active status.`;
+                message = `Dear ${member.fullName}, your TCWA membership has expired today. Please visit the TCWA office as soon as possible to renew your membership and restore your active status. - TCWA`;
                 logType = "Expiry Notice";
             }
 
@@ -117,9 +117,9 @@ exports.dailyRenewalCheck = onSchedule("every day 09:00", async (event) => {
 
                 if (sameMonthDay) {
                     if (yearsPassed === 2) {
-                        message = `Dear ${member.fullName}, your TCWA membership expired 1 year ago. A late penalty of Rs.500 has been added. Please renew soon.`;
+                        message = `Dear ${member.fullName}, your TCWA membership expired 1 year ago. A late penalty of Rs.500 has been added to your renewal amount. Please visit the TCWA office immediately to renew your membership. - TCWA`;
                     } else if (yearsPassed === 3) {
-                        message = `Dear ${member.fullName}, your TCWA membership expired 2 years ago. A late penalty of Rs.1000 has been added. This is your final year before account is disabled.`;
+                        message = `Dear ${member.fullName}, your TCWA membership expired 2 years ago. A late penalty of Rs.1000 has been added. This is your final reminder. Please visit the TCWA office urgently before your account is permanently closed. - TCWA`;
                     } else if (yearsPassed > 3) {
                         await doc.ref.update({ disabled: true, status: "Disabled" });
                         console.log(`Account ${doc.id} disabled due to 3+ years inactivity.`);
