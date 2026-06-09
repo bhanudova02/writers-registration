@@ -963,12 +963,11 @@ ${formattedClauses}
               <span>₹{expiryDetails.totalAmount}</span>
             </div>
           </div>
-          <button
-            onClick={() => toast.info("Online renewal payment integration pending. Please contact admin.", { icon: "💳" })}
-            className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 rounded-md transition duration-200"
-          >
-            Pay ₹{expiryDetails.totalAmount} to Renew
-          </button>
+          <div className="w-full bg-amber-50 border border-amber-300 rounded-md py-4 px-4 text-center space-y-1">
+            <p className="text-amber-800 font-bold text-sm">🏢 To renew your membership, please visit the TCWA Office.</p>
+            <p className="text-amber-700 text-xs font-medium">H.No.8-3-720/9/2, Yellareddy Guda, Srinagar Colony, Hyderabad - 500 073</p>
+            <p className="text-amber-700 text-xs font-medium">📞 Cell: 9989990229</p>
+          </div>
           <p className="text-[10px] text-zinc-500 italic font-semibold">
             * Dashboard access is locked until renewal is completed.
           </p>
