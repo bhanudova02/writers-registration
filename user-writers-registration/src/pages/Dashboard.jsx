@@ -934,8 +934,8 @@ ${formattedClauses}
 
   if (expiryDetails.isExpired) {
     return (
-      <main className="min-h-screen bg-[#111111] overflow-y-auto py-12 px-4 flex items-center justify-center font-sans">
-        <div className="bg-white border border-amber-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5">
+      <main className="min-h-screen bg-[#111111] overflow-y-auto py-10 px-4 flex flex-col items-center font-sans">
+        <div className="bg-white border border-amber-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5 my-auto">
           <div className="mx-auto size-16 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full flex items-center justify-center mb-2">
             <AlertTriangle size={36} />
           </div>
