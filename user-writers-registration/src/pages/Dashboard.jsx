@@ -1147,7 +1147,7 @@ ${formattedClauses}
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col border border-zinc-200 overflow-hidden transform scale-100 transition-all duration-300">
 
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50">
+            <div className="px-6 py-4 border-b border-zinc-100 flex items-center justify-between bg-white">
               <h3 className="text-sm sm:text-base font-extrabold text-zinc-900 flex items-center gap-2">
                 <span className="size-2.5 rounded-full bg-orange-500 animate-pulse flex-shrink-0"></span>
                 <span>స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం (TCWA Agreement)</span>
@@ -1163,8 +1163,8 @@ ${formattedClauses}
             </div>
 
             {/* Modal Scrollable Body */}
-            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 text-xs sm:text-sm text-zinc-700 leading-relaxed font-sans bg-zinc-50/30">
-              <div className="bg-white border border-zinc-200/80 p-5 rounded-lg shadow-sm whitespace-pre-line text-justify font-sans leading-relaxed tracking-normal">
+            <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 text-xs sm:text-sm text-zinc-700 leading-relaxed font-sans bg-white">
+              <div className="bg-white border border-zinc-200/80 p-5 rounded-lg whitespace-pre-line text-justify font-sans leading-relaxed tracking-normal">
                 
                 <div className="flex justify-between items-start mb-6 border-b border-zinc-100 pb-4">
                   <div>
@@ -1172,7 +1172,7 @@ ${formattedClauses}
                     <span className="text-red-600 font-extrabold text-base tracking-wide bg-red-50 px-2.5 py-1 rounded-md border border-red-100">{agreementId}</span>
                   </div>
                   <div className="relative">
-                    <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95 drop-shadow-sm mix-blend-multiply" />
+                    <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95" />
                   </div>
                 </div>
 
@@ -1181,7 +1181,7 @@ ${formattedClauses}
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between bg-zinc-50">
+            <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between bg-white">
               <button
                 onClick={() => setShowAgreementModal(false)}
                 className="px-4 py-2 text-xs font-bold text-zinc-500 hover:text-zinc-800 transition hover:bg-zinc-100 rounded-lg cursor-pointer"

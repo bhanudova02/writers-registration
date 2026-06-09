@@ -689,7 +689,7 @@ export default function RegistrationsPage() {
                                     <span className="text-red-600 font-extrabold text-base tracking-wide bg-red-50 px-2.5 py-1 rounded-md border border-red-100">{showAgreementViewer.agreementId || 'N/A'}</span>
                                   </div>
                                   <div className="relative">
-                                    <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95 drop-shadow-sm mix-blend-multiply" />
+                                    <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95" />
                                   </div>
                                 </div>
                                 {showAgreementViewer.agreementText}
