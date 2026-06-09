@@ -29,12 +29,12 @@ export default function ReceiptModal({ receiptModal, isDownloading, closeReceipt
   };
 
   const containerClasses = isFullScreen
-    ? "min-h-screen bg-slate-50 flex items-center justify-center px-4 py-8 overflow-y-auto w-full font-sans"
+    ? "min-h-screen bg-slate-50 px-4 py-8 overflow-y-auto w-full font-sans block"
     : "fixed inset-0 z-[60] bg-black/80 px-4 py-8 overflow-y-auto flex items-start justify-center font-sans";
 
   return (
     <div className={containerClasses}>
-      <div className={`w-full max-w-md rounded-lg border border-zinc-200 bg-white shadow-2xl my-auto shrink-0 ${isFullScreen ? 'shadow-xl border-zinc-300' : ''}`}>
+      <div className={`w-full max-w-md rounded-lg border border-zinc-200 bg-white shadow-2xl shrink-0 ${isFullScreen ? 'shadow-xl border-zinc-300 mx-auto mt-4 md:mt-16 mb-10' : 'mt-4 md:mt-10 mb-10 mx-auto'}`}>
         <div className="flex items-start justify-between border-b border-zinc-200 px-5 py-4">
           <div>
             <h3 className="text-base font-extrabold text-zinc-900">

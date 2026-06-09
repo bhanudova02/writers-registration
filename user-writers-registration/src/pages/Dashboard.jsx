@@ -187,11 +187,10 @@ export default function Dashboard({ member, setMember, onLogout }) {
   }, [member?.membershipId]);
 
   useEffect(() => {
-    if (expiryDetails.isExpired) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    // Removed overflow hidden since the expiry screen is a full page replacement 
+    // and needs to be scrollable on small screens or when zoomed in.
+    document.body.style.overflow = 'unset';
+    
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -934,8 +933,8 @@ ${formattedClauses}
 
   if (expiryDetails.isExpired) {
     return (
-      <main className="min-h-screen bg-[#111111] overflow-y-auto py-10 px-4 flex flex-col items-center font-sans">
-        <div className="bg-white border border-amber-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5 my-auto">
+      <main className="min-h-screen bg-[#111111] overflow-y-auto py-10 px-4 font-sans">
+        <div className="bg-white border border-amber-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5 mx-auto mt-4 md:mt-16 mb-10">
           <div className="mx-auto size-16 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full flex items-center justify-center mb-2">
             <AlertTriangle size={36} />
           </div>
