@@ -946,27 +946,17 @@ ${formattedClauses}
             Dear <span className="text-zinc-900 font-bold">{member?.name}</span>, your Associate Membership expired on <span className="font-bold text-zinc-800">{expiryDetails.expiryDateStr}</span>. 
             You must renew your membership to continue using the dashboard.
           </p>
-          <div className="bg-zinc-50 p-4 border border-zinc-200 text-left rounded text-sm space-y-2 text-zinc-800">
-            <p className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider border-b border-zinc-200 pb-1 mb-2">Renewal Breakdown</p>
-            <div className="flex justify-between items-center font-medium text-zinc-600">
-              <span>Base Renewal Fee:</span>
-              <span>₹{expiryDetails.baseAmount}</span>
-            </div>
-            {expiryDetails.penalty > 0 && (
+          {expiryDetails.penalty > 0 && (
+            <div className="bg-zinc-50 p-4 border border-zinc-200 text-left rounded text-sm space-y-2 text-zinc-800">
+              <p className="text-zinc-500 font-bold text-[10px] uppercase tracking-wider border-b border-zinc-200 pb-1 mb-2">Additional Fee</p>
               <div className="flex justify-between items-center font-bold text-red-500">
                 <span>Late Penalty Fee:</span>
                 <span>+ ₹{expiryDetails.penalty}</span>
               </div>
-            )}
-            <div className="flex justify-between items-center font-bold text-lg pt-2 border-t border-zinc-200 mt-2">
-              <span>Total Payable:</span>
-              <span>₹{expiryDetails.totalAmount}</span>
             </div>
-          </div>
-          <div className="w-full bg-amber-50 border border-amber-300 rounded-md py-4 px-4 text-center space-y-1">
-            <p className="text-amber-800 font-bold text-sm">🏢 To renew your membership, please visit the TCWA Office.</p>
-            <p className="text-amber-700 text-xs font-medium">H.No.8-3-720/9/2, Yellareddy Guda, Srinagar Colony, Hyderabad - 500 073</p>
-            <p className="text-amber-700 text-xs font-medium">📞 Cell: 9989990229</p>
+          )}
+          <div className="w-full bg-amber-50 border border-amber-300 rounded-md py-4 px-4 text-center">
+            <p className="text-amber-800 font-bold text-sm">🏢 Please visit the TCWA Office to renew your membership.</p>
           </div>
           <p className="text-[10px] text-zinc-500 italic font-semibold">
             * Dashboard access is locked until renewal is completed.
