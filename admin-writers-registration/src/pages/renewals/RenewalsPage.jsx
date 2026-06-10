@@ -11,6 +11,30 @@ import Modal from "../../components/common/Modal";
 import { toast } from "react-toastify";
 import { TableSkeleton } from "../../components/Skeletons";
 
+const calculateExpiryDate = (member) => {
+    if (!member) return null;
+    if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
+        return null;
+    }
+    let joiningDateStr = member.dateOfJoining || member.createdAt;
+    if (!joiningDateStr) return null;
+    
+    let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
+    if (isNaN(joiningDate.getTime())) return null;
+    
+    let refDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
+    let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
+    if (isNaN(refDate.getTime())) return null;
+    
+    let expiryDate = new Date(joiningDate);
+    expiryDate.setFullYear(refDate.getFullYear());
+    
+    if (expiryDate <= refDate) {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    }
+    return expiryDate;
+};
+
 export default function RenewalsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("All");
@@ -51,65 +75,35 @@ export default function RenewalsPage() {
                 let status = data.status || "Active";
                 let amountDue = "-";
 
-                let baseDateValue = data.lastRenewalDate || data.dateOfJoining || data.createdAt;
-                let createdDate = new Date();
-                if (baseDateValue) {
-                    createdDate = typeof baseDateValue.toDate === 'function' ? baseDateValue.toDate() : new Date(baseDateValue);
-                    if (isNaN(createdDate.getTime())) createdDate = new Date();
-                }
+                const expDate = calculateExpiryDate(data);
 
-                if (status === "Inactive") {
-                    status = "Inactive";
-                    // Still calculate expiry date for display
-                    if (data.memberType === "Associate Member") {
-                        const expDate = new Date(createdDate);
-                        expDate.setFullYear(expDate.getFullYear() + 1);
-                        expiryDate = expDate.toLocaleDateString();
-                        const now = new Date();
-                        daysRemaining = Math.ceil((expDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                    } else if (data.memberType === "Life Time Member") {
-                        expiryDate = "No Expiry";
-                    }
-                } else if (data.memberType === "Associate Member") {
-                    // Expiry is 1 year from base date
-                    const expDate = new Date(createdDate);
-                    expDate.setFullYear(expDate.getFullYear() + 1);
-                    expiryDate = expDate.toLocaleDateString();
-
+                if (data.memberType === "Associate Member" && expDate) {
+                    expiryDate = expDate.toLocaleDateString("en-GB");
                     const now = new Date();
                     const diffTime = expDate.getTime() - now.getTime();
                     daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    
-                    if (daysRemaining <= 0) {
-                        const daysOverdue = Math.abs(daysRemaining);
+                }
 
-                        if (daysOverdue > 1095) {
-                            // 3+ years overdue → disabled territory
-                            status = "Inactive";
-                            amountDue = "Expired";
-                        } else if (daysOverdue > 730) {
-                            // 2–3 years overdue → ₹1,000 penalty
-                            status = "Overdue";
+                if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
+                    status = "Disabled";
+                    amountDue = "Disabled";
+                } else if (status === "Inactive" || (daysRemaining !== Infinity && daysRemaining <= 0)) {
+                    status = "Inactive";
+                    if (daysRemaining !== Infinity) {
+                        const daysOverdue = Math.abs(daysRemaining);
+                        if (daysOverdue > 730) {
                             amountDue = "₹1,000 Penalty";
                         } else if (daysOverdue > 365) {
-                            // 1–2 years overdue → ₹500 penalty
-                            status = "Overdue";
                             amountDue = "₹500 Penalty";
-                        } else if (daysOverdue > 30) {
-                            // 30 days to 1 year → overdue, no penalty yet
-                            status = "Overdue";
-                            amountDue = "-";
                         } else {
-                            // Within 30 days of expiry → grace period, no penalty
-                            status = "Grace Period";
                             amountDue = "-";
                         }
-                    } else {
-                        status = "Active";
                     }
-                } else if (data.memberType === "Life Time Member") {
+                } else if (data.memberType === "Life Time Member" || data.memberType === "Life Member" || data.memberType === "Life Time") {
                     status = "Life Member";
                     expiryDate = "No Expiry";
+                } else {
+                    status = "Active";
                 }
 
                 list.push({
@@ -183,6 +177,10 @@ export default function RenewalsPage() {
 
         try {
             const memberToRenew = members.find(m => m.id === memberId);
+            if (memberToRenew && memberToRenew.status === "Disabled") {
+                toast.error("Cannot renew a disabled account. This account is permanently closed.");
+                return;
+            }
             const now = new Date();
             let newCreatedAtDate = now;
 
@@ -208,10 +206,34 @@ export default function RenewalsPage() {
             const nowStr = now.toISOString();
             const newCreatedAtStr = newCreatedAtDate.toISOString();
             
+            // Calculate new validityExpiresAt aligning with dateOfJoining anniversary
+            const currentExpiryDate = calculateExpiryDate(memberToRenew);
+            let baseDateForCalc = now;
+            if (currentExpiryDate && currentExpiryDate > now) {
+                baseDateForCalc = new Date(currentExpiryDate);
+            } else if (memberToRenew.dateOfJoining || memberToRenew.createdAt) {
+                let joiningDateStr = memberToRenew.dateOfJoining || memberToRenew.createdAt;
+                let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
+                if (!isNaN(joiningDate.getTime())) {
+                    let anniversaryThisYear = new Date(joiningDate);
+                    anniversaryThisYear.setFullYear(now.getFullYear());
+                    if (anniversaryThisYear <= now) {
+                        baseDateForCalc = anniversaryThisYear;
+                    } else {
+                        anniversaryThisYear.setFullYear(now.getFullYear() - 1);
+                        baseDateForCalc = anniversaryThisYear;
+                    }
+                }
+            }
+            const selectedExpiryDate = new Date(baseDateForCalc);
+            selectedExpiryDate.setFullYear(selectedExpiryDate.getFullYear() + years);
+            const newExpiryISO = selectedExpiryDate.toISOString();
+
             const memberRef = doc(db, "members", memberId);
             
             await updateDoc(memberRef, {
                 lastRenewalDate: newCreatedAtStr,
+                validityExpiresAt: newExpiryISO,
                 status: "Active"
             });
 
@@ -235,7 +257,7 @@ export default function RenewalsPage() {
     // Toggle Status
     const handleToggleStatus = async (memberId, currentStatus, memberName) => {
         try {
-            const newStatus = currentStatus === "Inactive" ? "Active" : "Inactive";
+            const newStatus = (currentStatus === "Inactive" || currentStatus === "Disabled") ? "Active" : "Inactive";
             
             // Check expiry date if we are trying to make them Active
             if (newStatus === "Active") {
@@ -274,6 +296,11 @@ export default function RenewalsPage() {
         setUpgradeModalData({ isOpen: false, memberId: '', name: '', targetType: '' });
 
         try {
+            const memberToUpgrade = members.find(m => m.id === memberId);
+            if (memberToUpgrade && memberToUpgrade.status === "Disabled" && targetType === "Life Time Member") {
+                toast.error("Cannot upgrade a disabled account to Life Time Member. This account is permanently closed.");
+                return;
+            }
             const memberRef = doc(db, "members", memberId);
             await updateDoc(memberRef, {
                 memberType: targetType,
@@ -415,7 +442,7 @@ export default function RenewalsPage() {
                                                     {renew.amountDue}
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 text-center whitespace-nowrap">
-                                                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${renew.status === 'Active' || renew.status === 'Life Member' ? 'bg-green-100 text-green-700' : renew.status === 'Grace Period' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${renew.status === 'Active' || renew.status === 'Life Member' ? 'bg-green-100 text-green-700' : renew.status === 'Inactive' || renew.status === 'Grace Period' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                                                         {renew.status}
                                                     </span>
                                                 </td>
@@ -430,13 +457,23 @@ export default function RenewalsPage() {
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
                                                     {renew.memberType === "Associate Member" ? (
-                                                        <CustomButton
-                                                            label="Renew"
-                                                            bgColor="bg-zinc-800 hover:bg-zinc-900"
-                                                            textColor="text-white"
-                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm"
-                                                            onClick={() => triggerRenewModal(renew.id, renew.name)}
-                                                        />
+                                                        renew.status === "Disabled" ? (
+                                                            <CustomButton
+                                                                label="Cannot Renew"
+                                                                bgColor="bg-zinc-300"
+                                                                textColor="text-zinc-500"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm border-zinc-200 mx-auto"
+                                                                disabled={true}
+                                                            />
+                                                        ) : (
+                                                            <CustomButton
+                                                                label="Renew"
+                                                                bgColor="bg-zinc-800 hover:bg-zinc-900"
+                                                                textColor="text-white"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm"
+                                                                onClick={() => triggerRenewModal(renew.id, renew.name)}
+                                                            />
+                                                        )
                                                     ) : (
                                                         <span className="text-zinc-400 text-xs">-</span>
                                                     )}
@@ -455,22 +492,33 @@ export default function RenewalsPage() {
                                                             </div>
                                                         ) : (
                                                             <CustomButton
-                                                                label={renew.status === "Inactive" ? "Make Active" : "Make Inactive"}
-                                                                bgColor={renew.status === "Inactive" ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                                                                label={(renew.status === "Inactive" || renew.status === "Disabled") ? "Make Active" : "Make Inactive"}
+                                                                bgColor={(renew.status === "Inactive" || renew.status === "Disabled") ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
                                                                 textColor="text-white"
                                                                 className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
                                                                 onClick={() => handleToggleStatus(renew.id, renew.status, renew.name)}
                                                             />
                                                         )}
                                                         {renew.memberType === "Associate Member" ? (
-                                                            <CustomButton
-                                                                label="Upgrade to Life"
-                                                                bgColor="bg-zinc-900 hover:bg-black"
-                                                                textColor="text-white"
-                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
-                                                                icon={FaUserGraduate}
-                                                                onClick={() => triggerUpgradeModal(renew.id, renew.name, "Life Time Member")}
-                                                            />
+                                                            renew.status === "Disabled" ? (
+                                                                <CustomButton
+                                                                    label="Upgrade to Life"
+                                                                    bgColor="bg-zinc-300"
+                                                                    textColor="text-zinc-500"
+                                                                    className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm border-zinc-200"
+                                                                    icon={FaUserGraduate}
+                                                                    disabled={true}
+                                                                />
+                                                            ) : (
+                                                                <CustomButton
+                                                                    label="Upgrade to Life"
+                                                                    bgColor="bg-zinc-900 hover:bg-black"
+                                                                    textColor="text-white"
+                                                                    className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
+                                                                    icon={FaUserGraduate}
+                                                                    onClick={() => triggerUpgradeModal(renew.id, renew.name, "Life Time Member")}
+                                                                />
+                                                            )
                                                         ) : (
                                                             <CustomButton
                                                                 label="Make Associate"
@@ -546,27 +594,17 @@ export default function RenewalsPage() {
                 let willExtendFrom = "today";
                 let baseDateForCalc = new Date();
 
-                let baseDateValue = modalMember?.lastRenewalDate || modalMember?.dateOfJoining || modalMember?.createdAt;
-                if (modalMember && baseDateValue) {
-                    const currentCreatedDate = new Date(baseDateValue);
-                    if (!isNaN(currentCreatedDate.getTime())) {
-                        const currentExpiryDate = new Date(currentCreatedDate);
-                        currentExpiryDate.setFullYear(currentExpiryDate.getFullYear() + 1);
-                        if (currentExpiryDate > new Date()) {
-                            willExtendFrom = "their current expiry date";
-                            baseDateForCalc = new Date(currentExpiryDate);
-                        }
+                const currentExpiryDate = calculateExpiryDate(modalMember);
+                if (currentExpiryDate) {
+                    if (currentExpiryDate > new Date()) {
+                        willExtendFrom = "their current expiry date";
+                        baseDateForCalc = new Date(currentExpiryDate);
                     }
                 }
 
                 const dropdownOptions = [1, 2, 3, 4, 5].map(y => {
                     const expiryForThisOption = new Date(baseDateForCalc);
                     expiryForThisOption.setFullYear(expiryForThisOption.getFullYear() + y);
-                    const formattedDate = expiryForThisOption.toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric'
-                    });
                     return {
                         value: y,
                         label: `${y} ${y === 1 ? 'Year' : 'Years'}`
@@ -575,11 +613,7 @@ export default function RenewalsPage() {
 
                 const selectedExpiryDate = new Date(baseDateForCalc);
                 selectedExpiryDate.setFullYear(selectedExpiryDate.getFullYear() + renewModalData.years);
-                const finalFormattedDate = selectedExpiryDate.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                });
+                const finalFormattedDate = selectedExpiryDate.toLocaleDateString('en-GB');
                 
                 return (
                     <Modal

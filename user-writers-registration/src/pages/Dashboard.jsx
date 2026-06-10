@@ -104,15 +104,26 @@ export default function Dashboard({ member, setMember, onLogout }) {
   const expiryDetails = useMemo(() => {
     if (!member) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
 
-    if (member.memberType === 'Life Time Member') {
+    if (member.memberType === 'Life Time Member' || member.memberType === 'Life Member') {
       return { isExpired: false, daysRemaining: 9999, expiryDateStr: 'Never (Life Time)', penalty: 0 };
     }
 
-    const referenceDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
-    const referenceDate = referenceDateStr ? new Date(referenceDateStr) : new Date();
+    let joiningDateStr = member.dateOfJoining || member.createdAt;
+    if (!joiningDateStr) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
     
-    const expiryDate = new Date(referenceDate);
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    let joiningDate = new Date(joiningDateStr);
+    if (isNaN(joiningDate.getTime())) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
+    
+    let refDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
+    let refDate = new Date(refDateStr);
+    if (isNaN(refDate.getTime())) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
+    
+    let expiryDate = new Date(joiningDate);
+    expiryDate.setFullYear(refDate.getFullYear());
+    
+    if (expiryDate <= refDate) {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    }
     
     const today = new Date();
     const diffTime = expiryDate.getTime() - today.getTime();
@@ -135,25 +146,42 @@ export default function Dashboard({ member, setMember, onLogout }) {
     return {
       isExpired,
       daysRemaining,
-      expiryDateStr: expiryDate.toLocaleDateString([], { dateStyle: 'medium' }),
+      expiryDateStr: expiryDate.toLocaleDateString("en-GB"),
       penalty
     };
   }, [member]);
 
   useEffect(() => {
-    if (expiryDetails.isExpired && member?.status === 'Active' && member?.membershipId) {
-      // Automatically update the status to 'Inactive' in Firestore when their validity expires
-      const autoDeactivate = async () => {
-        try {
-          const memberRef = doc(db, 'members', member.membershipId);
-          await updateDoc(memberRef, { status: 'Inactive' });
-        } catch (err) {
-          console.error("Failed to auto-update status to inactive:", err);
+    if (member?.membershipId) {
+      if (expiryDetails.isExpired) {
+        if (expiryDetails.daysRemaining <= -1095) {
+          if (member.status !== 'Disabled') {
+            const autoDisable = async () => {
+              try {
+                const memberRef = doc(db, 'members', member.membershipId);
+                await updateDoc(memberRef, { status: 'Disabled' });
+              } catch (err) {
+                console.error("Failed to auto-update status to Disabled:", err);
+              }
+            };
+            autoDisable();
+          }
+        } else {
+          if (member.status === 'Active') {
+            const autoDeactivate = async () => {
+              try {
+                const memberRef = doc(db, 'members', member.membershipId);
+                await updateDoc(memberRef, { status: 'Inactive' });
+              } catch (err) {
+                console.error("Failed to auto-update status to Inactive:", err);
+              }
+            };
+            autoDeactivate();
+          }
         }
-      };
-      autoDeactivate();
+      }
     }
-  }, [expiryDetails.isExpired, member?.status, member?.membershipId]);
+  }, [expiryDetails.isExpired, expiryDetails.daysRemaining, member?.status, member?.membershipId]);
 
   useEffect(() => {
     if (!member?.membershipId) return;
@@ -953,7 +981,7 @@ ${formattedClauses}
     }
   };
 
-  if (member?.disabled) {
+  if (member?.status === 'Disabled') {
     return (
       <main className="min-h-screen bg-[#111111] overflow-y-auto py-12 px-4 flex items-center justify-center font-sans">
         <div className="bg-white border border-red-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5">

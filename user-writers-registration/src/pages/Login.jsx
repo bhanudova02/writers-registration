@@ -6,6 +6,30 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import SupportModal from '../components/SupportModal';
 
+const calculateExpiryDate = (member) => {
+  if (!member) return null;
+  if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
+    return null;
+  }
+  let joiningDateStr = member.dateOfJoining || member.createdAt;
+  if (!joiningDateStr) return null;
+  
+  let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
+  if (isNaN(joiningDate.getTime())) return null;
+  
+  let refDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
+  let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
+  if (isNaN(refDate.getTime())) return null;
+  
+  let expiryDate = new Date(joiningDate);
+  expiryDate.setFullYear(refDate.getFullYear());
+  
+  if (expiryDate <= refDate) {
+    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+  }
+  return expiryDate;
+};
+
 export default function Login({ setMember, setIsLoggedIn }) {
   const [membershipId, setMembershipId] = useState('');
   const [phone, setPhone] = useState('');
@@ -58,6 +82,24 @@ export default function Login({ setMember, setIsLoggedIn }) {
       }
 
       const memberData = docSnap.data();
+
+      // Check if account is permanently closed/disabled (3+ years overdue or status is Disabled)
+      const expDate = calculateExpiryDate(memberData);
+      let isDisabled = memberData.status === "Disabled";
+      if (memberData.memberType === "Associate Member" && expDate) {
+        const now = new Date();
+        const diffTime = expDate.getTime() - now.getTime();
+        const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (daysRemaining <= -1095) {
+          isDisabled = true;
+        }
+      }
+
+      if (isDisabled) {
+        setLoginError('This account has been disabled. You need to create a new account and visit the TCWA office to re-register.');
+        setIsValidating(false);
+        return;
+      }
       const enteredPhoneDigits = phone.replace(/\D/g, '').slice(-10);
       const registeredPhoneDigits = String(memberData.mobileNumber || '').replace(/\D/g, '').slice(-10);
 

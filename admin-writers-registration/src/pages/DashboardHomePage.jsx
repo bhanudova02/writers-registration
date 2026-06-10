@@ -5,6 +5,52 @@ import { FaUsers, FaFileAlt, FaSyncAlt, FaRupeeSign } from "react-icons/fa";
 import { FiTrendingUp, FiCheckCircle, FiClock, FiActivity } from "react-icons/fi";
 import { MetricSkeleton, ListSkeleton } from "../components/Skeletons";
 
+const calculateExpiryDate = (member) => {
+    if (!member) return null;
+    if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
+        return null;
+    }
+    let joiningDateStr = member.dateOfJoining || member.createdAt;
+    if (!joiningDateStr) return null;
+    
+    let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
+    if (isNaN(joiningDate.getTime())) return null;
+    
+    let refDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
+    let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
+    if (isNaN(refDate.getTime())) return null;
+    
+    let expiryDate = new Date(joiningDate);
+    expiryDate.setFullYear(refDate.getFullYear());
+    
+    if (expiryDate <= refDate) {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    }
+    return expiryDate;
+};
+
+const getComputedStatus = (member) => {
+    let status = member.status || "Active";
+    let daysRemaining = Infinity;
+    const expDate = calculateExpiryDate(member);
+
+    if (member.memberType === "Associate Member" && expDate) {
+        const now = new Date();
+        const diffTime = expDate.getTime() - now.getTime();
+        daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
+        return "Disabled";
+    } else if (status === "Inactive" || (daysRemaining !== Infinity && daysRemaining <= 0)) {
+        return "Inactive";
+    } else if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
+        return "Life Member";
+    } else {
+        return "Active";
+    }
+};
+
 export default function DashboardHomePage() {
     const [stats, setStats] = useState({
         totalMembers: 0,
@@ -41,21 +87,20 @@ export default function DashboardHomePage() {
             snapshot.forEach((docSnap) => {
                 membersCount++;
                 const data = docSnap.data();
-                membersList.push({ id: docSnap.id, ...data });
+                membersList.push({ 
+                    id: docSnap.id, 
+                    ...data,
+                    status: getComputedStatus(data)
+                });
 
                 // Check pending renewals for associate members
                 if (data.memberType === "Associate Member") {
-                    let baseDateValue = data.lastRenewalDate || data.dateOfJoining || data.createdAt;
-                    let createdDate = new Date();
-                    if (baseDateValue) {
-                        createdDate = typeof baseDateValue.toDate === 'function' ? baseDateValue.toDate() : new Date(baseDateValue);
-                        if (isNaN(createdDate.getTime())) createdDate = new Date();
-                    }
-                    const expiryDate = new Date(createdDate);
-                    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-                    const now = new Date();
-                    if (expiryDate.getTime() < now.getTime()) {
-                        pendingRenewalsCount++;
+                    const expiryDate = calculateExpiryDate(data);
+                    if (expiryDate) {
+                        const now = new Date();
+                        if (expiryDate.getTime() < now.getTime()) {
+                            pendingRenewalsCount++;
+                        }
                     }
                 }
             });
@@ -285,7 +330,7 @@ export default function DashboardHomePage() {
                                         <p className="text-[10px] text-zinc-500 mt-0.5">ID: {member.membershipId} • Type: {member.memberType}</p>
                                     </div>
                                     <div className="text-right">
-                                        <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${member.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                        <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${member.status === "Active" ? "bg-green-100 text-green-700" : member.status === "Inactive" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>
                                             {member.status}
                                         </span>
                                         <p className="text-[9px] text-zinc-400 mt-1 font-semibold">

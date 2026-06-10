@@ -19,6 +19,7 @@ import RegistrationsPage from './pages/registrations/RegistrationsPage';
 import RenewalsPage from './pages/renewals/RenewalsPage';
 import NotificationsPage from './pages/notifications/NotificationsPage';
 import CommunicationLogsPage from './pages/communication-logs/CommunicationLogsPage';
+import ReportsPage from './pages/reports/ReportsPage';
 
 
 // Helper to check admin
@@ -214,6 +215,11 @@ function App() {
           <Route path="communication-logs" element={
             <ProtectedRoute user={user}>
               <CommunicationLogsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="reports" element={
+            <ProtectedRoute user={user}>
+              <ReportsPage />
             </ProtectedRoute>
           } />
           <Route path="*" element={<DashboardHomePage />} />

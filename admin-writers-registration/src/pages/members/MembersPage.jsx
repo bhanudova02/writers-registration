@@ -51,6 +51,47 @@ const initialFormData = {
     alternateMobileNumber: "",
 };
 
+const calculateExpiryDate = (member) => {
+    if (!member) return null;
+    let joiningDateStr = member.dateOfJoining || member.createdAt;
+    if (!joiningDateStr) return null;
+    let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
+    if (isNaN(joiningDate.getTime())) return null;
+    
+    let refDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
+    let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
+    if (isNaN(refDate.getTime())) return null;
+    
+    let expiryDate = new Date(joiningDate);
+    expiryDate.setFullYear(refDate.getFullYear());
+    if (expiryDate <= refDate) {
+        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    }
+    return expiryDate;
+};
+
+const getComputedStatus = (member) => {
+    let status = member.status || "Active";
+    let daysRemaining = Infinity;
+    const expDate = calculateExpiryDate(member);
+
+    if (member.memberType === "Associate Member" && expDate) {
+        const now = new Date();
+        const diffTime = expDate.getTime() - now.getTime();
+        daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+
+    if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
+        return "Disabled";
+    } else if (status === "Inactive" || (daysRemaining !== Infinity && daysRemaining <= 0)) {
+        return "Inactive";
+    } else if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
+        return "Life Member";
+    } else {
+        return "Active";
+    }
+};
+
 const savedMemberPageSizeOptions = [5, 10, 25, 50, 100];
 
 export default function MembersPage() {
@@ -110,7 +151,14 @@ export default function MembersPage() {
         setIsLoadingSavedMembers(true);
         const q = query(collection(db, 'members'), orderBy('createdAt', 'desc'));
         const unsub = onSnapshot(q, (snap) => {
-            const data = snap.docs.map(doc => ({ _id: doc.id, ...doc.data() }));
+            const data = snap.docs.map(doc => {
+                const docData = doc.data();
+                return { 
+                    _id: doc.id, 
+                    ...docData, 
+                    status: getComputedStatus(docData) 
+                };
+            });
             setSavedMembers(data);
             setIsLoadingSavedMembers(false);
         }, (error) => {
@@ -335,8 +383,31 @@ export default function MembersPage() {
                 return;
             }
 
+            const currentMember = savedMembers.find(m => m.membershipId === membershipId);
+            const mergedMember = { ...currentMember, ...updatedFields };
+            
+            let validityExpiresAt = null;
+            if (mergedMember.memberType === "Associate Member") {
+                let joiningDateStr = mergedMember.dateOfJoining || mergedMember.createdAt;
+                if (joiningDateStr) {
+                    let joiningDate = new Date(joiningDateStr);
+                    if (!isNaN(joiningDate.getTime())) {
+                        let refDateStr = mergedMember.lastRenewalDate || mergedMember.dateOfJoining || mergedMember.createdAt;
+                        let refDate = new Date(refDateStr);
+                        if (!isNaN(refDate.getTime())) {
+                            let expiryDate = new Date(joiningDate);
+                            expiryDate.setFullYear(refDate.getFullYear());
+                            if (expiryDate <= refDate) {
+                                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                            }
+                            validityExpiresAt = expiryDate.toISOString();
+                        }
+                    }
+                }
+            }
+
             const memberRef = doc(db, 'members', membershipId);
-            await setDoc(memberRef, updatedFields, { merge: true });
+            await setDoc(memberRef, { ...updatedFields, validityExpiresAt }, { merge: true });
             
             const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
             await logAdminActivity(adminEmail, "Edit Member", `Updated member profile: ${membershipId}`);
@@ -675,28 +746,22 @@ export default function MembersPage() {
                                                     </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 text-[11px] font-semibold text-zinc-500 whitespace-nowrap w-32">
                                                         {member.dateOfJoining 
-                                                            ? new Date(member.dateOfJoining).toLocaleDateString() 
-                                                            : (member.createdAt ? new Date(member.createdAt).toLocaleString([], { dateStyle: "short" }) : "-")}
+                                                            ? new Date(member.dateOfJoining).toLocaleDateString("en-GB") 
+                                                            : (member.createdAt ? new Date(member.createdAt).toLocaleString("en-GB", { dateStyle: "short" }) : "-")}
                                                     </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 w-28 text-center">
-                                                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${member.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                                            member.status === 'Active' 
+                                                                ? 'bg-green-100 text-green-700' 
+                                                                : member.status === 'Inactive'
+                                                                    ? 'bg-amber-100 text-amber-700'
+                                                                    : 'bg-red-100 text-red-700'
+                                                        }`}>
                                                             {member.status || "Active"}
                                                         </span>
                                                     </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 w-36 text-center">
                                                         <div className="flex items-center justify-center gap-1.5">
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => {
-                                                                    setMessageMember(member);
-                                                                    setIsMessageModalOpen(true);
-                                                                }}
-                                                                className="inline-flex items-center gap-1 rounded bg-orange-50 hover:bg-orange-100 text-orange-600 px-2 py-1 text-xs font-semibold border border-orange-200 transition-colors cursor-pointer"
-                                                                title="Send Custom Message"
-                                                            >
-                                                                <FaPaperPlane className="text-[10px]" />
-                                                                <span>Message</span>
-                                                            </button>
                                                             <button
                                                                 type="button"
                                                                 onClick={() => {

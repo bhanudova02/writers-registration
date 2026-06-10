@@ -86,6 +86,40 @@ export default function App() {
                 if (!docSnap.exists()) {
                   console.warn("Member deleted from database. Forcing logout.");
                   handleLogout();
+                } else {
+                  const dbData = docSnap.data();
+                  const checkPermanentlyClosed = (m) => {
+                    if (!m) return false;
+                    if (m.status === "Disabled") return true;
+                    if (m.memberType === "Associate Member") {
+                      let joiningDateStr = m.dateOfJoining || m.createdAt;
+                      if (!joiningDateStr) return false;
+                      let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
+                      if (isNaN(joiningDate.getTime())) return false;
+                      
+                      let refDateStr = m.lastRenewalDate || m.dateOfJoining || m.createdAt;
+                      let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
+                      if (isNaN(refDate.getTime())) return false;
+                      
+                      let expiryDate = new Date(joiningDate);
+                      expiryDate.setFullYear(refDate.getFullYear());
+                      if (expiryDate <= refDate) {
+                        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                      }
+                      
+                      const now = new Date();
+                      const diffTime = expiryDate.getTime() - now.getTime();
+                      const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                      if (daysRemaining <= -1095) {
+                        return true;
+                      }
+                    }
+                    return false;
+                  };
+                  if (checkPermanentlyClosed(dbData)) {
+                    console.warn("Member account permanently closed. Forcing logout.");
+                    handleLogout();
+                  }
                 }
               },
               (error) => {

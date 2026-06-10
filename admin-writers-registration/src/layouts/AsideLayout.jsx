@@ -1,4 +1,4 @@
-import { FaHome, FaUserPlus, FaUsers, FaFileInvoice, FaSync, FaBell, FaSms } from "react-icons/fa";
+import { FaHome, FaUserPlus, FaUsers, FaFileInvoice, FaSync, FaBell, FaSms, FaPrint } from "react-icons/fa";
 import { NavLink } from "react-router-dom";
 
 const allNavLinks = [
@@ -8,6 +8,7 @@ const allNavLinks = [
     { path: "/renewals", label: "Renewals", icon: FaSync, permission: "Renewals" },
     { path: "/communication-logs", label: "Comm. Logs", icon: FaSms, permission: "Notifications" },
     { path: "/notifications", label: "Notifications", icon: FaBell, permission: "Notifications" },
+    { path: "/reports", label: "Reports", icon: FaPrint, permission: "Members" },
 ];
 
 export function AsideLayout({ user }) {
