@@ -34,8 +34,19 @@ export default function RegistrationsPage() {
             throw new Error("No agreement text found for this registration.");
         }
 
-        // Split the agreement text by newlines into paragraphs
-        const paragraphsList = reg.agreementText.split('\n');
+        // Split the agreement text by newlines into paragraphs, trimming signature lines to be left-aligned
+        const paragraphsList = reg.agreementText.split('\n').map((para) => {
+            const trimmed = para.trim();
+            if (
+                trimmed.includes('భవదీయుడు') || 
+                trimmed.includes('సంతకం') || 
+                (reg.writerName && trimmed.includes(reg.writerName)) ||
+                (reg.fullName && trimmed.includes(reg.fullName))
+            ) {
+                return trimmed;
+            }
+            return para;
+        });
 
         // Preload stamp image
         const sealImg = new Image();

@@ -7,8 +7,8 @@ const allNavLinks = [
     { path: "/registrations", label: "Registrations", icon: FaFileInvoice, permission: "Registrations" },
     { path: "/renewals", label: "Renewals", icon: FaSync, permission: "Renewals" },
     { path: "/communication-logs", label: "Comm. Logs", icon: FaSms, permission: "Notifications" },
-    { path: "/notifications", label: "Notifications", icon: FaBell, permission: "Notifications" },
     { path: "/reports", label: "Reports", icon: FaPrint, permission: "Members" },
+    { path: "/notifications", label: "Notifications", icon: FaBell, permission: "Notifications" },
 ];
 
 export function AsideLayout({ user }) {

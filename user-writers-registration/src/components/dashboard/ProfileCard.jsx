@@ -41,8 +41,12 @@ const getDueYearsDisplay = (member) => {
     return "No Due";
   } else {
     const daysOverdue = Math.abs(daysRemaining);
-    const yearsOverdue = Math.ceil(daysOverdue / 365);
-    return `${yearsOverdue} Year${yearsOverdue > 1 ? 's' : ''} Due`;
+    if (daysOverdue < 365) {
+      return `${daysOverdue} Days Overdue`;
+    } else {
+      const yearsOverdue = Math.ceil(daysOverdue / 365);
+      return `${yearsOverdue} Year${yearsOverdue > 1 ? 's' : ''} Due (${daysOverdue} Days)`;
+    }
   }
 };
 

@@ -68,8 +68,12 @@ const getDueYearsDisplay = (member) => {
         return "No Due";
     } else {
         const daysOverdue = Math.abs(daysRemaining);
-        const yearsOverdue = Math.ceil(daysOverdue / 365);
-        return `${yearsOverdue} Year${yearsOverdue > 1 ? 's' : ''} Due`;
+        if (daysOverdue < 365) {
+            return `${daysOverdue} Days Overdue`;
+        } else {
+            const yearsOverdue = Math.ceil(daysOverdue / 365);
+            return `${yearsOverdue} Year${yearsOverdue > 1 ? 's' : ''} Due (${daysOverdue} Days)`;
+        }
     }
 };
 
@@ -229,7 +233,14 @@ export default function ReportsPage() {
         
         const expiry = getExpiryDetails(member);
         if (expiry.text !== "-") {
-            drawField("Valid Till", expiry.text);
+            let expiryVal = expiry.text;
+            if (!expiry.isLifeTime && expiry.daysRemaining !== null) {
+                const suffix = expiry.daysRemaining > 0 
+                    ? ` (${expiry.daysRemaining} days left)` 
+                    : ` (${Math.abs(expiry.daysRemaining)} days overdue)`;
+                expiryVal += suffix;
+            }
+            drawField("Expiry Date", expiryVal);
         }
 
         return doc;
