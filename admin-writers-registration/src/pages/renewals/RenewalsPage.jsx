@@ -459,7 +459,7 @@ export default function RenewalsPage() {
                                                     {renew.memberType === "Associate Member" ? (
                                                         renew.status === "Disabled" ? (
                                                             <CustomButton
-                                                                label="Cannot Renew"
+                                                                label="Renew"
                                                                 bgColor="bg-zinc-300"
                                                                 textColor="text-zinc-500"
                                                                 className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm border-zinc-200 mx-auto"
