@@ -734,8 +734,8 @@ export default function MembersPage() {
                                                         {member.name}
                                                     </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 text-[12px] font-semibold text-zinc-700 w-36">
-                                                        <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider ${member.memberType === 'Life Time Member' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                            {member.memberType === 'Life Time Member' ? 'Life Time' : 'Associate'}
+                                                        <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider ${(member.memberType === 'Life Time Member' || member.memberType === 'Life Member' || member.memberType === 'Life Time') ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                            {(member.memberType === 'Life Time Member' || member.memberType === 'Life Member' || member.memberType === 'Life Time') ? 'Life Time' : 'Associate'}
                                                         </span>
                                                     </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-semibold text-zinc-700 whitespace-nowrap w-28">

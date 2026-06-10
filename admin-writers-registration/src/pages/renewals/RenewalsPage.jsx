@@ -424,9 +424,9 @@ export default function RenewalsPage() {
                                                     {renew.name}
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 text-[11px] font-bold whitespace-nowrap">
-                                                    <span className={`px-2 py-0.5 rounded ${renew.memberType === 'Life Time Member' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                        {renew.memberType === 'Life Time Member' ? 'Life Time' : 'Associate'}
-                                                    </span>
+                                                     <span className={`px-2 py-0.5 rounded ${(renew.memberType === 'Life Time Member' || renew.memberType === 'Life Member' || renew.memberType === 'Life Time') ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                         {(renew.memberType === 'Life Time Member' || renew.memberType === 'Life Member' || renew.memberType === 'Life Time') ? 'Life Time' : 'Associate'}
+                                                     </span>
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
                                                     <div className="flex flex-col items-start gap-0.5">

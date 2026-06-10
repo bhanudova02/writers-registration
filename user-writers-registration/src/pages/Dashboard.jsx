@@ -327,7 +327,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
 
     let memberTypeStr = 'జీవిత సభ్యులు / అసోసియేట్ సభ్యులు';
     if (member?.memberType) {
-      if (member.memberType === 'Life Time Member') {
+       if (member.memberType === 'Life Time Member' || member.memberType === 'Life Member' || member.memberType === 'Life Time') {
         memberTypeStr = 'జీవిత సభ్యులు';
       } else {
         memberTypeStr = 'అసోసియేట్ సభ్యులు';
