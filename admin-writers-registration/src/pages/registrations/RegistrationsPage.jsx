@@ -76,18 +76,30 @@ export default function RegistrationsPage() {
         label.style.color = '#71717a';
         label.style.textTransform = 'uppercase';
         label.style.letterSpacing = '0.05em';
-        label.style.marginBottom = '4px';
+        label.style.marginBottom = '8px';
+        label.style.lineHeight = '1.4';
 
-        const idSpan = document.createElement('span');
-        idSpan.textContent = reg.agreementId || 'N/A';
+        const idSpan = document.createElement('div');
+        idSpan.style.display = 'block';
+        idSpan.style.width = 'fit-content';
+        idSpan.style.textAlign = 'center';
         idSpan.style.color = '#dc2626';
         idSpan.style.fontWeight = '800';
         idSpan.style.fontSize = '16px';
         idSpan.style.letterSpacing = '0.025em';
         idSpan.style.backgroundColor = '#fef2f2';
-        idSpan.style.padding = '4px 10px';
+        idSpan.style.padding = '6px 12px';
         idSpan.style.borderRadius = '6px';
         idSpan.style.border = '1px solid #fee2e2';
+        idSpan.style.marginTop = '2px';
+        idSpan.style.lineHeight = '1.2';
+
+        const idTextSpan = document.createElement('span');
+        idTextSpan.textContent = reg.agreementId || 'N/A';
+        idTextSpan.style.position = 'relative';
+        idTextSpan.style.top = '-2px'; // Shift text 2px upward
+        idTextSpan.style.display = 'inline-block';
+        idSpan.appendChild(idTextSpan);
 
         idContainer.appendChild(label);
         idContainer.appendChild(idSpan);
