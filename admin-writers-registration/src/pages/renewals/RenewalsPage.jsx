@@ -35,6 +35,30 @@ const calculateExpiryDate = (member) => {
     return expiryDate;
 };
 
+const getDueYearsDisplay = (member) => {
+    if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
+        return "Life Member";
+    }
+    const expDate = calculateExpiryDate(member);
+    if (!expDate) return "-";
+    
+    const now = new Date();
+    const diffTime = expDate.getTime() - now.getTime();
+    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (daysRemaining > 0) {
+        return "No Due";
+    } else {
+        const daysOverdue = Math.abs(daysRemaining);
+        if (daysOverdue < 365) {
+            return `${daysOverdue} Days Overdue`;
+        } else {
+            const yearsOverdue = Math.ceil(daysOverdue / 365);
+            return `${yearsOverdue} Year${yearsOverdue > 1 ? 's' : ''} Due (${daysOverdue} Days)`;
+        }
+    }
+};
+
 export default function RenewalsPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedStatus, setSelectedStatus] = useState("All");
@@ -91,13 +115,8 @@ export default function RenewalsPage() {
                     status = "Inactive";
                     if (daysRemaining !== Infinity) {
                         const daysOverdue = Math.abs(daysRemaining);
-                        if (daysOverdue > 730) {
-                            amountDue = "₹1,000 Penalty";
-                        } else if (daysOverdue > 365) {
-                            amountDue = "₹500 Penalty";
-                        } else {
-                            amountDue = "-";
-                        }
+                        const calculatedAmount = Math.round((daysOverdue / 365) * 500);
+                        amountDue = `₹${calculatedAmount.toLocaleString('en-IN')} Penalty`;
                     }
                 } else if (data.memberType === "Life Time Member" || data.memberType === "Life Member" || data.memberType === "Life Time") {
                     status = "Life Member";
@@ -438,8 +457,15 @@ export default function RenewalsPage() {
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-zinc-800 whitespace-nowrap">
-                                                    {renew.amountDue}
+                                                <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
+                                                    <div className="flex flex-col items-start gap-0.5">
+                                                        <span className="text-[12px] font-bold text-zinc-700">{renew.amountDue}</span>
+                                                        {renew.memberType === "Associate Member" && renew.daysRemaining !== Infinity && renew.daysRemaining <= 0 && (
+                                                            <span className="text-[10px] font-bold text-red-500 whitespace-nowrap">
+                                                                {getDueYearsDisplay(renew)}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 text-center whitespace-nowrap">
                                                     <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${renew.status === 'Active' || renew.status === 'Life Member' ? 'bg-green-100 text-green-700' : renew.status === 'Inactive' || renew.status === 'Grace Period' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
