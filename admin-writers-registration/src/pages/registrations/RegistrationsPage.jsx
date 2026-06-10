@@ -61,9 +61,11 @@ export default function RegistrationsPage() {
         headerDiv.style.display = 'flex';
         headerDiv.style.justifyContent = 'space-between';
         headerDiv.style.alignItems = 'flex-start';
-        headerDiv.style.marginBottom = '24px';
+        headerDiv.style.width = '100%';
+        headerDiv.style.boxSizing = 'border-box';
+        headerDiv.style.marginBottom = '20px';
         headerDiv.style.borderBottom = '1px solid #e4e4e7';
-        headerDiv.style.paddingBottom = '16px';
+        headerDiv.style.paddingBottom = '12px';
         headerDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
 
         const idContainer = document.createElement('div');
@@ -101,19 +103,20 @@ export default function RegistrationsPage() {
         headerDiv.appendChild(idContainer);
         headerDiv.appendChild(imgContainer);
 
+        // Append header first
         tempMeasureDiv.appendChild(headerDiv);
 
         // Insert each paragraph inside its own div to measure offsetHeight
         paragraphsList.forEach((para) => {
             const pDiv = document.createElement('div');
             pDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
-            pDiv.style.fontSize = '14px';
-            pDiv.style.lineHeight = '1.8';
+            pDiv.style.fontSize = '12.5px';
+            pDiv.style.lineHeight = '1.55';
             pDiv.style.color = '#111827';
             pDiv.style.textAlign = 'justify';
             pDiv.style.whiteSpace = 'pre-wrap';
-            pDiv.style.marginBottom = '12px';
-            pDiv.style.minHeight = '18px';
+            pDiv.style.marginBottom = '8px';
+            pDiv.style.minHeight = '14px';
             pDiv.textContent = para;
             tempMeasureDiv.appendChild(pDiv);
         });
@@ -125,7 +128,8 @@ export default function RegistrationsPage() {
             await document.fonts.ready;
         }
 
-        const pElements = Array.from(tempMeasureDiv.children);
+        const headerHeight = headerDiv.offsetHeight + 20; // height + margin-bottom
+        const pElements = Array.from(tempMeasureDiv.children).slice(1); // Skip headerDiv
 
         // A4 page height in pixels at 800px width:
         const usablePageHeight = 1031;
@@ -135,8 +139,10 @@ export default function RegistrationsPage() {
         let currentPageHeight = 0;
 
         pElements.forEach((pEl) => {
-            const elHeight = pEl.offsetHeight + 12; // Height + margin-bottom
-            if (currentPageHeight + elHeight > usablePageHeight && currentPageParas.length > 0) {
+            const elHeight = pEl.offsetHeight + 8; // Height + margin-bottom
+            const limit = pages.length === 0 ? (usablePageHeight - headerHeight) : usablePageHeight;
+
+            if (currentPageHeight + elHeight > limit && currentPageParas.length > 0) {
                 // Push current page and start a new page
                 pages.push(currentPageParas);
                 currentPageParas = [pEl];
@@ -173,6 +179,11 @@ export default function RegistrationsPage() {
             pageContainer.style.padding = '50px 60px';
             pageContainer.style.background = 'white';
             pageContainer.style.zIndex = '-9999';
+
+            // Prepend header Div only on first page
+            if (i === 0) {
+                pageContainer.appendChild(headerDiv.cloneNode(true));
+            }
 
             // Clone paragraphs belonging to this page
             pages[i].forEach((pEl) => {
