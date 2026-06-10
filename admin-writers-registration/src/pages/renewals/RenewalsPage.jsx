@@ -450,9 +450,9 @@ export default function RenewalsPage() {
                                                 <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
                                                     <div className="flex flex-col items-start gap-0.5">
                                                         <span className="text-[12px] font-bold text-zinc-700">{renew.expiryDate}</span>
-                                                        {renew.memberType === "Associate Member" && renew.daysRemaining !== Infinity && (
-                                                            <span className={`text-[10px] font-bold ${renew.daysRemaining < 0 ? 'text-red-500' : 'text-zinc-500'}`}>
-                                                                {renew.daysRemaining > 0 ? `${renew.daysRemaining} days left` : `${Math.abs(renew.daysRemaining)} days overdue`}
+                                                        {renew.memberType === "Associate Member" && renew.daysRemaining !== Infinity && renew.daysRemaining > 0 && (
+                                                            <span className="text-[10px] font-bold text-zinc-500">
+                                                                {renew.daysRemaining} days left
                                                             </span>
                                                         )}
                                                     </div>

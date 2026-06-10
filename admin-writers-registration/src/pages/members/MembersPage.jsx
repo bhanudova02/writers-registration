@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
-import { FaUserPlus, FaUsers, FaSearch } from "react-icons/fa";
+import { FaUserPlus, FaUsers, FaSearch, FaDownload } from "react-icons/fa";
 import { FiEdit, FiList } from "react-icons/fi";
+import { jsPDF } from "jspdf";
 import CustomInput from "../../components/custom/CustomInput";
 import CustomTextArea from "../../components/custom/CustomTextArea";
 import { CustomSelect } from "../../components/custom/CustomSelect";
@@ -104,6 +105,7 @@ export default function MembersPage() {
     const [savedMembersPage, setSavedMembersPage] = useState(1);
     const [savedMembersPageSize, setSavedMembersPageSize] = useState(10);
     const [activeTab, setActiveTab] = useState("normal");
+    const [selectedMemberIds, setSelectedMemberIds] = useState(new Set());
     
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedMember, setSelectedMember] = useState(null);
@@ -146,6 +148,188 @@ export default function MembersPage() {
     const paginatedSavedMembers = filteredSavedMembers.slice(savedMembersStartIndex, savedMembersStartIndex + savedMembersPageSize);
     const savedMembersFrom = filteredSavedMembers.length === 0 ? 0 : savedMembersStartIndex + 1;
     const savedMembersTo = Math.min(savedMembersStartIndex + savedMembersPageSize, filteredSavedMembers.length);
+
+    const toggleSelectAll = () => {
+        const allFilteredIds = filteredSavedMembers.map(m => m._id);
+        const hasAllSelected = allFilteredIds.every(id => selectedMemberIds.has(id));
+        
+        const newSelected = new Set(selectedMemberIds);
+        if (hasAllSelected) {
+            allFilteredIds.forEach(id => newSelected.delete(id));
+        } else {
+            allFilteredIds.forEach(id => newSelected.add(id));
+        }
+        setSelectedMemberIds(newSelected);
+    };
+
+    const toggleSelectMember = (memberId) => {
+        const newSelected = new Set(selectedMemberIds);
+        if (newSelected.has(memberId)) {
+            newSelected.delete(memberId);
+        } else {
+            newSelected.add(memberId);
+        }
+        setSelectedMemberIds(newSelected);
+    };
+
+    // Reset selection when search query changes
+    useEffect(() => {
+        setSelectedMemberIds(new Set());
+    }, [searchQuery]);
+
+    const downloadMembersListPDF = async () => {
+        const membersToPrint = selectedMemberIds.size > 0 
+            ? filteredSavedMembers.filter(m => selectedMemberIds.has(m._id))
+            : filteredSavedMembers;
+
+        if (membersToPrint.length === 0) {
+            toast.info("No members available to print.");
+            return;
+        }
+
+        const doc = new jsPDF('l', 'mm', 'a4');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
+        
+        const headers = ["S No", "Membership ID", "Name", "Member Type", "Mobile", "Email", "Joined On", "Status"];
+        const colWidths = [15, 35, 45, 35, 30, 60, 30, 20];
+        const startX = 13.5;
+        
+        let yPos = 45;
+        let currentPage = 1;
+
+        const drawPageHeader = (pageNumber) => {
+            doc.setDrawColor(0, 0, 150);
+            doc.setLineWidth(0.5);
+            doc.rect(10, 10, pageWidth - 20, pageHeight - 20);
+
+            doc.setTextColor(0, 0, 150);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("TELUGU CINE WRITERS' ASSOCIATION", pageWidth / 2, 18, { align: "center" });
+
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.text("(Regd. No. A741, Registered under Trade Union Act, 1926, Affiliated to T.S.F.I.E.F.)", pageWidth / 2, 22, { align: "center" });
+
+            doc.setFontSize(11);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(0, 0, 0);
+            doc.text("TCWA MEMBERS DIRECTORY LIST", pageWidth / 2, 30, { align: "center" });
+            
+            let currentX = startX;
+            doc.setFillColor(240, 240, 240);
+            doc.rect(startX, 37, 270, 8, "F");
+            doc.setDrawColor(180, 180, 180);
+            doc.setLineWidth(0.2);
+            doc.rect(startX, 37, 270, 8, "D");
+            
+            doc.setFontSize(9);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(50, 50, 50);
+            
+            headers.forEach((header, index) => {
+                if (index === 0) {
+                    doc.text(header, currentX + colWidths[index] / 2, 42.5, { align: "center" });
+                } else {
+                    doc.text(header, currentX + 3, 42.5);
+                }
+                currentX += colWidths[index];
+            });
+
+            currentX = startX;
+            colWidths.forEach((width) => {
+                doc.line(currentX, 37, currentX, 45);
+                currentX += width;
+            });
+            doc.line(currentX, 37, currentX, 45);
+
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Page ${pageNumber}`, pageWidth - 15, pageHeight - 13, { align: "right" });
+            doc.text(`Generated on: ${new Date().toLocaleDateString("en-GB")} | Total Members: ${membersToPrint.length}`, 15, pageHeight - 13);
+        };
+
+        // Try preloading logo
+        try {
+            const logoImg = new Image();
+            logoImg.src = '/Logo.png';
+            await new Promise((resolve) => {
+                logoImg.onload = resolve;
+                logoImg.onerror = resolve;
+            });
+        } catch (e) {}
+
+        drawPageHeader(currentPage);
+
+        membersToPrint.forEach((member, index) => {
+            if (yPos > pageHeight - 22) {
+                doc.addPage();
+                currentPage++;
+                drawPageHeader(currentPage);
+                yPos = 45;
+            }
+
+            doc.setDrawColor(220, 220, 220);
+            doc.rect(startX, yPos, 270, 8, "D");
+
+            doc.setFontSize(8.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(30, 30, 30);
+
+            let joinedDate = "-";
+            if (member.dateOfJoining) {
+                const jDate = new Date(member.dateOfJoining);
+                joinedDate = isNaN(jDate.getTime()) ? String(member.dateOfJoining) : jDate.toLocaleDateString("en-GB");
+            } else if (member.createdAt) {
+                const cDate = new Date(member.createdAt);
+                joinedDate = isNaN(cDate.getTime()) ? "-" : cDate.toLocaleDateString("en-GB");
+            }
+
+            const memberTypeDisplay = (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") 
+                ? "Life Time" 
+                : "Associate";
+
+            const rowData = [
+                String(index + 1),
+                member.membershipId || "-",
+                member.name || "-",
+                memberTypeDisplay,
+                member.mobileNumber || "-",
+                member.email || "-",
+                joinedDate,
+                member.status || "Active"
+            ];
+
+            let currentX = startX;
+            rowData.forEach((val, colIdx) => {
+                let cleanVal = String(val);
+                const maxChars = colIdx === 5 ? 35 : (colIdx === 2 ? 22 : 30);
+                if (cleanVal.length > maxChars) {
+                    cleanVal = cleanVal.substring(0, maxChars - 3) + "...";
+                }
+                
+                if (colIdx === 0) {
+                    doc.text(cleanVal, currentX + colWidths[colIdx] / 2, yPos + 5.5, { align: "center" });
+                } else {
+                    doc.text(cleanVal, currentX + 3, yPos + 5.5);
+                }
+                currentX += colWidths[colIdx];
+            });
+
+            currentX = startX;
+            colWidths.forEach((width) => {
+                doc.line(currentX, yPos, currentX, yPos + 8);
+                currentX += width;
+            });
+            doc.line(currentX, yPos, currentX, yPos + 8);
+
+            yPos += 8;
+        });
+
+        doc.save(`TCWA_Members_List_${new Date().toLocaleDateString("en-GB").replace(/\//g, "-")}.pdf`);
+    };
 
     useEffect(() => {
         setIsLoadingSavedMembers(true);
@@ -699,11 +883,19 @@ export default function MembersPage() {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
+                                <CustomButton
+                                    icon={FaDownload}
+                                    label="Download List"
+                                    onClick={downloadMembersListPDF}
+                                    bgColor="bg-zinc-800 hover:bg-zinc-900"
+                                    textColor="text-white"
+                                    className="py-2 px-4 text-xs font-bold whitespace-nowrap h-[38px] rounded-sm"
+                                />
                             </div>
                         </div>
 
                         {isLoadingSavedMembers ? (
-                            <TableSkeleton rowCount={5} colCount={9} />
+                            <TableSkeleton rowCount={5} colCount={10} />
                         ) : savedMembers.length === 0 ? (
                             <div className="py-16 text-center text-sm font-bold text-zinc-500 border border-dashed border-gray-200 rounded">
                                 No members found in the database.
@@ -714,6 +906,14 @@ export default function MembersPage() {
                                     <table className="w-full min-w-[900px] border-collapse border border-zinc-200">
                                         <thead>
                                             <tr className="bg-zinc-100 border-b border-zinc-200">
+                                                <th className="border border-zinc-200 py-3 px-3 text-center w-12 bg-zinc-50/50">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 cursor-pointer h-4 w-4"
+                                                        checked={filteredSavedMembers.length > 0 && filteredSavedMembers.every(m => selectedMemberIds.has(m._id))}
+                                                        onChange={toggleSelectAll}
+                                                    />
+                                                </th>
                                                 {["S No", "Membership ID", "Name", "Member Type", "Mobile", "Email", "Joined On", "Status", "Actions"].map((head) => (
                                                     <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                                         {head}
@@ -724,6 +924,14 @@ export default function MembersPage() {
                                         <tbody>
                                             {paginatedSavedMembers.map((member, index) => (
                                                 <tr key={member._id} className="hover:bg-zinc-50 transition-colors">
+                                                    <td className="border border-zinc-200 py-2.5 px-3 text-center w-12 bg-zinc-50/10">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="rounded border-zinc-300 text-blue-600 focus:ring-blue-500 cursor-pointer h-4 w-4"
+                                                            checked={selectedMemberIds.has(member._id)}
+                                                            onChange={() => toggleSelectMember(member._id)}
+                                                        />
+                                                    </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-zinc-600 text-center bg-zinc-50/30 w-12">
                                                         {savedMembersStartIndex + index + 1}
                                                     </td>
