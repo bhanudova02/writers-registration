@@ -524,7 +524,13 @@ export default function RenewalsPage() {
                                                             />
                                                         )
                                                     ) : (
-                                                        <span className="text-zinc-400 text-xs">-</span>
+                                                        <CustomButton
+                                                            label="Renew"
+                                                            bgColor="bg-zinc-300"
+                                                            textColor="text-zinc-500"
+                                                            className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm cursor-not-allowed mx-auto"
+                                                            disabled={true}
+                                                        />
                                                     )}
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-40 whitespace-nowrap text-center">

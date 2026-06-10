@@ -832,12 +832,6 @@ export default function MembersPage() {
                                         onChange={(e) => handleTextChange("amToLmFeeDDNoBank", e.target.value)}
                                         placeholder="Enter DD No & Bank"
                                     />
-                                    <CustomInput
-                                        label="Change to Life Member Date"
-                                        type="date"
-                                        value={formData.changeToLifeMemberDate}
-                                        onChange={(e) => handleTextChange("changeToLifeMemberDate", e.target.value)}
-                                    />
                                 </div>
                             </div>
 
