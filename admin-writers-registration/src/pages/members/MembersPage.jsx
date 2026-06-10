@@ -568,6 +568,21 @@ export default function MembersPage() {
             }
 
             const currentMember = savedMembers.find(m => m.membershipId === membershipId);
+            const isOldLife = currentMember ? (currentMember.memberType === "Life Time Member" || currentMember.memberType === "Life Member" || currentMember.memberType === "Life Time") : false;
+            const isNewLife = updatedFields.memberType === "Life Time Member" || updatedFields.memberType === "Life Member" || updatedFields.memberType === "Life Time";
+            
+            let upgradeToLifeHistory = currentMember?.upgradeToLifeHistory || [];
+            let downgradeToAssociateHistory = currentMember?.downgradeToAssociateHistory || [];
+            const currentDate = new Date().toISOString();
+            
+            if (currentMember && updatedFields.memberType && updatedFields.memberType !== currentMember.memberType) {
+                if (!isOldLife && isNewLife) {
+                    upgradeToLifeHistory = [...upgradeToLifeHistory, currentDate];
+                } else if (isOldLife && !isNewLife) {
+                    downgradeToAssociateHistory = [...downgradeToAssociateHistory, currentDate];
+                }
+            }
+
             const mergedMember = { ...currentMember, ...updatedFields };
             
             let validityExpiresAt = null;
@@ -591,7 +606,7 @@ export default function MembersPage() {
             }
 
             const memberRef = doc(db, 'members', membershipId);
-            await setDoc(memberRef, { ...updatedFields, validityExpiresAt }, { merge: true });
+            await setDoc(memberRef, { ...updatedFields, upgradeToLifeHistory, downgradeToAssociateHistory, validityExpiresAt }, { merge: true });
             
             const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
             await logAdminActivity(adminEmail, "Edit Member", `Updated member profile: ${membershipId}`);

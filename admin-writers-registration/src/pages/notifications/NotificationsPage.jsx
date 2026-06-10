@@ -3,12 +3,15 @@ import { FaBell, FaUserShield, FaSignInAlt, FaSignOutAlt, FaHistory } from "reac
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 import { db } from "../../firebase";
 import { TableSkeleton } from "../../components/Skeletons";
+import { CustomSelect } from "../../components/custom/CustomSelect";
 
 export default function NotificationsPage() {
     const [logs, setLogs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-
     const [errorMsg, setErrorMsg] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const pageSizeOptions = [5, 10, 25, 50, 100];
 
     useEffect(() => {
         const q = query(collection(db, "admin_logs"), orderBy("timestamp", "desc"), limit(100));
@@ -33,6 +36,12 @@ export default function NotificationsPage() {
     const loginCount = logs.filter(log => log.action === "Login").length;
     const logoutCount = logs.filter(log => log.action === "Logout").length;
     const otherCount = logs.length - loginCount - logoutCount;
+
+    const totalPages = Math.max(1, Math.ceil(logs.length / pageSize));
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginatedLogs = logs.slice(startIndex, startIndex + pageSize);
+    const fromIndex = logs.length === 0 ? 0 : startIndex + 1;
+    const toIndex = Math.min(startIndex + pageSize, logs.length);
 
     return (
         <div className="p-3 sm:p-6">
@@ -102,7 +111,8 @@ export default function NotificationsPage() {
                         No recent admin activity found.
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
+                    <>
+                        <div className="overflow-x-auto">
                         <table className="w-full min-w-[750px] border-collapse border border-zinc-200">
                             <thead>
                                 <tr className="bg-zinc-100 border-b border-zinc-200">
@@ -114,7 +124,7 @@ export default function NotificationsPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {logs.map((log) => (
+                                {paginatedLogs.map((log) => (
                                     <tr key={log.id} className="hover:bg-zinc-50 transition-colors">
                                         <td className="border border-zinc-200 py-3 px-3 text-[12px] font-medium text-zinc-500 w-40 whitespace-nowrap">
                                             {log.timestamp?.toDate ? log.timestamp.toDate().toLocaleString() : 'Just now'}
@@ -139,7 +149,56 @@ export default function NotificationsPage() {
                             </tbody>
                         </table>
                     </div>
-                )}
+
+                    <div className="mt-4 rounded border border-zinc-200 bg-zinc-50 px-3 py-3 text-sm md:flex md:items-center md:justify-between md:gap-3">
+                        <div className="flex items-center justify-between gap-2 md:flex-1">
+                            <p className="font-semibold text-zinc-600">
+                                Showing {fromIndex}-{toIndex} Of {logs.length}
+                            </p>
+                            <div className="flex shrink-0 items-center gap-2">
+                                <div className="flex items-center gap-1">
+                                    <label className="text-xs font-bold uppercase text-zinc-500" htmlFor="logs-page-size">
+                                        Rows
+                                    </label>
+                                    <CustomSelect
+                                        dropdownData={pageSizeOptions.map(size => ({ value: size, label: size }))}
+                                        value={pageSize}
+                                        onChange={(value) => {
+                                            setPageSize(Number(value));
+                                            setCurrentPage(1);
+                                        }}
+                                        buttonClassName="h-8 py-0 min-w-16 bg-white !text-xs"
+                                        label={null}
+                                    />
+                                </div>
+                                <span className="rounded-sm bg-white px-2 py-1.5 text-xs font-bold text-zinc-700 border border-zinc-200 sm:text-sm">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                            </div>
+                        </div>
+                        <div className="mt-3 flex flex-col gap-3 md:mt-0 md:flex-row md:items-center md:justify-end">
+                            <div className="grid grid-cols-2 gap-2 md:flex md:items-center">
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                                    disabled={currentPage === 1}
+                                    className="h-10 rounded-sm border border-zinc-300 bg-white px-3 text-sm font-bold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 md:h-9 cursor-pointer"
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                                    disabled={currentPage === totalPages}
+                                    className="h-10 rounded-sm border border-zinc-300 bg-white px-3 text-sm font-bold text-zinc-700 disabled:cursor-not-allowed disabled:opacity-50 md:h-9 cursor-pointer"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
             </div>
         </div>
     );

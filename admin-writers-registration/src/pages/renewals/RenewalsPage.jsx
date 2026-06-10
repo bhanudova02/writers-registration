@@ -320,11 +320,29 @@ export default function RenewalsPage() {
                 toast.error("Cannot upgrade a disabled account to Life Time Member. This account is permanently closed.");
                 return;
             }
+
+            const isOldLife = memberToUpgrade ? (memberToUpgrade.memberType === "Life Time Member" || memberToUpgrade.memberType === "Life Member" || memberToUpgrade.memberType === "Life Time") : false;
+            const isNewLife = targetType === "Life Time Member" || targetType === "Life Member" || targetType === "Life Time";
+            
+            let upgradeToLifeHistory = memberToUpgrade?.upgradeToLifeHistory || [];
+            let downgradeToAssociateHistory = memberToUpgrade?.downgradeToAssociateHistory || [];
+            const currentDate = new Date().toISOString();
+            
+            if (memberToUpgrade && memberToUpgrade.memberType !== targetType) {
+                if (!isOldLife && isNewLife) {
+                    upgradeToLifeHistory = [...upgradeToLifeHistory, currentDate];
+                } else if (isOldLife && !isNewLife) {
+                    downgradeToAssociateHistory = [...downgradeToAssociateHistory, currentDate];
+                }
+            }
+
             const memberRef = doc(db, "members", memberId);
             await updateDoc(memberRef, {
                 memberType: targetType,
                 status: "Active",
-                createdAt: new Date().toISOString() // Reset timer for Associate
+                createdAt: currentDate, // Reset timer for Associate
+                upgradeToLifeHistory,
+                downgradeToAssociateHistory
             });
 
             // Log the upgrade transaction

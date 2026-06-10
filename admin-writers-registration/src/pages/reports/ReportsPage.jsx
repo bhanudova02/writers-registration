@@ -91,11 +91,53 @@ const getExpiryDetails = (member) => {
     return { text: expDate.toLocaleDateString("en-GB"), isExpired, isLifeTime: false, daysRemaining };
 };
 
+const renderMembershipHistory = (member) => {
+    const history = [];
+    if (member.upgradeToLifeHistory && Array.isArray(member.upgradeToLifeHistory)) {
+        member.upgradeToLifeHistory.forEach(d => {
+            history.push({ label: "Asso to LM", date: d });
+        });
+    }
+    if (member.downgradeToAssociateHistory && Array.isArray(member.downgradeToAssociateHistory)) {
+        member.downgradeToAssociateHistory.forEach(d => {
+            history.push({ label: "LM to Asso", date: d });
+        });
+    }
+    
+    if (history.length === 0) return "-";
+    
+    // Sort by date chronologically
+    history.sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    return (
+        <ul className="list-disc list-inside text-left gap-1 flex flex-col min-w-[130px] py-1">
+            {history.map((item, idx) => {
+                const dateObj = new Date(item.date);
+                const displayDate = isNaN(dateObj.getTime()) ? String(item.date) : dateObj.toLocaleDateString("en-GB");
+                return (
+                    <li key={idx} className="text-[12px] font-bold text-zinc-700 whitespace-nowrap">
+                        {item.label}: <span className="font-semibold text-zinc-500">{displayDate}</span>
+                    </li>
+                );
+            })}
+        </ul>
+    );
+};
+
 const savedMemberPageSizeOptions = [5, 10, 25, 50, 100];
+
+const filterOptions = [
+    { value: "All", label: "All Members" },
+    { value: "Associate Member", label: "Associate" },
+    { value: "Life Time Member", label: "Life Time" },
+    { value: "No Due", label: "No Due" },
+    { value: "Dues Pending", label: "Dues Pending" }
+];
 
 export default function ReportsPage() {
     const [savedMembers, setSavedMembers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedFilter, setSelectedFilter] = useState("All");
     const [isLoadingSavedMembers, setIsLoadingSavedMembers] = useState(false);
     const [savedMembersPage, setSavedMembersPage] = useState(1);
     const [savedMembersPageSize, setSavedMembersPageSize] = useState(10);
@@ -124,15 +166,47 @@ export default function ReportsPage() {
     }, []);
 
     const filteredSavedMembers = useMemo(() => {
-        if (!searchQuery) return savedMembers;
+        let list = savedMembers;
+        
+        if (selectedFilter !== "All") {
+            list = list.filter(member => {
+                if (selectedFilter === "Associate Member") {
+                    return member.memberType === "Associate Member" || member.memberType === "Associate";
+                }
+                if (selectedFilter === "Life Time Member") {
+                    return member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time";
+                }
+                
+                // Dues status filtering
+                const isLife = member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time";
+                if (isLife) {
+                    return selectedFilter === "No Due";
+                }
+                const expDate = calculateExpiryDate(member);
+                if (!expDate) return selectedFilter === "No Due"; // Assume no due if no expiry
+                
+                const now = new Date();
+                const diffTime = expDate.getTime() - now.getTime();
+                const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (selectedFilter === "No Due") {
+                    return daysRemaining > 0;
+                } else if (selectedFilter === "Dues Pending") {
+                    return daysRemaining <= 0;
+                }
+                return true;
+            });
+        }
+        
+        if (!searchQuery) return list;
         const lowerQuery = searchQuery.toLowerCase();
-        return savedMembers.filter((member) =>
+        return list.filter((member) =>
             (member.name && member.name.toLowerCase().includes(lowerQuery)) ||
             (member.mobileNumber && member.mobileNumber.toLowerCase().includes(lowerQuery)) ||
             (member.membershipId && member.membershipId.toLowerCase().includes(lowerQuery)) ||
             (member.memberType && member.memberType.toLowerCase().includes(lowerQuery))
         );
-    }, [savedMembers, searchQuery]);
+    }, [savedMembers, searchQuery, selectedFilter]);
 
     const savedMembersTotalPages = Math.max(1, Math.ceil(filteredSavedMembers.length / savedMembersPageSize));
     const savedMembersStartIndex = (savedMembersPage - 1) * savedMembersPageSize;
@@ -300,17 +374,29 @@ export default function ReportsPage() {
                             <h3 className="text-lg font-bold">Generate Member Reports</h3>
                             <p className="text-sm text-zinc-500 mt-1">Download, View or Print member details.</p>
                         </div>
-                        <div className="flex items-center gap-3 w-full md:w-auto">
-                            <div className="relative flex-1 md:w-64">
+                        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+                            <div className="relative flex-1 w-full sm:w-64">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <FaSearch className="text-zinc-400 text-sm" />
                                 </div>
                                 <input
                                     type="text"
-                                    className="w-full pl-10 pr-3 py-2 border border-zinc-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 bg-zinc-50 text-zinc-800 placeholder-zinc-400"
+                                    className="w-full h-[38px] pl-10 pr-3 py-2 border border-zinc-300 rounded-sm text-sm focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 bg-zinc-50 text-zinc-800 placeholder-zinc-400"
                                     placeholder="Search by ID, Name or Mobile..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                            <div className="w-full sm:w-48">
+                                <CustomSelect
+                                    label={null}
+                                    dropdownData={filterOptions}
+                                    value={selectedFilter}
+                                    onChange={(val) => {
+                                        setSelectedFilter(val);
+                                        setSavedMembersPage(1);
+                                    }}
+                                    buttonClassName="h-[38px]"
                                 />
                             </div>
                         </div>
@@ -328,7 +414,7 @@ export default function ReportsPage() {
                                 <table className="w-full min-w-[700px] border-collapse border border-zinc-200">
                                     <thead>
                                         <tr className="bg-zinc-100 border-b border-zinc-200">
-                                            {["S No", "Membership ID", "Name", "Member Type", "Date of Joining", "Dues", "Expiry Date", "Mobile", "Actions"].map((head) => (
+                                            {["S No", "Membership ID", "Name", "Member Type", "Date of Joining", "Change History", "Dues", "Expiry Date", "Mobile", "Actions"].map((head) => (
                                                 <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                                     {head}
                                                 </th>
@@ -337,7 +423,7 @@ export default function ReportsPage() {
                                     </thead>
                                     <tbody>
                                         {paginatedSavedMembers.map((member, index) => (
-                                            <tr key={member._id} className="hover:bg-zinc-50 transition-colors">
+                                            <tr key={member._id} className="hover:bg-zinc-50 transition-colors align-top">
                                                 <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-zinc-600 text-center bg-zinc-50/30 w-12">
                                                     {savedMembersStartIndex + index + 1}
                                                 </td>
@@ -356,6 +442,9 @@ export default function ReportsPage() {
                                                     {member.dateOfJoining 
                                                         ? new Date(member.dateOfJoining).toLocaleDateString("en-GB") 
                                                         : (member.createdAt ? new Date(member.createdAt).toLocaleString("en-GB", { dateStyle: "short" }) : "-")}
+                                                </td>
+                                                <td className="border border-zinc-200 py-2.5 px-3 text-left whitespace-nowrap">
+                                                    {renderMembershipHistory(member)}
                                                 </td>
                                                 <td className="border border-zinc-200 py-2.5 px-3 text-[12px] font-semibold text-zinc-700 w-36 whitespace-nowrap">
                                                     {(() => {
