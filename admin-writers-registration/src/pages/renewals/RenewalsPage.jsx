@@ -426,7 +426,7 @@ export default function RenewalsPage() {
                                 <table className="w-full min-w-[700px] border-collapse border border-zinc-200">
                                     <thead>
                                         <tr className="bg-zinc-100 border-b border-zinc-200">
-                                            {["Member ID", "Name", "Type", "Expires On", "Amount Due", "Status", "View", "Renew", "Actions"].map((head) => (
+                                            {["Member ID", "Name", "Type", "Date of Joining", "Expires On", "Amount Due", "Status", "View", "Renew", "Actions"].map((head) => (
                                                 <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                                     {head}
                                                 </th>
@@ -446,6 +446,11 @@ export default function RenewalsPage() {
                                                      <span className={`px-2 py-0.5 rounded ${(renew.memberType === 'Life Time Member' || renew.memberType === 'Life Member' || renew.memberType === 'Life Time') ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
                                                          {(renew.memberType === 'Life Time Member' || renew.memberType === 'Life Member' || renew.memberType === 'Life Time') ? 'Life Time' : 'Associate'}
                                                      </span>
+                                                </td>
+                                                <td className="border border-zinc-200 py-3 px-3 text-[11px] font-semibold text-zinc-500 whitespace-nowrap">
+                                                    {renew.dateOfJoining 
+                                                        ? new Date(renew.dateOfJoining).toLocaleDateString("en-GB") 
+                                                        : (renew.createdAt ? new Date(renew.createdAt).toLocaleString("en-GB", { dateStyle: "short" }) : "-")}
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 whitespace-nowrap">
                                                     <div className="flex flex-col items-start gap-0.5">

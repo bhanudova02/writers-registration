@@ -328,7 +328,7 @@ export default function ReportsPage() {
                                 <table className="w-full min-w-[700px] border-collapse border border-zinc-200">
                                     <thead>
                                         <tr className="bg-zinc-100 border-b border-zinc-200">
-                                            {["S No", "Membership ID", "Name", "Member Type", "Dues", "Expiry Date", "Mobile", "Actions"].map((head) => (
+                                            {["S No", "Membership ID", "Name", "Member Type", "Date of Joining", "Dues", "Expiry Date", "Mobile", "Actions"].map((head) => (
                                                 <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                                     {head}
                                                 </th>
@@ -351,6 +351,11 @@ export default function ReportsPage() {
                                                     <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider ${(member.memberType === 'Life Time Member' || member.memberType === 'Life Member' || member.memberType === 'Life Time') ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
                                                         {(member.memberType === 'Life Time Member' || member.memberType === 'Life Member' || member.memberType === 'Life Time') ? 'Life Time' : 'Associate'}
                                                     </span>
+                                                </td>
+                                                <td className="border border-zinc-200 py-2.5 px-3 text-[11px] font-semibold text-zinc-500 whitespace-nowrap">
+                                                    {member.dateOfJoining 
+                                                        ? new Date(member.dateOfJoining).toLocaleDateString("en-GB") 
+                                                        : (member.createdAt ? new Date(member.createdAt).toLocaleString("en-GB", { dateStyle: "short" }) : "-")}
                                                 </td>
                                                 <td className="border border-zinc-200 py-2.5 px-3 text-[12px] font-semibold text-zinc-700 w-36 whitespace-nowrap">
                                                     {(() => {
