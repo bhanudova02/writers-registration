@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
-import { FaFileSignature, FaSearch } from "react-icons/fa";
+import { FaFileSignature, FaSearch, FaPrint } from "react-icons/fa";
 import { FiCheckCircle, FiXCircle, FiEye, FiTrendingUp } from "react-icons/fi";
 import { collection, onSnapshot, doc, updateDoc, query, orderBy } from "firebase/firestore";
 import { db, auth } from "../../firebase";
@@ -29,6 +29,176 @@ export default function RegistrationsPage() {
     const [viewReceipt, setViewReceipt] = useState(null);
     const [showAgreementViewer, setShowAgreementViewer] = useState(null);
 
+    const generateAgreementPDF = async (reg) => {
+        if (!reg.agreementText) {
+            throw new Error("No agreement text found for this registration.");
+        }
+
+        // Split the agreement text by newlines into paragraphs
+        const paragraphsList = reg.agreementText.split('\n');
+
+        // Preload stamp image
+        const sealImg = new Image();
+        sealImg.src = '/stamp.png';
+        await new Promise((resolve) => {
+            sealImg.onload = resolve;
+            sealImg.onerror = resolve;
+        });
+
+        // Create a temporary hidden container to measure paragraph heights
+        const tempMeasureDiv = document.createElement('div');
+        tempMeasureDiv.style.position = 'fixed';
+        tempMeasureDiv.style.left = '0';
+        tempMeasureDiv.style.top = '0';
+        tempMeasureDiv.style.transform = 'translate(-200%, -200%)';
+        tempMeasureDiv.style.width = '800px';
+        tempMeasureDiv.style.boxSizing = 'border-box';
+        tempMeasureDiv.style.padding = '50px 60px'; // Matching page padding
+        tempMeasureDiv.style.zIndex = '-9999';
+
+        // Add Header with Agreement ID and Seal
+        const headerDiv = document.createElement('div');
+        headerDiv.style.display = 'flex';
+        headerDiv.style.justifyContent = 'space-between';
+        headerDiv.style.alignItems = 'flex-start';
+        headerDiv.style.marginBottom = '24px';
+        headerDiv.style.borderBottom = '1px solid #e4e4e7';
+        headerDiv.style.paddingBottom = '16px';
+        headerDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
+
+        const idContainer = document.createElement('div');
+        const label = document.createElement('h4');
+        label.textContent = 'హామీపత్రం నంబర్:';
+        label.style.fontSize = '12px';
+        label.style.fontWeight = 'bold';
+        label.style.color = '#71717a';
+        label.style.textTransform = 'uppercase';
+        label.style.letterSpacing = '0.05em';
+        label.style.marginBottom = '4px';
+
+        const idSpan = document.createElement('span');
+        idSpan.textContent = reg.agreementId || 'N/A';
+        idSpan.style.color = '#dc2626';
+        idSpan.style.fontWeight = '800';
+        idSpan.style.fontSize = '16px';
+        idSpan.style.letterSpacing = '0.025em';
+        idSpan.style.backgroundColor = '#fef2f2';
+        idSpan.style.padding = '4px 10px';
+        idSpan.style.borderRadius = '6px';
+        idSpan.style.border = '1px solid #fee2e2';
+
+        idContainer.appendChild(label);
+        idContainer.appendChild(idSpan);
+
+        const imgContainer = document.createElement('div');
+        const sealImgElement = document.createElement('img');
+        sealImgElement.src = sealImg.src;
+        sealImgElement.style.width = '64px';
+        sealImgElement.style.height = '64px';
+        sealImgElement.style.opacity = '0.95';
+        imgContainer.appendChild(sealImgElement);
+
+        headerDiv.appendChild(idContainer);
+        headerDiv.appendChild(imgContainer);
+
+        tempMeasureDiv.appendChild(headerDiv);
+
+        // Insert each paragraph inside its own div to measure offsetHeight
+        paragraphsList.forEach((para) => {
+            const pDiv = document.createElement('div');
+            pDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
+            pDiv.style.fontSize = '14px';
+            pDiv.style.lineHeight = '1.8';
+            pDiv.style.color = '#111827';
+            pDiv.style.textAlign = 'justify';
+            pDiv.style.whiteSpace = 'pre-wrap';
+            pDiv.style.marginBottom = '12px';
+            pDiv.style.minHeight = '18px';
+            pDiv.textContent = para;
+            tempMeasureDiv.appendChild(pDiv);
+        });
+
+        document.body.appendChild(tempMeasureDiv);
+
+        // Wait for fonts to load so height calculations are accurate
+        if (document.fonts) {
+            await document.fonts.ready;
+        }
+
+        const pElements = Array.from(tempMeasureDiv.children);
+
+        // A4 page height in pixels at 800px width:
+        const usablePageHeight = 1031;
+
+        const pages = [];
+        let currentPageParas = [];
+        let currentPageHeight = 0;
+
+        pElements.forEach((pEl) => {
+            const elHeight = pEl.offsetHeight + 12; // Height + margin-bottom
+            if (currentPageHeight + elHeight > usablePageHeight && currentPageParas.length > 0) {
+                // Push current page and start a new page
+                pages.push(currentPageParas);
+                currentPageParas = [pEl];
+                currentPageHeight = elHeight;
+            } else {
+                currentPageParas.push(pEl);
+                currentPageHeight += elHeight;
+            }
+        });
+
+        if (currentPageParas.length > 0) {
+            pages.push(currentPageParas);
+        }
+
+        // Remove the measurement div
+        document.body.removeChild(tempMeasureDiv);
+
+        const pdf = new jsPDF('p', 'pt', 'a4');
+        const scaleFactor = 595.28 / 800;
+
+        for (let i = 0; i < pages.length; i++) {
+            if (i > 0) {
+                pdf.addPage();
+            }
+
+            // Create a temporary container for this specific page
+            const pageContainer = document.createElement('div');
+            pageContainer.style.position = 'fixed';
+            pageContainer.style.left = '0';
+            pageContainer.style.top = '0';
+            pageContainer.style.transform = 'translate(-200%, -200%)';
+            pageContainer.style.width = '800px';
+            pageContainer.style.boxSizing = 'border-box';
+            pageContainer.style.padding = '50px 60px';
+            pageContainer.style.background = 'white';
+            pageContainer.style.zIndex = '-9999';
+
+            // Clone paragraphs belonging to this page
+            pages[i].forEach((pEl) => {
+                pageContainer.appendChild(pEl.cloneNode(true));
+            });
+
+            document.body.appendChild(pageContainer);
+
+            const canvas = await html2canvas(pageContainer, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false
+            });
+
+            document.body.removeChild(pageContainer);
+
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const pageHeightPoints = (canvas.height / 2) * scaleFactor;
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, 595.28, pageHeightPoints);
+        }
+
+        return pdf;
+    };
+
     const handleDownloadAgreementDoc = async (reg) => {
         if (!reg.agreementText) {
             toast.error("No agreement text found for this registration.");
@@ -38,177 +208,38 @@ export default function RegistrationsPage() {
         const toastId = toast.loading("Generating PDF, please wait...");
 
         try {
-            // Split the agreement text by newlines into paragraphs
-            const paragraphsList = reg.agreementText.split('\n');
-
-            // Preload stamp image
-            const sealImg = new Image();
-            sealImg.src = '/stamp.png';
-            await new Promise((resolve) => {
-                sealImg.onload = resolve;
-                sealImg.onerror = resolve;
-            });
-
-            // Create a temporary hidden container to measure paragraph heights
-            const tempMeasureDiv = document.createElement('div');
-            tempMeasureDiv.style.position = 'fixed';
-            tempMeasureDiv.style.left = '0';
-            tempMeasureDiv.style.top = '0';
-            tempMeasureDiv.style.transform = 'translate(-200%, -200%)';
-            tempMeasureDiv.style.width = '800px';
-            tempMeasureDiv.style.boxSizing = 'border-box';
-            tempMeasureDiv.style.padding = '50px 60px'; // Matching page padding
-            tempMeasureDiv.style.zIndex = '-9999';
-
-            // Add Header with Agreement ID and Seal
-            const headerDiv = document.createElement('div');
-            headerDiv.style.display = 'flex';
-            headerDiv.style.justifyContent = 'space-between';
-            headerDiv.style.alignItems = 'flex-start';
-            headerDiv.style.marginBottom = '24px';
-            headerDiv.style.borderBottom = '1px solid #e4e4e7';
-            headerDiv.style.paddingBottom = '16px';
-            headerDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
-
-            const idContainer = document.createElement('div');
-            const label = document.createElement('h4');
-            label.textContent = 'హామీపత్రం నంబర్:';
-            label.style.fontSize = '12px';
-            label.style.fontWeight = 'bold';
-            label.style.color = '#71717a';
-            label.style.textTransform = 'uppercase';
-            label.style.letterSpacing = '0.05em';
-            label.style.marginBottom = '4px';
-
-            const idSpan = document.createElement('span');
-            idSpan.textContent = reg.agreementId || 'N/A';
-            idSpan.style.color = '#dc2626';
-            idSpan.style.fontWeight = '800';
-            idSpan.style.fontSize = '16px';
-            idSpan.style.letterSpacing = '0.025em';
-            idSpan.style.backgroundColor = '#fef2f2';
-            idSpan.style.padding = '4px 10px';
-            idSpan.style.borderRadius = '6px';
-            idSpan.style.border = '1px solid #fee2e2';
-
-            idContainer.appendChild(label);
-            idContainer.appendChild(idSpan);
-
-            const imgContainer = document.createElement('div');
-            const sealImgElement = document.createElement('img');
-            sealImgElement.src = sealImg.src;
-            sealImgElement.style.width = '64px';
-            sealImgElement.style.height = '64px';
-            sealImgElement.style.opacity = '0.95';
-            imgContainer.appendChild(sealImgElement);
-
-            headerDiv.appendChild(idContainer);
-            headerDiv.appendChild(imgContainer);
-
-            tempMeasureDiv.appendChild(headerDiv);
-
-            // Insert each paragraph inside its own div to measure offsetHeight
-            paragraphsList.forEach((para) => {
-                const pDiv = document.createElement('div');
-                pDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
-                pDiv.style.fontSize = '14px';
-                pDiv.style.lineHeight = '1.8';
-                pDiv.style.color = '#111827';
-                pDiv.style.textAlign = 'justify';
-                pDiv.style.whiteSpace = 'pre-wrap';
-                pDiv.style.marginBottom = '12px';
-                pDiv.style.minHeight = '18px';
-                pDiv.textContent = para;
-                tempMeasureDiv.appendChild(pDiv);
-            });
-
-            document.body.appendChild(tempMeasureDiv);
-
-            // Wait for fonts to load so height calculations are accurate
-            if (document.fonts) {
-                await document.fonts.ready;
-            }
-
-            const pElements = Array.from(tempMeasureDiv.children);
-
-            // A4 page height in pixels at 800px width:
-            // A4 width: 595.28pt, A4 height: 841.89pt
-            // scaleFactor: 595.28 / 800 = 0.7441
-            // Max height in pixels = 841.89 / 0.7441 = 1131.4px
-            // Available height for text = Max height - top padding (50px) - bottom padding (50px) = 1031px
-            const usablePageHeight = 1031;
-
-            const pages = [];
-            let currentPageParas = [];
-            let currentPageHeight = 0;
-
-            pElements.forEach((pEl) => {
-                const elHeight = pEl.offsetHeight + 12; // Height + margin-bottom
-                if (currentPageHeight + elHeight > usablePageHeight && currentPageParas.length > 0) {
-                    // Push current page and start a new page
-                    pages.push(currentPageParas);
-                    currentPageParas = [pEl];
-                    currentPageHeight = elHeight;
-                } else {
-                    currentPageParas.push(pEl);
-                    currentPageHeight += elHeight;
-                }
-            });
-
-            if (currentPageParas.length > 0) {
-                pages.push(currentPageParas);
-            }
-
-            // Remove the measurement div
-            document.body.removeChild(tempMeasureDiv);
-
-            const pdf = new jsPDF('p', 'pt', 'a4');
-            const scaleFactor = 595.28 / 800;
-
-            for (let i = 0; i < pages.length; i++) {
-                if (i > 0) {
-                    pdf.addPage();
-                }
-
-                // Create a temporary container for this specific page
-                const pageContainer = document.createElement('div');
-                pageContainer.style.position = 'fixed';
-                pageContainer.style.left = '0';
-                pageContainer.style.top = '0';
-                pageContainer.style.transform = 'translate(-200%, -200%)';
-                pageContainer.style.width = '800px';
-                pageContainer.style.boxSizing = 'border-box';
-                pageContainer.style.padding = '50px 60px';
-                pageContainer.style.background = 'white';
-                pageContainer.style.zIndex = '-9999';
-
-                // Clone paragraphs belonging to this page
-                pages[i].forEach((pEl) => {
-                    pageContainer.appendChild(pEl.cloneNode(true));
-                });
-
-                document.body.appendChild(pageContainer);
-
-                const canvas = await html2canvas(pageContainer, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false
-                });
-
-                document.body.removeChild(pageContainer);
-
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const pageHeightPoints = (canvas.height / 2) * scaleFactor;
-
-                pdf.addImage(imgData, 'JPEG', 0, 0, 595.28, pageHeightPoints);
-            }
-
+            const pdf = await generateAgreementPDF(reg);
             pdf.save(`TCWA_Agreement_${reg.registrationId || reg.id}.pdf`);
             toast.update(toastId, { render: "Agreement PDF downloaded successfully!", type: "success", isLoading: false, autoClose: 3000 });
         } catch (error) {
             console.error("PDF generation failed:", error);
             toast.update(toastId, { render: "Failed to generate PDF. Please try again.", type: "error", isLoading: false, autoClose: 3000 });
+        }
+    };
+
+    const handlePrintAgreementDoc = async (reg) => {
+        if (!reg.agreementText) {
+            toast.error("No agreement text found for this registration.");
+            return;
+        }
+
+        const toastId = toast.loading("Preparing print layout, please wait...");
+
+        try {
+            const pdf = await generateAgreementPDF(reg);
+            const blobUrl = pdf.output('bloburl');
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = blobUrl;
+            document.body.appendChild(iframe);
+            iframe.onload = () => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                toast.update(toastId, { render: "Print layout opened!", type: "success", isLoading: false, autoClose: 3000 });
+            };
+        } catch (error) {
+            console.error("Print layout generation failed:", error);
+            toast.update(toastId, { render: "Failed to prepare print layout.", type: "error", isLoading: false, autoClose: 3000 });
         }
     };
 
@@ -651,6 +682,12 @@ export default function RegistrationsPage() {
                                         Download Agreement PDF
                                     </button>
                                     <button 
+                                        onClick={() => handlePrintAgreementDoc(viewReceipt)}
+                                        className="px-3 py-1.5 bg-zinc-800 hover:bg-zinc-900 text-white text-xs font-bold rounded transition shadow-sm flex items-center gap-1 cursor-pointer"
+                                    >
+                                        <FaPrint size={11} /> Print Agreement
+                                    </button>
+                                    <button 
                                         onClick={() => setShowAgreementViewer(viewReceipt)}
                                         className="px-3 py-1.5 bg-white border border-zinc-300 hover:bg-zinc-50 text-zinc-700 text-xs font-bold rounded transition cursor-pointer"
                                     >
@@ -695,7 +732,13 @@ export default function RegistrationsPage() {
                                 {showAgreementViewer.agreementText}
                             </div>
                         </div>
-                        <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-end">
+                        <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-between items-center">
+                            <button 
+                                onClick={() => handlePrintAgreementDoc(showAgreementViewer)} 
+                                className="px-4 py-2 bg-orange-600 text-white rounded text-sm font-semibold hover:bg-orange-700 transition cursor-pointer flex items-center gap-1.5"
+                            >
+                                <FaPrint size={14} /> Print Agreement
+                            </button>
                             <button onClick={() => setShowAgreementViewer(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>
                         </div>
                     </div>
