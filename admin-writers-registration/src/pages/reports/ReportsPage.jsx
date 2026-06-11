@@ -151,6 +151,7 @@ const filterOptions = [
     { value: "All", label: "All Members" },
     { value: "Associate Member", label: "Associate" },
     { value: "Life Time Member", label: "Life Time" },
+    { value: "Asso to LM", label: "Asso to LM" },
     { value: "No Due", label: "No Due" },
     { value: "Dues Pending", label: "Dues Pending" }
 ];
@@ -196,6 +197,11 @@ export default function ReportsPage() {
                 }
                 if (selectedFilter === "Life Time Member") {
                     return member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time";
+                }
+                if (selectedFilter === "Asso to LM") {
+                    const isLife = member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time";
+                    const hasUpgradeHistory = member.upgradeToLifeHistory && Array.isArray(member.upgradeToLifeHistory) && member.upgradeToLifeHistory.length > 0;
+                    return isLife && hasUpgradeHistory;
                 }
                 
                 // Dues status filtering
