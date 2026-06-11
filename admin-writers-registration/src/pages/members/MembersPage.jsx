@@ -679,14 +679,32 @@ export default function MembersPage() {
                 };
                 await setDoc(newMemberRef, finalData);
 
+                const batch = writeBatch(db);
+
                 // Update related registrations
                 const regsRef = collection(db, 'registrations');
-                const q = query(regsRef, where('membershipId', '==', membershipId));
-                const querySnapshot = await getDocs(q);
-                const batch = writeBatch(db);
-                querySnapshot.forEach((docSnap) => {
+                const qRegs = query(regsRef, where('membershipId', '==', membershipId));
+                const regsSnapshot = await getDocs(qRegs);
+                regsSnapshot.forEach((docSnap) => {
                     batch.update(docSnap.ref, { membershipId: newDocId });
                 });
+
+                // Update related renewal transactions
+                const transRef = collection(db, 'renewal_transactions');
+                const qTrans = query(transRef, where('memberId', '==', membershipId));
+                const transSnapshot = await getDocs(qTrans);
+                transSnapshot.forEach((docSnap) => {
+                    batch.update(docSnap.ref, { memberId: newDocId });
+                });
+
+                // Update related communication logs
+                const logsRef = collection(db, 'communication_logs');
+                const qLogs = query(logsRef, where('memberId', '==', membershipId));
+                const logsSnapshot = await getDocs(qLogs);
+                logsSnapshot.forEach((docSnap) => {
+                    batch.update(docSnap.ref, { memberId: newDocId });
+                });
+
                 await batch.commit();
 
                 // Delete old document
