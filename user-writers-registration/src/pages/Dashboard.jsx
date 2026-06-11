@@ -314,7 +314,7 @@ export default function Dashboard({ member, setMember, onLogout }) {
     }
   };
 
-  const getAgreementText = (regId = '') => {
+  const getAgreementText = () => {
     const today = new Date();
     const dateStr = today.toLocaleDateString('en-GB') || today.toLocaleDateString();
 
@@ -422,18 +422,16 @@ export default function Dashboard({ member, setMember, onLogout }) {
     clauses.push(`నేను రిజిష్టరు చేయిస్తున్న వాటిలో కథ, కథనం, సంభాషణలు, పాటలకు సంబందించిన విషయాలు మాత్రమే రిజిష్టరు చేయబడతాయి అని 	నాకు తెలుసు.`);
 
     // Clause 8: Dispute resolution, coordination committee and social media ban clause
-    clauses.push(`భవిష్యత్ కాలంలో ఈ కథ / పాటల  విషయమై  ఎటువంటి  అభియోగం  వచ్చినా,  ఆ  అభియోగాన్ని  తెలుగు  సినీ రచయితల సంఘం 	కో-ఆర్డినేషన్  కమిటీకి  కానీ, కథా  హక్కుల  వేదికకు  కానీ   మధ్యంతర  నిర్ణయం  కోసం  పంపించే హక్కు  తెలుగు సినీ రచయితల సంఘానికి ఉంది  అని  నాకు  తెలుసు.మధ్యవర్తిత్వం  సమయంలో  అభియోగానికి  గురైన వారు చిత్రం  చిత్రీకరణ  సమయంలో  తన  కథాహక్కులకు  భంగం  కలుగుతుందని  అభ్యంతరం  వ్యక్తం చేస్తే,  చిత్రీకరణ పూర్తయిన పిదప,చిత్రం విడుదలకు ముందే వారి  కథను రచయితల సంఘంలో సబ్మిట్ చేయవలసి 	ఉంటుంది. ఉభయుల  కథలను  పరిశీలించి,  మధ్యవర్తిత్వ నిర్ణయం తెలియజేసే హక్కు తెలుగు 	సినీ రచయితల సంఘం  కథాహక్కుల వేదికకు ఉందని నాకు తెలుసు. చిత్రీకరణ  సమయంలోనే  సత్వర న్యాయం కావాలని కోరుకుంటే న్యాయస్థానానికి  వెళ్ళమని  సూచించే హక్కు  రచయితల సంఘానికి ఉందని నాకు తెలుసు.ఈ కథ / పాట విషయమై ఎలాంటి వివాదాలు తలెత్తినా మన సంఘం ఇచ్చే ఆదేశాలకు కట్టుబడి ఉంటానని,కథాహక్కులవేదిక  నియమం 16 ప్రకారము  నేను చేసిన లేదా నాపై  వచ్చిన అభియోగం  గురించి  సోషల్  మీడియాకు గానీ,  ఛానల్స్కుగానీ,  పత్రికలకు   తెలియజేయననీ,  సామాజిక  మాధ్యమాలలో   ఎలాంటి చర్చలకు   వెళ్ళనని  వాగ్ధానం చేస్తున్నాను.	 ఒకవేళ   ఆ  నియమాన్ని  ఉల్లంఘించినట్లైయితే  నామీద చర్య తీసుకొనే హక్కు తెలుగు  సినీ రచయితల సంఘానికి ఉన్నదని అంగీకరిస్తున్నాను.`);
+    clauses.push(`భవిష్యత్ కాలంలో ఈ కథ / పాటల  విషయమై  ఎటువంటి  అభియోగం  వచ్చినా,  ఆ  అభియోగాన్ని  తెలుగు  సినీ రచయితల సంఘం 	కో-ఆర్డినేషన్  కమిటీకి  కానీ, కథా  హక్కుల  వేదికకు  కానీ   మధ్యంతర  నిర్ణయం  కోసం  పంపించే హక్కు  తెలుగు సినీ రచయితల సంఘానికి ఉంది  అని  నాకు  తెలుసు.మధ్యవర్తిత్వం  సమయంలో  అభియోగానికి  గురైన వారు చిత్రం  చిత్రీకరణ  సమయంలో  తన  కథాహక్కులకు  భంగం  కలుగుతుందని  అభ్యంతరం  వ్యక్తం చేస్తే,  చిత్రీకరణ పూర్తయిన పిదప,చిత్రం విడుదలకు ముందే వారి  కథను రచయితల సంఘంలో సబ్మిట్ చేయవలసి 	ఉంటుంది. ఉభయుల  కథలను  పరిశీలించి,  మధ్యవర్తిత్వ నిర్ణయం తెలియజేసే హక్కు తెలుగు 	సినీ రచయితల సంఘం  కథాహక్కుల వేదికకు ఉందని నాకు తెలుసు. చిత్రీకరణ  సమయంలోనే  సత్వర న్యాయం కావాలని కోరుకుంటే న్యాయస్థానానికి  వెళ్ళమని  సూచించే హక్కు  రచయితల సంఘానికి ఉందని నాకు తెలుసు.ఈ కథ / పాట విషయమై ఎలాంటి వివాదాలు తలెత్తినా మన సంఘం ఇచ్చే ఆదేశాలకు కట్టుబడి ఉంటానని,కథాహక్కులవేదిక  నియమం 16 ప్రకారము  నేను చేసిన లేదా నాపై  వచ్చిన అభియోగం  గురించి  సోషల్  メディアకు గానీ,  ఛానల్స్కుగానీ,  పత్రికలకు   తెలియజేయననీ,  సామాజిక  మాధ్యమాలలో   ఎలాంటి చర్చలకు   వెళ్ళనని  వాగ్ధానం చేస్తున్నాను.	 ఒకవేళ   ఆ  నియమాన్ని  ఉల్లంఘించినట్లైయితే  నామీద చర్య తీసుకొనే హక్కు తెలుగు  సినీ రచయితల సంఘానికి ఉన్నదని అంగీకరిస్తున్నాను.`);
 
     // Map each clause to a numbered string format
     const formattedClauses = clauses.map((clauseText, index) => `${index + 1}) ${clauseText}`).join('\n\n');
-
-    const regNoDisplay = regId ? `Registration No: ${regId}\n\n` : '';
 
     return `${agreementTitle}
 అధ్యక్షులు / ప్రధానకార్యదర్శి
 తెలుగు సినీ రచయితల సంఘం వారికి!
 
-${regNoDisplay}అయ్యా!
+అయ్యా!
 
 ${formattedClauses}
 
@@ -594,7 +592,7 @@ ${fullName || ''}
         status: 'Approved',
         downloadCount: 0,
         createdAt: new Date().toISOString(),
-        agreementText: getAgreementText(sequentialId),
+        agreementText: getAgreementText(),
         agreementId: agreementId,
         agreedAt: new Date().toISOString(),
         agreementSigned: true,
@@ -1206,17 +1204,43 @@ ${fullName || ''}
             <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 text-xs sm:text-sm text-zinc-700 leading-relaxed font-sans bg-white">
               <div className="bg-white border border-zinc-200/80 p-5 rounded-lg whitespace-pre-line text-justify font-sans leading-relaxed tracking-normal">
                 
-                <div className="flex justify-between items-start mb-6 border-b border-zinc-100 pb-4">
-                  <div>
-                    <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">హామీపత్రం నంబర్:</h4>
-                    <span className="text-red-600 font-extrabold text-base tracking-wide bg-red-50 px-2.5 py-1 rounded-md border border-red-100">{agreementId}</span>
-                  </div>
-                  <div className="relative">
-                    <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95" />
-                  </div>
-                </div>
+                {(() => {
+                  const rawText = getAgreementText();
+                  const lines = rawText.split('\n');
+                  let headerTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
+                  let headerLine2 = 'అధ్యక్షులు / ప్రధానకార్యదర్శి';
+                  let headerLine3 = 'తెలుగు సినీ రచయితల సంఘం వారికి!';
+                  let bodyText = '';
 
-                {getAgreementText()}
+                  if (lines.length >= 3 && lines[0].includes('హామీపత్రం')) {
+                    headerTitle = lines[0].trim();
+                    headerLine2 = lines[1].trim();
+                    headerLine3 = lines[2].trim();
+                    let bodyStartIdx = 3;
+                    while (bodyStartIdx < lines.length && lines[bodyStartIdx].trim() === '') {
+                      bodyStartIdx++;
+                    }
+                    bodyText = lines.slice(bodyStartIdx).join('\n');
+                  } else {
+                    bodyText = rawText;
+                  }
+
+                  return (
+                    <>
+                      <div className="flex justify-between items-start mb-6 border-b border-zinc-100 pb-4">
+                        <div className="text-left font-sans">
+                          <h2 className="text-sm sm:text-base font-extrabold text-zinc-900 mb-1">{headerTitle}</h2>
+                          <p className="text-xs text-zinc-500 font-bold leading-normal">{headerLine2}</p>
+                          <p className="text-xs text-zinc-500 font-bold leading-normal">{headerLine3}</p>
+                        </div>
+                        <div className="relative flex-shrink-0 ml-4">
+                          <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95" />
+                        </div>
+                      </div>
+                      {bodyText}
+                    </>
+                  );
+                })()}
               </div>
             </div>
 

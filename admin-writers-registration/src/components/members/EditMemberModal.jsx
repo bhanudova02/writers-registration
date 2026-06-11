@@ -107,7 +107,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
 
     const handleNumberChange = (field, value, maxLength) => {
         let numericValue = value.replace(/\D/g, '');
-        
+
         if (field === "mobileNumber") {
             if (numericValue.length > 10 && numericValue.startsWith("91")) {
                 numericValue = numericValue.substring(2);
@@ -115,9 +115,9 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                 numericValue = numericValue.substring(1);
             }
         }
-        
+
         numericValue = numericValue.slice(0, maxLength);
-        
+
         setFormData(prev => ({ ...prev, [field]: numericValue }));
         setErrors(prev => ({ ...prev, [field]: validateField(field, numericValue) }));
     };
@@ -192,7 +192,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     return (
         <Modal isOpen={isOpen} onClose={onClose} title={`Edit Member: ${member?.membershipId}`} widthClass="md:max-w-4xl">
             <div className="space-y-6">
-                
+
                 {/* 1. Personal Details */}
                 <div className="mb-2 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
                     <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">1. Personal Details</h3>
@@ -244,7 +244,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                             error={errors.dateOfJoining}
                         />
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                         <CustomInput label="Joining Fee Amount" value={formData.joiningFeeAmount} onChange={(e) => handleTextChange("joiningFeeAmount", e.target.value)} />
                         <CustomInput label="Joining Fee Receipt No" value={formData.joiningFeeReceiptNo} onChange={(e) => handleTextChange("joiningFeeReceiptNo", e.target.value)} />

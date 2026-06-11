@@ -34,8 +34,28 @@ export default function RegistrationsPage() {
             throw new Error("No agreement text found for this registration.");
         }
 
+        // Parse raw text: extract header lines if starting with typical title, else keep default
+        const lines = reg.agreementText.split('\n').filter((l) => !l.includes('Registration No:'));
+        let headerTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
+        let headerLine2 = 'అధ్యక్షులు / ప్రధానకార్యదర్శి';
+        let headerLine3 = 'తెలుగు సినీ రచయితల సంఘం వారికి!';
+        let bodyLines = [];
+
+        if (lines.length >= 3 && lines[0].includes('హామీపత్రం')) {
+            headerTitle = lines[0].trim();
+            headerLine2 = lines[1].trim();
+            headerLine3 = lines[2].trim();
+            let bodyStartIdx = 3;
+            while (bodyStartIdx < lines.length && lines[bodyStartIdx].trim() === '') {
+                bodyStartIdx++;
+            }
+            bodyLines = lines.slice(bodyStartIdx);
+        } else {
+            bodyLines = lines;
+        }
+
         // Split the agreement text by newlines into paragraphs, trimming signature lines to be left-aligned
-        const paragraphsList = reg.agreementText.split('\n').map((para) => {
+        const paragraphsList = bodyLines.map((para) => {
             const trimmed = para.trim();
             if (
                 trimmed.includes('భవదీయుడు') || 
@@ -67,7 +87,7 @@ export default function RegistrationsPage() {
         tempMeasureDiv.style.padding = '50px 60px'; // Matching page padding
         tempMeasureDiv.style.zIndex = '-9999';
 
-        // Add Header with Agreement ID and Seal
+        // Add Header with Left Text and Right Seal aligned side-by-side
         const headerDiv = document.createElement('div');
         headerDiv.style.display = 'flex';
         headerDiv.style.justifyContent = 'space-between';
@@ -79,43 +99,46 @@ export default function RegistrationsPage() {
         headerDiv.style.paddingBottom = '12px';
         headerDiv.style.fontFamily = "'Outfit', 'Noto Sans Telugu', sans-serif";
 
-        const idContainer = document.createElement('div');
-        const label = document.createElement('h4');
-        label.textContent = 'హామీపత్రం నంబర్:';
-        label.style.fontSize = '12px';
-        label.style.fontWeight = 'bold';
-        label.style.color = '#71717a';
-        label.style.textTransform = 'uppercase';
-        label.style.letterSpacing = '0.05em';
-        label.style.marginBottom = '8px';
-        label.style.lineHeight = '1.4';
+        const textContainer = document.createElement('div');
+        textContainer.style.textAlign = 'left';
 
-        const idSpan = document.createElement('div');
-        idSpan.style.display = 'block';
-        idSpan.style.width = 'fit-content';
-        idSpan.style.textAlign = 'center';
-        idSpan.style.color = '#dc2626';
-        idSpan.style.fontWeight = '800';
-        idSpan.style.fontSize = '16px';
-        idSpan.style.letterSpacing = '0.025em';
-        idSpan.style.backgroundColor = '#fef2f2';
-        idSpan.style.padding = '6px 12px';
-        idSpan.style.borderRadius = '6px';
-        idSpan.style.border = '1px solid #fee2e2';
-        idSpan.style.marginTop = '2px';
-        idSpan.style.lineHeight = '1.2';
+        const titleEl = document.createElement('h2');
+        titleEl.textContent = headerTitle;
+        titleEl.style.fontSize = '15px';
+        titleEl.style.fontWeight = '800';
+        titleEl.style.color = '#111827';
+        titleEl.style.marginBottom = '4px';
 
-        const idTextSpan = document.createElement('span');
-        idTextSpan.textContent = reg.agreementId || 'N/A';
-        idTextSpan.style.position = 'relative';
-        idTextSpan.style.top = '-2px'; // Shift text 2px upward
-        idTextSpan.style.display = 'inline-block';
-        idSpan.appendChild(idTextSpan);
+        const line2El = document.createElement('p');
+        line2El.textContent = headerLine2;
+        line2El.style.fontSize = '12px';
+        line2El.style.fontWeight = 'bold';
+        line2El.style.color = '#4b5563';
+        line2El.style.margin = '0';
 
-        idContainer.appendChild(label);
-        idContainer.appendChild(idSpan);
+        const line3El = document.createElement('p');
+        line3El.textContent = headerLine3;
+        line3El.style.fontSize = '12px';
+        line3El.style.fontWeight = 'bold';
+        line3El.style.color = '#4b5563';
+        line3El.style.margin = '0';
+
+        const regNoEl = document.createElement('p');
+        regNoEl.textContent = `Registration No: ${reg.registrationId || reg.id || 'N/A'}`;
+        regNoEl.style.fontSize = '12px';
+        regNoEl.style.fontWeight = 'bold';
+        regNoEl.style.color = '#dc2626';
+        regNoEl.style.marginTop = '4px';
+        regNoEl.style.marginBottom = '0';
+
+        textContainer.appendChild(titleEl);
+        textContainer.appendChild(line2El);
+        textContainer.appendChild(line3El);
+        textContainer.appendChild(regNoEl);
 
         const imgContainer = document.createElement('div');
+        imgContainer.style.flexShrink = '0';
+        imgContainer.style.marginLeft = '16px';
         const sealImgElement = document.createElement('img');
         sealImgElement.src = sealImg.src;
         sealImgElement.style.width = '64px';
@@ -123,7 +146,7 @@ export default function RegistrationsPage() {
         sealImgElement.style.opacity = '0.95';
         imgContainer.appendChild(sealImgElement);
 
-        headerDiv.appendChild(idContainer);
+        headerDiv.appendChild(textContainer);
         headerDiv.appendChild(imgContainer);
 
         // Append header first
@@ -740,44 +763,70 @@ export default function RegistrationsPage() {
                 </div>
             )}
 
-            {showAgreementViewer && (
-                <div className="fixed inset-0 z-[70] bg-black/60 px-4 py-8 overflow-y-auto flex items-center justify-center">
-                    <div className="w-full max-w-2xl rounded-lg border border-zinc-200 bg-white shadow-2xl flex flex-col max-h-[80vh] my-auto">
-                        <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg">
-                            <h3 className="text-sm sm:text-base font-extrabold text-zinc-800">TCWA Signed Agreement Viewer</h3>
-                            <button
-                                onClick={() => setShowAgreementViewer(null)}
-                                className="text-zinc-500 hover:text-zinc-855 transition cursor-pointer"
-                            >
-                                <FiXCircle size={20} />
-                            </button>
-                        </div>
-                        <div className="p-5 overflow-y-auto flex-1 text-xs sm:text-sm text-zinc-700 whitespace-pre-line leading-relaxed font-sans">
-                            <div className="bg-zinc-50 p-4 border border-zinc-200 rounded font-sans leading-relaxed text-justify">
-                                <div className="flex justify-between items-start mb-6 border-b border-zinc-200 pb-4">
-                                  <div>
-                                    <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">హామీపత్రం నంబర్:</h4>
-                                    <span className="text-red-600 font-extrabold text-base tracking-wide bg-red-50 px-2.5 py-1 rounded-md border border-red-100">{showAgreementViewer.agreementId || 'N/A'}</span>
-                                  </div>
-                                  <div className="relative">
-                                    <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95" />
-                                  </div>
+            {showAgreementViewer && (() => {
+                const rawText = showAgreementViewer.agreementText ? showAgreementViewer.agreementText.replace(/Registration No:[^\n]*\n*/gi, '') : '';
+                const lines = rawText.split('\n');
+                let headerTitle = 'స్టోరీ రిజిస్ట్రేషన్ హామీపత్రం';
+                let headerLine2 = 'అధ్యక్షులు / ప్రధానకార్యదర్శి';
+                let headerLine3 = 'తెలుగు సినీ రచయితల సంఘం వారికి!';
+                let bodyText = '';
+
+                if (lines.length >= 3 && lines[0].includes('హామీపత్రం')) {
+                    headerTitle = lines[0].trim();
+                    headerLine2 = lines[1].trim();
+                    headerLine3 = lines[2].trim();
+                    let bodyStartIdx = 3;
+                    while (bodyStartIdx < lines.length && lines[bodyStartIdx].trim() === '') {
+                        bodyStartIdx++;
+                    }
+                    bodyText = lines.slice(bodyStartIdx).join('\n');
+                } else {
+                    bodyText = rawText;
+                }
+
+                return (
+                    <div className="fixed inset-0 z-[70] bg-black/60 px-4 py-8 overflow-y-auto flex items-center justify-center">
+                        <div className="w-full max-w-2xl rounded-lg border border-zinc-200 bg-white shadow-2xl flex flex-col max-h-[80vh] my-auto">
+                            <div className="flex items-center justify-between border-b border-zinc-200 px-5 py-4 bg-zinc-50 rounded-t-lg">
+                                <h3 className="text-sm sm:text-base font-extrabold text-zinc-800">TCWA Signed Agreement Viewer</h3>
+                                <button
+                                    onClick={() => setShowAgreementViewer(null)}
+                                    className="text-zinc-500 hover:text-zinc-855 transition cursor-pointer"
+                                >
+                                    <FiXCircle size={20} />
+                                </button>
+                            </div>
+                            <div className="p-5 overflow-y-auto flex-1 text-xs sm:text-sm text-zinc-700 whitespace-pre-line leading-relaxed font-sans">
+                                <div className="bg-zinc-50 p-4 border border-zinc-200 rounded font-sans leading-relaxed text-justify">
+                                    <div className="flex justify-between items-start mb-6 border-b border-zinc-200 pb-4">
+                                      <div className="text-left font-sans">
+                                        <h2 className="text-sm sm:text-base font-extrabold text-zinc-900 mb-1">{headerTitle}</h2>
+                                        <p className="text-xs text-zinc-500 font-bold leading-normal">{headerLine2}</p>
+                                        <p className="text-xs text-zinc-500 font-bold leading-normal">{headerLine3}</p>
+                                        <p className="text-xs text-red-600 font-extrabold leading-normal mt-1">
+                                          Registration No: {showAgreementViewer.registrationId || showAgreementViewer.id}
+                                        </p>
+                                      </div>
+                                      <div className="relative flex-shrink-0 ml-4">
+                                        <img src="/stamp.png" alt="TCWA Seal" className="w-16 h-16 opacity-95" />
+                                      </div>
+                                    </div>
+                                    {bodyText}
                                 </div>
-                                {showAgreementViewer.agreementText}
+                            </div>
+                            <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-between items-center">
+                                <button 
+                                    onClick={() => handlePrintAgreementDoc(showAgreementViewer)} 
+                                    className="px-4 py-2 bg-orange-600 text-white rounded text-sm font-semibold hover:bg-orange-700 transition cursor-pointer flex items-center gap-1.5"
+                                >
+                                    <FaPrint size={14} /> Print Agreement
+                                </button>
+                                <button onClick={() => setShowAgreementViewer(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>
                             </div>
                         </div>
-                        <div className="border-t border-zinc-200 px-5 py-3 bg-zinc-50 rounded-b-lg flex justify-between items-center">
-                            <button 
-                                onClick={() => handlePrintAgreementDoc(showAgreementViewer)} 
-                                className="px-4 py-2 bg-orange-600 text-white rounded text-sm font-semibold hover:bg-orange-700 transition cursor-pointer flex items-center gap-1.5"
-                            >
-                                <FaPrint size={14} /> Print Agreement
-                            </button>
-                            <button onClick={() => setShowAgreementViewer(null)} className="px-4 py-2 bg-zinc-800 text-white rounded text-sm font-semibold hover:bg-zinc-700 transition cursor-pointer">Close</button>
-                        </div>
                     </div>
-                </div>
-            )}
+                );
+            })()}
         </div>
     );
 }

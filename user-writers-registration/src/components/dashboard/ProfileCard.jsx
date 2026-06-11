@@ -1,5 +1,4 @@
 import { User } from 'lucide-react';
-import { jsPDF } from 'jspdf';
 import { toast } from 'react-toastify';
 
 const calculateExpiryDate = (member) => {
@@ -59,104 +58,6 @@ const getDueYearsDisplay = (member) => {
 };
 
 export default function ProfileCard({ member, expiryDetails }) {
-  const handlePrint = async () => {
-    if (!member) {
-      toast.error("Member details not available.");
-      return;
-    }
-
-    try {
-      const doc = new jsPDF('p', 'mm', 'a4');
-      
-      // Draw border
-      doc.setDrawColor(0, 0, 150);
-      doc.setLineWidth(0.5);
-      doc.rect(10, 10, 190, 277);
-      
-      try {
-        const logoImg = new Image();
-        logoImg.src = '/Logo.png';
-        await new Promise((resolve, reject) => {
-          logoImg.onload = resolve;
-          logoImg.onerror = reject;
-        });
-        doc.addImage(logoImg, 'PNG', 15, 11, 20, 30);
-      } catch (e) {
-        console.warn("Logo could not be loaded for PDF");
-      }
-
-      // Header Text
-      doc.setTextColor(0, 0, 150);
-      doc.setFontSize(15);
-      doc.setFont("helvetica", "bold");
-      doc.text("TELUGU CINE WRITERS' ASSOCIATION", 105, 20, { align: "center" });
-
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.text("(Regd. No. A741, Registered under Trade Union Act, 1926, Affiliated to T.S.F.I.E.F.)", 105, 25, { align: "center" });
-
-      // Horizontal line
-      doc.setDrawColor(0, 0, 150);
-      doc.line(10, 42, 200, 42);
-
-      // Title
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0);
-      doc.setFont("helvetica", "bold");
-      doc.text("MEMBER DETAILS", 105, 52, { align: "center" });
-      const titleWidth = doc.getTextWidth("MEMBER DETAILS");
-      doc.line(105 - (titleWidth / 2), 53, 105 + (titleWidth / 2), 53);
-
-      let yPos = 65;
-
-      const drawField = (label, value) => {
-        doc.setFontSize(11);
-        doc.setTextColor(0, 0, 150);
-        doc.setFont("helvetica", "bold");
-        doc.text(`${label}:`, 20, yPos);
-
-        doc.setTextColor(0, 0, 0);
-        doc.setFont("helvetica", "normal");
-        
-        const isValEmpty = !value || String(value).trim() === "" || String(value).toUpperCase() === "N/A";
-        const textVal = isValEmpty ? "" : String(value);
-        const splitText = doc.splitTextToSize(textVal, 110);
-        doc.text(splitText, 70, yPos);
-        
-        yPos += (splitText.length * 5) + 5;
-      };
-
-      drawField("Membership ID", member.membershipId);
-      drawField("Member Type", member.memberType);
-      drawField("Dues Status", getDueYearsDisplay(member));
-      drawField("Full Name", `${member.name || ''} ${member.surname || ''}`.trim());
-      drawField("Date of Birth", member.dateOfBirth);
-      drawField("Blood Group", member.bloodGroup);
-      drawField("Qualification", member.qualification);
-      drawField("Mobile Number", member.mobileNumber);
-      if (member.alternateMobileNumber) drawField("Alt Mobile", member.alternateMobileNumber);
-      drawField("Email Address", member.email);
-      drawField("Aadhar Number", member.aadharNo);
-      drawField("PAN Card", member.panCardNo);
-      drawField("Permanent Address", member.permanentAddress);
-      drawField("Temporary Address", member.temporaryAddress);
-      
-      drawField("Nominee Name", member.nomineeName);
-      drawField("Nominee Relation", member.nomineeRelation);
-
-      drawField("Status", member.status);
-      if (expiryDetails && expiryDetails.expiryDateStr) {
-        drawField("Valid Till", expiryDetails.expiryDateStr);
-      }
-
-      doc.save(`Member_Details_${member.membershipId}.pdf`);
-      toast.success("Member details downloaded successfully!");
-    } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF.");
-    }
-  };
-
   return (
     <section className="bg-white border border-slate-200 p-5 rounded-lg flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative">
       <div className="flex items-center gap-4">
