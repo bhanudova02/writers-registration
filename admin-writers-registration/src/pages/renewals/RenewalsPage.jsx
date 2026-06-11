@@ -614,24 +614,6 @@ export default function RenewalsPage() {
                                                             />
                                                         )}
 
-                                                        {renew.status === "Deceased" ? (
-                                                            <CustomButton
-                                                                label="Mark Deceased"
-                                                                bgColor="bg-zinc-300"
-                                                                textColor="text-zinc-500"
-                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm cursor-not-allowed"
-                                                                disabled={true}
-                                                            />
-                                                        ) : (
-                                                            <CustomButton
-                                                                label="Mark Deceased"
-                                                                bgColor="bg-zinc-700 hover:bg-zinc-800"
-                                                                textColor="text-white"
-                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
-                                                                onClick={() => setDeceasedModalData({ isOpen: true, memberId: renew.id, name: renew.name, currentStatus: renew.status })}
-                                                            />
-                                                        )}
-
                                                         {renew.memberType === "Associate Member" ? (
                                                             (renew.status === "Disabled" || renew.status === "Deceased") ? (
                                                                 <CustomButton
@@ -670,6 +652,24 @@ export default function RenewalsPage() {
                                                                     onClick={() => triggerUpgradeModal(renew.id, renew.name, "Associate Member")}
                                                                 />
                                                             )
+                                                        )}
+
+                                                        {renew.status === "Deceased" ? (
+                                                            <CustomButton
+                                                                label="Mark Deceased"
+                                                                bgColor="bg-zinc-300"
+                                                                textColor="text-zinc-500"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm cursor-not-allowed"
+                                                                disabled={true}
+                                                            />
+                                                        ) : (
+                                                            <CustomButton
+                                                                label="Mark Deceased"
+                                                                bgColor="bg-zinc-700 hover:bg-zinc-800"
+                                                                textColor="text-white"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
+                                                                onClick={() => setDeceasedModalData({ isOpen: true, memberId: renew.id, name: renew.name, currentStatus: renew.status })}
+                                                            />
                                                         )}
                                                     </div>
                                                 </td>
