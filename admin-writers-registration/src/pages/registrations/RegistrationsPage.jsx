@@ -581,8 +581,8 @@ export default function RegistrationsPage() {
                                         <td className="border border-zinc-200 py-3 px-3 text-[13px] font-bold text-green-700">
                                             ₹{reg.amount}
                                         </td>
-                                        <td className="border border-zinc-200 py-3 px-3 w-28 text-center">
-                                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${reg.status === 'Approved' ? 'bg-green-100 text-green-700' : reg.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                                        <td className="border border-zinc-200 py-3 px-3 w-28 text-center whitespace-nowrap">
+                                            <span className={`px-2 py-0.5 rounded text-[11px] font-bold whitespace-nowrap ${reg.status === 'Approved' ? 'bg-green-100 text-green-700' : reg.status === 'Rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
                                                 {reg.status || 'Pending'}
                                             </span>
                                         </td>

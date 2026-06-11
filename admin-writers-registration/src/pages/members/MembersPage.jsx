@@ -983,7 +983,7 @@ export default function MembersPage() {
                                                     <td className="border border-zinc-200 py-2.5 px-3 text-[13px] font-bold text-zinc-800 capitalize min-w-[150px]">
                                                         {member.name}
                                                     </td>
-                                                    <td className="border border-zinc-200 py-2.5 px-3 text-[12px] font-semibold text-zinc-700 w-36">
+                                                    <td className="border border-zinc-200 py-2.5 px-3 text-[12px] font-semibold text-zinc-700 w-36 whitespace-nowrap">
                                                         <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider ${(member.memberType === 'Life Time Member' || member.memberType === 'Life Member' || member.memberType === 'Life Time') ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700'}`}>
                                                             {(member.memberType === 'Life Time Member' || member.memberType === 'Life Member' || member.memberType === 'Life Time') ? 'Life Time' : 'Associate'}
                                                         </span>
@@ -999,8 +999,8 @@ export default function MembersPage() {
                                                             ? new Date(member.dateOfJoining).toLocaleDateString("en-GB") 
                                                             : (member.createdAt ? new Date(member.createdAt).toLocaleString("en-GB", { dateStyle: "short" }) : "-")}
                                                     </td>
-                                                    <td className="border border-zinc-200 py-2.5 px-3 w-28 text-center">
-                                                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                                    <td className="border border-zinc-200 py-2.5 px-3 w-28 text-center whitespace-nowrap">
+                                                        <span className={`px-2 py-0.5 rounded text-[11px] font-bold whitespace-nowrap ${
                                                             member.status === 'Active' 
                                                                 ? 'bg-green-100 text-green-700' 
                                                                 : member.status === 'Inactive'

@@ -58,6 +58,17 @@ export default function Dashboard({ member, setMember, onLogout }) {
     setIsCalculatingPages(true);
     try {
       const arrayBuffer = await file.arrayBuffer();
+
+      // Check if PDF is encrypted or has edit restrictions using pdf-lib
+      try {
+        await PDFDocument.load(arrayBuffer);
+      } catch (pdfLibError) {
+        setPageValidationError("This PDF is encrypted, password-protected, or has restricted permissions. Please upload a standard unencrypted PDF script so we can stamp it. Please re-upload again.");
+        setPdfFile(null);
+        setPageCount(1);
+        return;
+      }
+
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
       const numPages = pdf.numPages;
 
@@ -245,6 +256,15 @@ export default function Dashboard({ member, setMember, onLogout }) {
         if (!isDownloading) {
           setReceiptModal({ type: null, registration: null });
           setSuccessRegistration(null);
+          setScriptTitle('');
+          setSelectedCategory('');
+          setPdfFile(null);
+          setPageCount(1);
+          setIsAgreed(false);
+          setAgreementId('');
+          setNomineeRelation('');
+          setNomineeName('');
+          setPageValidationError('');
         } else {
           // If downloading, prevent going back by pushing state again
           window.history.pushState({ successPage: true }, '', '/success');
@@ -627,6 +647,15 @@ ${fullName || ''}
       if (window.location.pathname === '/success') {
         window.history.replaceState(null, '', '/');
       }
+      setScriptTitle('');
+      setSelectedCategory('');
+      setPdfFile(null);
+      setPageCount(1);
+      setIsAgreed(false);
+      setAgreementId('');
+      setNomineeRelation('');
+      setNomineeName('');
+      setPageValidationError('');
     }
   };
 
@@ -747,7 +776,21 @@ ${fullName || ''}
       toast.success("Stamped script downloaded successfully!");
     } catch (error) {
       console.error("Error stamping script:", error);
-      toast.error("Failed to stamp and download the script.");
+      toast.error("Failed to stamp the script. Downloading your original unstamped script instead so your file is not lost.");
+      
+      try {
+        const url = URL.createObjectURL(receiptModal.originalFile);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = receiptModal.originalFile.name || `Original_Script_${receiptModal.registration.registrationId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (fallbackError) {
+        console.error("Fallback download failed:", fallbackError);
+        toast.error("Failed to download the original script as well.");
+      }
     } finally {
       setIsDownloading(false);
     }
