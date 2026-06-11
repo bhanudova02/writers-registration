@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaSyncAlt, FaSearch, FaUserGraduate } from "react-icons/fa";
 import { FiAlertTriangle, FiCheck, FiClock, FiLayers } from "react-icons/fi";
-import { collection, onSnapshot, doc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import CustomButton from "../../components/custom/CustomButton";
 import { CustomSelect } from "../../components/custom/CustomSelect";
@@ -253,7 +253,8 @@ export default function RenewalsPage() {
             await updateDoc(memberRef, {
                 lastRenewalDate: newCreatedAtStr,
                 validityExpiresAt: newExpiryISO,
-                status: "Active"
+                status: "Active",
+                renewalHistory: arrayUnion(nowStr)
             });
 
             // Write transaction log

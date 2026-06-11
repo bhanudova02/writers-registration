@@ -103,6 +103,11 @@ const renderMembershipHistory = (member) => {
             history.push({ label: "LM to Asso", date: d });
         });
     }
+    if (member.renewalHistory && Array.isArray(member.renewalHistory)) {
+        member.renewalHistory.forEach(d => {
+            history.push({ label: "Renewed", date: d });
+        });
+    }
     
     if (history.length === 0) return "-";
     
