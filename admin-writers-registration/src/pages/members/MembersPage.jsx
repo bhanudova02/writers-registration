@@ -54,6 +54,14 @@ const initialFormData = {
 
 const calculateExpiryDate = (member) => {
     if (!member) return null;
+    if (member.validityExpiresAt) {
+        let expDate = typeof member.validityExpiresAt.toDate === 'function' 
+            ? member.validityExpiresAt.toDate() 
+            : new Date(member.validityExpiresAt);
+        if (!isNaN(expDate.getTime())) {
+            return expDate;
+        }
+    }
     let joiningDateStr = member.dateOfJoining || member.createdAt;
     if (!joiningDateStr) return null;
     let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
@@ -586,27 +594,52 @@ export default function MembersPage() {
             const mergedMember = { ...currentMember, ...updatedFields };
             
             let validityExpiresAt = null;
+            let status = currentMember?.status || "Active";
             if (mergedMember.memberType === "Associate Member") {
-                let joiningDateStr = mergedMember.dateOfJoining || mergedMember.createdAt;
-                if (joiningDateStr) {
-                    let joiningDate = new Date(joiningDateStr);
-                    if (!isNaN(joiningDate.getTime())) {
-                        let refDateStr = mergedMember.lastRenewalDate || mergedMember.dateOfJoining || mergedMember.createdAt;
-                        let refDate = new Date(refDateStr);
-                        if (!isNaN(refDate.getTime())) {
-                            let expiryDate = new Date(joiningDate);
-                            expiryDate.setFullYear(refDate.getFullYear());
-                            if (expiryDate <= refDate) {
-                                expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                if (updatedFields.validityExpiresAt) {
+                    const manualDate = new Date(updatedFields.validityExpiresAt);
+                    if (!isNaN(manualDate.getTime())) {
+                        validityExpiresAt = manualDate.toISOString();
+                    }
+                } else {
+                    let joiningDateStr = mergedMember.dateOfJoining || mergedMember.createdAt;
+                    if (joiningDateStr) {
+                        let joiningDate = new Date(joiningDateStr);
+                        if (!isNaN(joiningDate.getTime())) {
+                            let refDateStr = mergedMember.lastRenewalDate || mergedMember.dateOfJoining || mergedMember.createdAt;
+                            let refDate = new Date(refDateStr);
+                            if (!isNaN(refDate.getTime())) {
+                                let expiryDate = new Date(joiningDate);
+                                expiryDate.setFullYear(refDate.getFullYear());
+                                if (expiryDate <= refDate) {
+                                    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                                }
+                                validityExpiresAt = expiryDate.toISOString();
                             }
-                            validityExpiresAt = expiryDate.toISOString();
                         }
                     }
                 }
+
+                // Recalculate status based on the new validityExpiresAt date
+                if (validityExpiresAt) {
+                    const now = new Date();
+                    const expDate = new Date(validityExpiresAt);
+                    const diffTime = expDate.getTime() - now.getTime();
+                    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (daysRemaining > 0) {
+                        status = "Active";
+                    } else if (daysRemaining <= -1095) {
+                        status = "Disabled";
+                    } else {
+                        status = "Inactive";
+                    }
+                }
+            } else if (mergedMember.memberType === "Life Time Member" || mergedMember.memberType === "Life Member" || mergedMember.memberType === "Life Time") {
+                status = "Active";
             }
 
             const memberRef = doc(db, 'members', membershipId);
-            await setDoc(memberRef, { ...updatedFields, upgradeToLifeHistory, downgradeToAssociateHistory, validityExpiresAt }, { merge: true });
+            await setDoc(memberRef, { ...updatedFields, upgradeToLifeHistory, downgradeToAssociateHistory, validityExpiresAt, status }, { merge: true });
             
             const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
             await logAdminActivity(adminEmail, "Edit Member", `Updated member profile: ${membershipId}`);

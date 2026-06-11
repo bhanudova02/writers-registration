@@ -31,7 +31,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
         amToLmFeeReceiptNo: "",
         amToLmFeeDDNoBank: "",
         changeToLifeMemberDate: "",
-        alternateMobileNumber: ""
+        alternateMobileNumber: "",
+        validityExpiresAt: ""
     });
 
     const [errors, setErrors] = useState({});
@@ -63,7 +64,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                 amToLmFeeReceiptNo: member.amToLmFeeReceiptNo || "",
                 amToLmFeeDDNoBank: member.amToLmFeeDDNoBank || "",
                 changeToLifeMemberDate: member.changeToLifeMemberDate || "",
-                alternateMobileNumber: member.alternateMobileNumber || ""
+                alternateMobileNumber: member.alternateMobileNumber || "",
+                validityExpiresAt: member.validityExpiresAt ? member.validityExpiresAt.substring(0, 10) : ""
             });
             setErrors({});
         }
@@ -168,7 +170,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
             amToLmFeeReceiptNo: formData.amToLmFeeReceiptNo.trim(),
             amToLmFeeDDNoBank: formData.amToLmFeeDDNoBank.trim(),
             changeToLifeMemberDate: formData.changeToLifeMemberDate,
-            alternateMobileNumber: formData.alternateMobileNumber
+            alternateMobileNumber: formData.alternateMobileNumber,
+            validityExpiresAt: formData.validityExpiresAt
         });
     };
 
@@ -257,6 +260,17 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                         <CustomInput label="AM to LM Receipt No" value={formData.amToLmFeeReceiptNo} onChange={(e) => handleTextChange("amToLmFeeReceiptNo", e.target.value)} />
                         <CustomInput label="AM to LM DD/Bank" value={formData.amToLmFeeDDNoBank} onChange={(e) => handleTextChange("amToLmFeeDDNoBank", e.target.value)} />
                     </div>
+
+                    {formData.memberType === "Associate Member" && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 border-t border-zinc-200 pt-4">
+                            <CustomInput
+                                label="Membership Expiry Date (Manually Override)"
+                                type="date"
+                                value={formData.validityExpiresAt}
+                                onChange={(e) => handleTextChange("validityExpiresAt", e.target.value)}
+                            />
+                        </div>
+                    )}
                 </div>
 
                 {/* 4. Nominee Details */}

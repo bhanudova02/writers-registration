@@ -13,6 +13,14 @@ const calculateExpiryDate = (member) => {
     if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
         return null;
     }
+    if (member.validityExpiresAt) {
+        let expDate = typeof member.validityExpiresAt.toDate === 'function' 
+            ? member.validityExpiresAt.toDate() 
+            : new Date(member.validityExpiresAt);
+        if (!isNaN(expDate.getTime())) {
+            return expDate;
+        }
+    }
     let joiningDateStr = member.dateOfJoining || member.createdAt;
     if (!joiningDateStr) return null;
     
