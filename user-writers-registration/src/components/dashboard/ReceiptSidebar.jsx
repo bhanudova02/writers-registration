@@ -22,7 +22,7 @@ export default function ReceiptSidebar({
         </div>
         <div className="flex justify-between border-t border-zinc-200/60 pt-2 text-sm font-bold">
           <span>Total Amount Due</span>
-          <span className="text-amber-600">₹{pageCount > 0 ? Math.ceil(pageCount / 25) * 300 : 0}</span>
+          <span className="text-amber-600">₹{pageCount > 0 ? (selectedCategory?.toLowerCase().includes('song') && pageCount === 1 ? 200 : Math.ceil(pageCount / 25) * 300) : 0}</span>
         </div>
       </div>
 

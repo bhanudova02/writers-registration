@@ -239,7 +239,7 @@ export default function RegistrationForm({
             <span>Calculating Pages...</span>
           </>
         ) : (
-          <span>Proceed to Payment (₹{pageCount > 0 ? Math.ceil(pageCount / 25) * 300 : 0})</span>
+          <span>Proceed to Payment (₹{pageCount > 0 ? (selectedCategory?.toLowerCase().includes('song') && pageCount === 1 ? 200 : Math.ceil(pageCount / 25) * 300) : 0})</span>
         )}
       </button>
     </form>

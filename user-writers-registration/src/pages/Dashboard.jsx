@@ -528,7 +528,8 @@ ${fullName || ''}
       }
 
       const tempRegId = `TEMP-REG-${Date.now()}`;
-      const amount = pageCount > 0 ? Math.ceil(pageCount / 25) * 300 : 0;
+      const isSongsCategory = selectedCategory ? selectedCategory.toLowerCase().includes('song') : false;
+      const amount = pageCount > 0 ? (isSongsCategory && pageCount === 1 ? 200 : Math.ceil(pageCount / 25) * 300) : 0;
       await loadRazorpayCheckout();
 
       const paymentResult = await new Promise((resolve, reject) => {
