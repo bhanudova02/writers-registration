@@ -1,4 +1,4 @@
-import { User, Printer } from 'lucide-react';
+import { User } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import { toast } from 'react-toastify';
 
@@ -184,15 +184,6 @@ export default function ProfileCard({ member, expiryDetails }) {
             {expiryDetails?.expiryDateStr}
           </p>
         </div>
-        
-        <button 
-          onClick={handlePrint}
-          className="ml-auto md:ml-4 flex items-center gap-2 bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-md text-xs font-bold transition-colors border border-blue-200"
-          title="Print Member Details"
-        >
-          <Printer size={16} />
-          Print Details
-        </button>
       </div>
     </section>
   );
