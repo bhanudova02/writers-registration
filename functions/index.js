@@ -80,15 +80,35 @@ exports.dailyRenewalCheck = onSchedule("every day 09:00", async (event) => {
             // Skip Life Time Members or disabled accounts
             if (member.memberType === "Life Time Member" || member.disabled === true) continue;
 
-            const referenceDateStr = member.lastRenewalDate || member.dateOfJoining;
-            if (!referenceDateStr) continue;
+            let nextExpiry = null;
+            let referenceDate = null;
 
-            const referenceDate = new Date(referenceDateStr);
-            referenceDate.setHours(0, 0, 0, 0);
+            if (member.validityExpiresAt) {
+                const expDate = typeof member.validityExpiresAt.toDate === 'function' 
+                    ? member.validityExpiresAt.toDate() 
+                    : new Date(member.validityExpiresAt);
+                if (!isNaN(expDate.getTime())) {
+                    nextExpiry = expDate;
+                    referenceDate = new Date(nextExpiry);
+                    referenceDate.setFullYear(nextExpiry.getFullYear() - 1);
+                }
+            }
 
-            // Calculate next expiry = referenceDate + 1 year (anniversary)
-            const nextExpiry = new Date(referenceDate);
-            nextExpiry.setFullYear(referenceDate.getFullYear() + 1);
+            if (!nextExpiry) {
+                const referenceDateStr = member.lastRenewalDate || member.dateOfJoining;
+                if (!referenceDateStr) continue;
+
+                referenceDate = new Date(referenceDateStr);
+                referenceDate.setHours(0, 0, 0, 0);
+
+                nextExpiry = new Date(referenceDate);
+                nextExpiry.setFullYear(referenceDate.getFullYear() + 1);
+            }
+
+            nextExpiry.setHours(0, 0, 0, 0);
+            if (referenceDate) {
+                referenceDate.setHours(0, 0, 0, 0);
+            }
 
             // Days until expiry
             const msPerDay = 24 * 60 * 60 * 1000;

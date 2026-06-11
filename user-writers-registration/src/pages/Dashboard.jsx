@@ -108,21 +108,33 @@ export default function Dashboard({ member, setMember, onLogout }) {
       return { isExpired: false, daysRemaining: 9999, expiryDateStr: 'Never (Life Time)', penalty: 0 };
     }
 
-    let joiningDateStr = member.dateOfJoining || member.createdAt;
-    if (!joiningDateStr) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
-    
-    let joiningDate = new Date(joiningDateStr);
-    if (isNaN(joiningDate.getTime())) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
-    
-    let refDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
-    let refDate = new Date(refDateStr);
-    if (isNaN(refDate.getTime())) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
-    
-    let expiryDate = new Date(joiningDate);
-    expiryDate.setFullYear(refDate.getFullYear());
-    
-    if (expiryDate <= refDate) {
-        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    let expiryDate = null;
+    if (member.validityExpiresAt) {
+      let expDate = typeof member.validityExpiresAt.toDate === 'function' 
+        ? member.validityExpiresAt.toDate() 
+        : new Date(member.validityExpiresAt);
+      if (!isNaN(expDate.getTime())) {
+        expiryDate = expDate;
+      }
+    }
+
+    if (!expiryDate) {
+      let joiningDateStr = member.dateOfJoining || member.createdAt;
+      if (!joiningDateStr) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
+      
+      let joiningDate = new Date(joiningDateStr);
+      if (isNaN(joiningDate.getTime())) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
+      
+      let refDateStr = member.lastRenewalDate || member.dateOfJoining || member.createdAt;
+      let refDate = new Date(refDateStr);
+      if (isNaN(refDate.getTime())) return { isExpired: false, daysRemaining: 365, expiryDateStr: '', penalty: 0 };
+      
+      expiryDate = new Date(joiningDate);
+      expiryDate.setFullYear(refDate.getFullYear());
+      
+      if (expiryDate <= refDate) {
+          expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+      }
     }
     
     const today = new Date();
