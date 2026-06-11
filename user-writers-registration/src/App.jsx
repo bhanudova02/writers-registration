@@ -92,19 +92,30 @@ export default function App() {
                     if (!m) return false;
                     if (m.status === "Disabled") return true;
                     if (m.memberType === "Associate Member") {
-                      let joiningDateStr = m.dateOfJoining || m.createdAt;
-                      if (!joiningDateStr) return false;
-                      let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
-                      if (isNaN(joiningDate.getTime())) return false;
-                      
-                      let refDateStr = m.lastRenewalDate || m.dateOfJoining || m.createdAt;
-                      let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
-                      if (isNaN(refDate.getTime())) return false;
-                      
-                      let expiryDate = new Date(joiningDate);
-                      expiryDate.setFullYear(refDate.getFullYear());
-                      if (expiryDate <= refDate) {
-                        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                      let expiryDate = null;
+                      if (m.validityExpiresAt) {
+                        let expDate = typeof m.validityExpiresAt.toDate === 'function' 
+                          ? m.validityExpiresAt.toDate() 
+                          : new Date(m.validityExpiresAt);
+                        if (!isNaN(expDate.getTime())) {
+                          expiryDate = expDate;
+                        }
+                      }
+                      if (!expiryDate) {
+                        let joiningDateStr = m.dateOfJoining || m.createdAt;
+                        if (!joiningDateStr) return false;
+                        let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
+                        if (isNaN(joiningDate.getTime())) return false;
+                        
+                        let refDateStr = m.lastRenewalDate || m.dateOfJoining || m.createdAt;
+                        let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
+                        if (isNaN(refDate.getTime())) return false;
+                        
+                        expiryDate = new Date(joiningDate);
+                        expiryDate.setFullYear(refDate.getFullYear());
+                        if (expiryDate <= refDate) {
+                          expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                        }
                       }
                       
                       const now = new Date();
