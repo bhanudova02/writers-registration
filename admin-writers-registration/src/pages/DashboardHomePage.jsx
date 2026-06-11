@@ -48,7 +48,9 @@ const getComputedStatus = (member) => {
         daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
+    if (status === "Deceased") {
+        return "Deceased";
+    } else if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
         return "Disabled";
     } else if (status === "Inactive" || (daysRemaining !== Infinity && daysRemaining <= 0)) {
         return "Inactive";
@@ -338,7 +340,15 @@ export default function DashboardHomePage() {
                                         <p className="text-[10px] text-zinc-500 mt-0.5">ID: {member.membershipId} • Type: {member.memberType}</p>
                                     </div>
                                     <div className="text-right">
-                                        <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${member.status === "Active" ? "bg-green-100 text-green-700" : member.status === "Inactive" ? "bg-amber-100 text-amber-700" : "bg-red-100 text-red-700"}`}>
+                                        <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${
+                                            member.status === "Active" || member.status === "Life Member"
+                                                ? "bg-green-100 text-green-700" 
+                                                : member.status === "Inactive" 
+                                                    ? "bg-amber-100 text-amber-700" 
+                                                    : member.status === "Deceased"
+                                                        ? "bg-zinc-800 text-zinc-100 animate-pulse"
+                                                        : "bg-red-100 text-red-700"
+                                        }`}>
                                             {member.status}
                                         </span>
                                         <p className="text-[9px] text-zinc-400 mt-1 font-semibold">

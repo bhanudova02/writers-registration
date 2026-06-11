@@ -1035,6 +1035,25 @@ ${fullName || ''}
     }
   };
 
+  if (member?.status === 'Deceased') {
+    return (
+      <main className="min-h-screen bg-[#111111] overflow-y-auto py-12 px-4 flex items-center justify-center font-sans">
+        <div className="bg-white border border-red-500/30 p-6 sm:p-8 rounded-lg shadow-2xl max-w-md w-full text-center space-y-5">
+          <div className="mx-auto size-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center mb-2">
+            <AlertTriangle size={36} />
+          </div>
+          <h2 className="text-xl font-extrabold text-zinc-900 uppercase tracking-wider">Account Closed</h2>
+          <p className="text-sm text-zinc-600 leading-relaxed">
+            Dear <span className="text-zinc-900 font-bold">{member?.name}</span>, this membership account has been closed (Deceased).
+          </p>
+          <div className="pt-2 border-t border-zinc-100 flex items-center justify-center">
+            <button onClick={onLogout} className="text-xs font-bold text-zinc-500 hover:text-zinc-800 transition">Logout</button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (member?.status === 'Disabled') {
     return (
       <main className="min-h-screen bg-[#111111] overflow-y-auto py-12 px-4 flex items-center justify-center font-sans">

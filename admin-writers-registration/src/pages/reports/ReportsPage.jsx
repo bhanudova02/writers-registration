@@ -50,7 +50,9 @@ const getComputedStatus = (member) => {
         daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
+    if (status === "Deceased") {
+        return "Deceased";
+    } else if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
         return "Disabled";
     } else if (status === "Inactive" || (daysRemaining !== Infinity && daysRemaining <= 0)) {
         return "Inactive";
@@ -62,6 +64,9 @@ const getComputedStatus = (member) => {
 };
 
 const getDueYearsDisplay = (member) => {
+    if (member.status === "Deceased") {
+        return "Deceased";
+    }
     if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
         return "Life Member";
     }
@@ -86,6 +91,9 @@ const getDueYearsDisplay = (member) => {
 };
 
 const getExpiryDetails = (member) => {
+    if (member.status === "Deceased") {
+        return { text: "Deceased", isExpired: true, isLifeTime: false, daysRemaining: null };
+    }
     if (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") {
         return { text: "Life Member", isExpired: false, isLifeTime: true, daysRemaining: Infinity };
     }
@@ -462,8 +470,15 @@ export default function ReportsPage() {
                                                 <td className="border border-zinc-200 py-2.5 px-3 text-[12px] font-semibold text-zinc-700 w-36 whitespace-nowrap">
                                                     {(() => {
                                                         const due = getDueYearsDisplay(member);
+                                                        const badgeClass = due === 'Deceased'
+                                                            ? 'bg-zinc-800 text-zinc-100 animate-pulse'
+                                                            : due === 'Life Member'
+                                                                ? 'bg-purple-100 text-purple-700'
+                                                                : due === 'No Due'
+                                                                    ? 'bg-green-100 text-green-700'
+                                                                    : 'bg-red-100 text-red-700';
                                                         return (
-                                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider whitespace-nowrap ${due === 'Life Member' ? 'bg-purple-100 text-purple-700' : due === 'No Due' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                            <span className={`px-2 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider whitespace-nowrap ${badgeClass}`}>
                                                                 {due}
                                                             </span>
                                                         );
@@ -473,17 +488,19 @@ export default function ReportsPage() {
                                                     {(() => {
                                                         const expiry = getExpiryDetails(member);
                                                         if (expiry.text === "-") return "-";
-                                                        const badgeClass = expiry.isLifeTime 
-                                                            ? 'bg-purple-100 text-purple-700'
-                                                            : expiry.isExpired 
-                                                                ? 'bg-red-100 text-red-700' 
-                                                                : 'bg-green-100 text-green-700';
+                                                        const badgeClass = expiry.text === 'Deceased'
+                                                            ? 'bg-zinc-800 text-zinc-100 animate-pulse'
+                                                            : expiry.isLifeTime 
+                                                                ? 'bg-purple-100 text-purple-700'
+                                                                : expiry.isExpired 
+                                                                    ? 'bg-red-100 text-red-700' 
+                                                                    : 'bg-green-100 text-green-700';
                                                         return (
                                                             <div className="flex flex-col gap-0.5 items-start">
                                                                 <span className={`px-2 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider whitespace-nowrap ${badgeClass}`}>
                                                                     {expiry.text}
                                                                 </span>
-                                                                {!expiry.isLifeTime && (
+                                                                {!expiry.isLifeTime && expiry.daysRemaining !== null && (
                                                                     <span className="text-[10px] font-semibold text-zinc-500 lowercase">
                                                                         {expiry.daysRemaining > 0 
                                                                             ? `${expiry.daysRemaining} days left` 

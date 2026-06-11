@@ -81,6 +81,9 @@ const calculateExpiryDate = (member) => {
 
 const getComputedStatus = (member) => {
     let status = member.status || "Active";
+    if (status === "Deceased") {
+        return "Deceased";
+    }
     let daysRemaining = Infinity;
     const expDate = calculateExpiryDate(member);
 
@@ -595,47 +598,49 @@ export default function MembersPage() {
             
             let validityExpiresAt = null;
             let status = currentMember?.status || "Active";
-            if (mergedMember.memberType === "Associate Member") {
-                if (updatedFields.validityExpiresAt) {
-                    const manualDate = new Date(updatedFields.validityExpiresAt);
-                    if (!isNaN(manualDate.getTime())) {
-                        validityExpiresAt = manualDate.toISOString();
-                    }
-                } else {
-                    let joiningDateStr = mergedMember.dateOfJoining || mergedMember.createdAt;
-                    if (joiningDateStr) {
-                        let joiningDate = new Date(joiningDateStr);
-                        if (!isNaN(joiningDate.getTime())) {
-                            let refDateStr = mergedMember.lastRenewalDate || mergedMember.dateOfJoining || mergedMember.createdAt;
-                            let refDate = new Date(refDateStr);
-                            if (!isNaN(refDate.getTime())) {
-                                let expiryDate = new Date(joiningDate);
-                                expiryDate.setFullYear(refDate.getFullYear());
-                                if (expiryDate <= refDate) {
-                                    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+            if (status !== "Deceased") {
+                if (mergedMember.memberType === "Associate Member") {
+                    if (updatedFields.validityExpiresAt) {
+                        const manualDate = new Date(updatedFields.validityExpiresAt);
+                        if (!isNaN(manualDate.getTime())) {
+                            validityExpiresAt = manualDate.toISOString();
+                        }
+                    } else {
+                        let joiningDateStr = mergedMember.dateOfJoining || mergedMember.createdAt;
+                        if (joiningDateStr) {
+                            let joiningDate = new Date(joiningDateStr);
+                            if (!isNaN(joiningDate.getTime())) {
+                                let refDateStr = mergedMember.lastRenewalDate || mergedMember.dateOfJoining || mergedMember.createdAt;
+                                let refDate = new Date(refDateStr);
+                                if (!isNaN(refDate.getTime())) {
+                                    let expiryDate = new Date(joiningDate);
+                                    expiryDate.setFullYear(refDate.getFullYear());
+                                    if (expiryDate <= refDate) {
+                                        expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                                    }
+                                    validityExpiresAt = expiryDate.toISOString();
                                 }
-                                validityExpiresAt = expiryDate.toISOString();
                             }
                         }
                     }
-                }
 
-                // Recalculate status based on the new validityExpiresAt date
-                if (validityExpiresAt) {
-                    const now = new Date();
-                    const expDate = new Date(validityExpiresAt);
-                    const diffTime = expDate.getTime() - now.getTime();
-                    const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    if (daysRemaining > 0) {
-                        status = "Active";
-                    } else if (daysRemaining <= -1095) {
-                        status = "Disabled";
-                    } else {
-                        status = "Inactive";
+                    // Recalculate status based on the new validityExpiresAt date
+                    if (validityExpiresAt) {
+                        const now = new Date();
+                        const expDate = new Date(validityExpiresAt);
+                        const diffTime = expDate.getTime() - now.getTime();
+                        const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        if (daysRemaining > 0) {
+                            status = "Active";
+                        } else if (daysRemaining <= -1095) {
+                            status = "Disabled";
+                        } else {
+                            status = "Inactive";
+                        }
                     }
+                } else if (mergedMember.memberType === "Life Time Member" || mergedMember.memberType === "Life Member" || mergedMember.memberType === "Life Time") {
+                    status = "Active";
                 }
-            } else if (mergedMember.memberType === "Life Time Member" || mergedMember.memberType === "Life Member" || mergedMember.memberType === "Life Time") {
-                status = "Active";
             }
 
             const memberRef = doc(db, 'members', membershipId);
@@ -1005,7 +1010,9 @@ export default function MembersPage() {
                                                                 ? 'bg-green-100 text-green-700' 
                                                                 : member.status === 'Inactive'
                                                                     ? 'bg-amber-100 text-amber-700'
-                                                                    : 'bg-red-100 text-red-700'
+                                                                    : member.status === 'Deceased'
+                                                                        ? 'bg-zinc-800 text-zinc-100'
+                                                                        : 'bg-red-100 text-red-700'
                                                         }`}>
                                                             {member.status || "Active"}
                                                         </span>

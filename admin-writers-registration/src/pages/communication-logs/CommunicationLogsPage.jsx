@@ -51,7 +51,9 @@ const getComputedStatus = (member) => {
         daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
 
-    if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
+    if (status === "Deceased") {
+        return "Deceased";
+    } else if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
         return "Disabled";
     } else if (status === "Inactive" || (daysRemaining !== Infinity && daysRemaining <= 0)) {
         return "Inactive";

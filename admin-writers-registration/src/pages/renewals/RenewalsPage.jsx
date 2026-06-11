@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaSyncAlt, FaSearch, FaUserGraduate } from "react-icons/fa";
 import { FiAlertTriangle, FiCheck, FiClock, FiLayers } from "react-icons/fi";
-import { collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, setDoc, arrayUnion, deleteField } from "firebase/firestore";
 import { db, auth } from "../../firebase";
 import CustomButton from "../../components/custom/CustomButton";
 import { CustomSelect } from "../../components/custom/CustomSelect";
@@ -78,6 +78,7 @@ export default function RenewalsPage() {
     const [renewModalData, setRenewModalData] = useState({ isOpen: false, memberId: '', name: '', years: 1 });
     const [viewModalData, setViewModalData] = useState({ isOpen: false, member: null });
     const [warningModalData, setWarningModalData] = useState({ isOpen: false, message: '' });
+    const [deceasedModalData, setDeceasedModalData] = useState({ isOpen: false, memberId: '', name: '', currentStatus: '' });
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
@@ -89,6 +90,7 @@ export default function RenewalsPage() {
         { value: "Active", label: "Active" },
         { value: "Overdue", label: "Overdue" },
         { value: "Inactive", label: "Inactive" },
+        { value: "Deceased", label: "Deceased" },
         { value: "Associate Member", label: "Associate" },
         { value: "Life Time Member", label: "Life Time" },
     ];
@@ -116,7 +118,10 @@ export default function RenewalsPage() {
                     daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
                 }
 
-                if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
+                if (status === "Deceased") {
+                    status = "Deceased";
+                    amountDue = "-";
+                } else if (status === "Disabled" || (daysRemaining !== Infinity && daysRemaining <= -1095)) {
                     status = "Disabled";
                     amountDue = "Disabled";
                 } else if (status === "Inactive" || (daysRemaining !== Infinity && daysRemaining <= 0)) {
@@ -189,9 +194,9 @@ export default function RenewalsPage() {
     }, [searchQuery, selectedStatus]);
 
     // Dynamic metrics
-    const totalAssociates = members.filter(m => m.memberType === "Associate Member").length;
-    const overdueCount = members.filter(m => m.status === "Overdue").length;
-    const activeCount = members.filter(m => m.status === "Active" && m.memberType === "Associate Member").length;
+    const totalAssociates = members.filter(m => m.memberType === "Associate Member" && m.status !== "Deceased" && m.status !== "Disabled").length;
+    const overdueCount = members.filter(m => m.status === "Overdue" && m.status !== "Deceased").length;
+    const activeCount = members.filter(m => m.status === "Active" && m.memberType === "Associate Member" && m.status !== "Deceased").length;
 
     // Record Offline Renewal
     const triggerRenewModal = (memberId, name) => {
@@ -285,10 +290,19 @@ export default function RenewalsPage() {
     // Toggle Status
     const handleToggleStatus = async (memberId, currentStatus, memberName) => {
         try {
-            const newStatus = (currentStatus === "Inactive" || currentStatus === "Disabled") ? "Active" : "Inactive";
+            let newStatus;
+            let wasDeceased = false;
+            
+            if (currentStatus === "Deceased") {
+                const memberToToggle = members.find(m => m.id === memberId);
+                newStatus = memberToToggle?.previousStatusBeforeDeceased || "Active";
+                wasDeceased = true;
+            } else {
+                newStatus = (currentStatus === "Inactive" || currentStatus === "Disabled") ? "Active" : "Inactive";
+            }
             
             // Check expiry date if we are trying to make them Active
-            if (newStatus === "Active") {
+            if (newStatus === "Active" && !wasDeceased) {
                 const memberToToggle = members.find(m => m.id === memberId);
                 if (memberToToggle && memberToToggle.memberType === "Associate Member" && memberToToggle.daysRemaining <= 0) {
                     setWarningModalData({
@@ -300,7 +314,11 @@ export default function RenewalsPage() {
             }
 
             const memberRef = doc(db, 'members', memberId);
-            await updateDoc(memberRef, { status: newStatus });
+            const updatePayload = { status: newStatus };
+            if (wasDeceased) {
+                updatePayload.previousStatusBeforeDeceased = deleteField();
+            }
+            await updateDoc(memberRef, updatePayload);
             
             await logAdminActivity(
                 auth.currentUser?.email || 'admin@tcwa.in',
@@ -311,6 +329,31 @@ export default function RenewalsPage() {
         } catch (error) {
             console.error("Error updating status:", error);
             toast.error("Failed to update status.");
+        }
+    };
+
+    // Confirm and Mark Member as Deceased
+    const confirmMarkDeceased = async () => {
+        const { memberId, name, currentStatus } = deceasedModalData;
+        setDeceasedModalData({ isOpen: false, memberId: '', name: '', currentStatus: '' });
+
+        try {
+            const memberRef = doc(db, "members", memberId);
+            await updateDoc(memberRef, { 
+                status: "Deceased",
+                previousStatusBeforeDeceased: currentStatus || "Active"
+            });
+
+            await logAdminActivity(
+                auth.currentUser?.email || 'admin@tcwa.in',
+                "Changed Member Status",
+                `Marked member ${name} (ID: ${memberId}) as Deceased`
+            );
+
+            toast.success(`${name} has been marked as Deceased.`);
+        } catch (error) {
+            console.error("Error marking member as deceased:", error);
+            toast.error("Failed to update member status.");
         }
     };
 
@@ -500,7 +543,15 @@ export default function RenewalsPage() {
                                                     </div>
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 text-center whitespace-nowrap">
-                                                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${renew.status === 'Active' || renew.status === 'Life Member' ? 'bg-green-100 text-green-700' : renew.status === 'Inactive' || renew.status === 'Grace Period' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                                                        renew.status === 'Active' || renew.status === 'Life Member' 
+                                                            ? 'bg-green-100 text-green-700' 
+                                                            : renew.status === 'Inactive' || renew.status === 'Grace Period' 
+                                                                ? 'bg-amber-100 text-amber-700' 
+                                                                : renew.status === 'Deceased'
+                                                                    ? 'bg-zinc-800 text-zinc-100'
+                                                                    : 'bg-red-100 text-red-700'
+                                                    }`}>
                                                         {renew.status}
                                                     </span>
                                                 </td>
@@ -515,12 +566,12 @@ export default function RenewalsPage() {
                                                 </td>
                                                 <td className="border border-zinc-200 py-3 px-3 w-28 whitespace-nowrap text-center">
                                                     {renew.memberType === "Associate Member" ? (
-                                                        renew.status === "Disabled" ? (
+                                                        (renew.status === "Disabled" || renew.status === "Deceased") ? (
                                                             <CustomButton
                                                                 label="Renew"
                                                                 bgColor="bg-zinc-300"
                                                                 textColor="text-zinc-500"
-                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm border-zinc-200 mx-auto"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap inline-flex rounded-sm border-zinc-200 mx-auto cursor-not-allowed"
                                                                 disabled={true}
                                                             />
                                                         ) : (
@@ -532,7 +583,7 @@ export default function RenewalsPage() {
                                                                 onClick={() => triggerRenewModal(renew.id, renew.name)}
                                                             />
                                                         )
-                                                    ) : (
+                                                     ) : (
                                                         <CustomButton
                                                             label="Renew"
                                                             bgColor="bg-zinc-300"
@@ -545,31 +596,48 @@ export default function RenewalsPage() {
                                                 <td className="border border-zinc-200 py-3 px-3 w-40 whitespace-nowrap text-center">
                                                     <div className="flex justify-center gap-2">
                                                         {renew.memberType === "Associate Member" && renew.daysRemaining <= 0 ? (
-                                                            <div className="group relative">
-                                                                <CustomButton
-                                                                    label="Renewal Due"
-                                                                    bgColor="bg-zinc-300"
-                                                                    textColor="text-zinc-500"
-                                                                    className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm cursor-not-allowed"
-                                                                    onClick={() => setWarningModalData({ isOpen: true, message: `Cannot change status. ${renew.name} has a pending renewal.`})}
-                                                                />
-                                                            </div>
-                                                        ) : (
                                                             <CustomButton
-                                                                label={(renew.status === "Inactive" || renew.status === "Disabled") ? "Make Active" : "Make Inactive"}
-                                                                bgColor={(renew.status === "Inactive" || renew.status === "Disabled") ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
+                                                                label="Renewal Due"
+                                                                bgColor="bg-zinc-300"
+                                                                textColor="text-zinc-500"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm cursor-not-allowed"
+                                                                onClick={() => setWarningModalData({ isOpen: true, message: `Cannot change status. ${renew.name} has a pending renewal.`})}
+                                                            />
+                                                                                        ) : (
+                                                            <CustomButton
+                                                                label={renew.status === "Deceased" ? "Undo Deceased" : ((renew.status === "Inactive" || renew.status === "Disabled") ? "Make Active" : "Make Inactive")}
+                                                                bgColor={(renew.status === "Inactive" || renew.status === "Disabled" || renew.status === "Deceased") ? "bg-green-600 hover:bg-green-700" : "bg-red-600 hover:bg-red-700"}
                                                                 textColor="text-white"
                                                                 className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
                                                                 onClick={() => handleToggleStatus(renew.id, renew.status, renew.name)}
                                                             />
                                                         )}
+
+                                                        {renew.status === "Deceased" ? (
+                                                            <CustomButton
+                                                                label="Mark Deceased"
+                                                                bgColor="bg-zinc-300"
+                                                                textColor="text-zinc-500"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm cursor-not-allowed"
+                                                                disabled={true}
+                                                            />
+                                                        ) : (
+                                                            <CustomButton
+                                                                label="Mark Deceased"
+                                                                bgColor="bg-zinc-700 hover:bg-zinc-800"
+                                                                textColor="text-white"
+                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm"
+                                                                onClick={() => setDeceasedModalData({ isOpen: true, memberId: renew.id, name: renew.name, currentStatus: renew.status })}
+                                                            />
+                                                        )}
+
                                                         {renew.memberType === "Associate Member" ? (
-                                                            renew.status === "Disabled" ? (
+                                                            (renew.status === "Disabled" || renew.status === "Deceased") ? (
                                                                 <CustomButton
                                                                     label="Upgrade to Life"
                                                                     bgColor="bg-zinc-300"
                                                                     textColor="text-zinc-500"
-                                                                    className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm border-zinc-200"
+                                                                    className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap rounded-sm border-zinc-200 cursor-not-allowed"
                                                                     icon={FaUserGraduate}
                                                                     disabled={true}
                                                                 />
@@ -584,13 +652,23 @@ export default function RenewalsPage() {
                                                                 />
                                                             )
                                                         ) : (
-                                                            <CustomButton
-                                                                label="Make Associate"
-                                                                bgColor="bg-zinc-700 hover:bg-zinc-800"
-                                                                textColor="text-white"
-                                                                className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap border border-zinc-600 rounded-sm"
-                                                                onClick={() => triggerUpgradeModal(renew.id, renew.name, "Associate Member")}
-                                                            />
+                                                            (renew.status === "Disabled" || renew.status === "Deceased") ? (
+                                                                <CustomButton
+                                                                    label="Make Associate"
+                                                                    bgColor="bg-zinc-300"
+                                                                    textColor="text-zinc-500"
+                                                                    className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap border border-zinc-200 rounded-sm cursor-not-allowed mx-auto"
+                                                                    disabled={true}
+                                                                />
+                                                            ) : (
+                                                                <CustomButton
+                                                                    label="Make Associate"
+                                                                    bgColor="bg-zinc-700 hover:bg-zinc-800"
+                                                                    textColor="text-white"
+                                                                    className="py-1 px-3 text-[11px] font-bold tracking-wide whitespace-nowrap border border-zinc-600 rounded-sm"
+                                                                    onClick={() => triggerUpgradeModal(renew.id, renew.name, "Associate Member")}
+                                                                />
+                                                            )
                                                         )}
                                                     </div>
                                                 </td>
@@ -773,6 +851,40 @@ export default function RenewalsPage() {
                 onClose={() => setViewModalData({ isOpen: false, member: null })}
                 member={viewModalData.member}
             />
+
+            {/* Deceased Confirmation Modal */}
+            <Modal
+                isOpen={deceasedModalData.isOpen}
+                onClose={() => setDeceasedModalData({ isOpen: false, memberId: '', name: '' })}
+                title="Mark Member as Deceased"
+                widthClass="max-w-md"
+            >
+                <div className="text-zinc-700 text-sm">
+                    <div className="mb-6 p-4 bg-zinc-50 border border-zinc-200 rounded flex items-start gap-3">
+                        <FiAlertTriangle className="text-amber-500 text-xl shrink-0 mt-0.5" />
+                        <p className="text-zinc-700 font-medium">
+                            Are you sure you want to mark <strong>{deceasedModalData.name}</strong> (ID: {deceasedModalData.memberId}) as <strong>Deceased</strong>?
+                            <br /><br />
+                            This will freeze their account status, block all user-side logins, and disable further renewal/upgrade operations.
+                        </p>
+                    </div>
+                    <div className="flex justify-end gap-3 pt-4 border-t border-zinc-100">
+                        <CustomButton
+                            label="Cancel"
+                            onClick={() => setDeceasedModalData({ isOpen: false, memberId: '', name: '' })}
+                            bgColor="bg-zinc-100 hover:bg-zinc-200"
+                            textColor="text-zinc-700"
+                            className="border border-zinc-300"
+                        />
+                        <CustomButton
+                            label="Confirm Deceased"
+                            onClick={confirmMarkDeceased}
+                            bgColor="bg-red-600 hover:bg-red-700"
+                            textColor="text-white"
+                        />
+                    </div>
+                </div>
+            </Modal>
 
             {/* Warning Modal */}
             <Modal

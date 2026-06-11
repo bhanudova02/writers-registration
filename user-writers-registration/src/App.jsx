@@ -44,10 +44,12 @@ export default function App() {
 
   useEffect(() => {
     let unsubscribeAuth = () => {};
+    let isMounted = true;
     
     // Check Firebase Auth state to prevent localStorage bypass
     import('firebase/auth').then(({ onAuthStateChanged }) => {
       import('./firebase').then(({ auth }) => {
+        if (!isMounted) return;
         unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
           if (!firebaseUser && isLoggedIn) {
             // Allow developer bypass in local mode
@@ -76,72 +78,6 @@ export default function App() {
 
       localStorage.setItem('tcwa_member', JSON.stringify(member));
       localStorage.setItem('tcwa_isLoggedIn', 'true');
-      
-      // Real-time check if member still exists in DB
-      import('firebase/firestore').then(({ doc, onSnapshot }) => {
-        import('./firebase').then(({ db }) => {
-          if (member.membershipId) {
-            const unsubDb = onSnapshot(doc(db, 'members', member.membershipId), 
-              (docSnap) => {
-                if (!docSnap.exists()) {
-                  console.warn("Member deleted from database. Forcing logout.");
-                  handleLogout();
-                } else {
-                  const dbData = docSnap.data();
-                  const checkPermanentlyClosed = (m) => {
-                    if (!m) return false;
-                    if (m.status === "Disabled") return true;
-                    if (m.memberType === "Associate Member") {
-                      let expiryDate = null;
-                      if (m.validityExpiresAt) {
-                        let expDate = typeof m.validityExpiresAt.toDate === 'function' 
-                          ? m.validityExpiresAt.toDate() 
-                          : new Date(m.validityExpiresAt);
-                        if (!isNaN(expDate.getTime())) {
-                          expiryDate = expDate;
-                        }
-                      }
-                      if (!expiryDate) {
-                        let joiningDateStr = m.dateOfJoining || m.createdAt;
-                        if (!joiningDateStr) return false;
-                        let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
-                        if (isNaN(joiningDate.getTime())) return false;
-                        
-                        let refDateStr = m.lastRenewalDate || m.dateOfJoining || m.createdAt;
-                        let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
-                        if (isNaN(refDate.getTime())) return false;
-                        
-                        expiryDate = new Date(joiningDate);
-                        expiryDate.setFullYear(refDate.getFullYear());
-                        if (expiryDate <= refDate) {
-                          expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-                        }
-                      }
-                      
-                      const now = new Date();
-                      const diffTime = expiryDate.getTime() - now.getTime();
-                      const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                      if (daysRemaining <= -1095) {
-                        return true;
-                      }
-                    }
-                    return false;
-                  };
-                  if (checkPermanentlyClosed(dbData)) {
-                    console.warn("Member account permanently closed. Forcing logout.");
-                    handleLogout();
-                  }
-                }
-              },
-              (error) => {
-                console.error("Firestore permission/access error. Forcing logout to be safe.", error);
-                handleLogout();
-              }
-            );
-          }
-        }).catch(err => console.error("Failed to load firebase", err));
-      }).catch(err => console.error("Failed to load firestore", err));
-      
     } else {
       localStorage.removeItem('tcwa_member');
       localStorage.removeItem('tcwa_isLoggedIn');
@@ -149,9 +85,99 @@ export default function App() {
     }
 
     return () => {
+      isMounted = false;
       if (unsubscribeAuth) unsubscribeAuth();
     };
-  }, [isLoggedIn, member]);
+  }, [isLoggedIn]);
+
+  // Dedicated Real-time Firestore sync and status/expiry check listener
+  useEffect(() => {
+    if (!isLoggedIn || !member?.membershipId) return;
+
+    let unsubscribeDb = null;
+    let isMounted = true;
+
+    import('firebase/firestore').then(({ doc, onSnapshot }) => {
+      import('./firebase').then(({ db }) => {
+        if (!isMounted) return;
+        unsubscribeDb = onSnapshot(doc(db, 'members', member.membershipId), 
+          (docSnap) => {
+            if (!isMounted) return;
+            if (!docSnap.exists()) {
+              console.warn("Member deleted from database. Forcing logout.");
+              handleLogout();
+            } else {
+              const dbData = docSnap.data();
+              const checkPermanentlyClosed = (m) => {
+                if (!m) return false;
+                if (m.status === "Disabled" || m.status === "Deceased") return true;
+                if (m.memberType === "Associate Member") {
+                  let expiryDate = null;
+                  if (m.validityExpiresAt) {
+                    let expDate = typeof m.validityExpiresAt.toDate === 'function' 
+                      ? m.validityExpiresAt.toDate() 
+                      : new Date(m.validityExpiresAt);
+                    if (!isNaN(expDate.getTime())) {
+                      expiryDate = expDate;
+                    }
+                  }
+                  if (!expiryDate) {
+                    let joiningDateStr = m.dateOfJoining || m.createdAt;
+                    if (!joiningDateStr) return false;
+                    let joiningDate = typeof joiningDateStr.toDate === 'function' ? joiningDateStr.toDate() : new Date(joiningDateStr);
+                    if (isNaN(joiningDate.getTime())) return false;
+                    
+                    let refDateStr = m.lastRenewalDate || m.dateOfJoining || m.createdAt;
+                    let refDate = typeof refDateStr.toDate === 'function' ? refDateStr.toDate() : new Date(refDateStr);
+                    if (isNaN(refDate.getTime())) return false;
+                    
+                    expiryDate = new Date(joiningDate);
+                    expiryDate.setFullYear(refDate.getFullYear());
+                    if (expiryDate <= refDate) {
+                      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+                    }
+                  }
+                  
+                  const now = new Date();
+                  const diffTime = expiryDate.getTime() - now.getTime();
+                  const daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                  if (daysRemaining <= -1095) {
+                    return true;
+                  }
+                }
+                return false;
+              };
+
+              if (checkPermanentlyClosed(dbData)) {
+                console.warn("Member account permanently closed. Forcing logout.");
+                handleLogout();
+              } else {
+                // Check if any critical data changed before updating state to avoid infinite renders
+                const hasChanged = 
+                  dbData.status !== member.status || 
+                  dbData.memberType !== member.memberType ||
+                  dbData.name !== member.name ||
+                  JSON.stringify(dbData.validityExpiresAt) !== JSON.stringify(member.validityExpiresAt);
+
+                if (hasChanged) {
+                  setMember(prev => ({ ...prev, ...dbData }));
+                }
+              }
+            }
+          },
+          (error) => {
+            console.error("Firestore permission/access error. Forcing logout to be safe.", error);
+            handleLogout();
+          }
+        );
+      });
+    });
+
+    return () => {
+      isMounted = false;
+      if (unsubscribeDb) unsubscribeDb();
+    };
+  }, [isLoggedIn, member?.membershipId]);
 
   // Enforce 6 day session limit while app is open
   useEffect(() => {

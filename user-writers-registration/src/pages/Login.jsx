@@ -103,6 +103,12 @@ export default function Login({ setMember, setIsLoggedIn }) {
         }
       }
 
+      if (memberData.status === "Deceased") {
+        setLoginError('This account has been closed (Deceased).');
+        setIsValidating(false);
+        return;
+      }
+
       if (isDisabled) {
         setLoginError('This account has been disabled. You need to create a new account and visit the TCWA office to re-register.');
         setIsValidating(false);
