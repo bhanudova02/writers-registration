@@ -130,18 +130,7 @@ export default function MembersPage() {
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [messageMember, setMessageMember] = useState(null);
 
-    const isSubmitDisabled = useMemo(() => {
-        return !(formData.membershipId || "").trim()
-            || !(formData.name || "").trim()
-            || !(formData.surname || "").trim()
-            || !formData.dateOfJoining
-            || !formData.memberType
-            || !(formData.email || "").trim()
-            || !(formData.permanentAddress || "").trim()
-            || (formData.mobileNumber || "").length !== 10
-            || (formData.alternateMobileNumber && formData.alternateMobileNumber.length !== 10)
-            || Object.values(errors).some(Boolean);
-    }, [errors, formData]);
+
 
     const filteredSavedMembers = useMemo(() => {
         if (!searchQuery) return savedMembers;
@@ -379,6 +368,9 @@ export default function MembersPage() {
                 if (!trimmedValue) return "Field is required.";
                 if (!/^\d{10}$/.test(trimmedValue)) return "Mobile number must be exactly 10 digits.";
                 return "";
+            case "alternateMobileNumber":
+                if (trimmedValue && !/^\d{10}$/.test(trimmedValue)) return "Alternate mobile number must be exactly 10 digits.";
+                return "";
             case "aadharNo":
             case "nomineeAadharNo":
                 if (trimmedValue && !/^\d{12}$/.test(trimmedValue)) return "Aadhar number must be exactly 12 digits.";
@@ -420,23 +412,24 @@ export default function MembersPage() {
 
     const validateForm = () => {
         const nextErrors = {
-            membershipId: validateField("membershipId", formData.membershipId),
             name: validateField("name", formData.name),
             surname: validateField("surname", formData.surname),
-            dateOfJoining: validateField("dateOfJoining", formData.dateOfJoining),
             dateOfBirth: validateField("dateOfBirth", formData.dateOfBirth),
             qualification: validateField("qualification", formData.qualification),
             bloodGroup: validateField("bloodGroup", formData.bloodGroup),
             mobileNumber: validateField("mobileNumber", formData.mobileNumber),
+            alternateMobileNumber: validateField("alternateMobileNumber", formData.alternateMobileNumber),
             email: validateField("email", formData.email),
             aadharNo: validateField("aadharNo", formData.aadharNo),
             panCardNo: validateField("panCardNo", formData.panCardNo),
+            permanentAddress: validateField("permanentAddress", formData.permanentAddress),
+            temporaryAddress: validateField("temporaryAddress", formData.temporaryAddress),
+            membershipId: validateField("membershipId", formData.membershipId),
+            memberType: validateField("memberType", formData.memberType),
+            dateOfJoining: validateField("dateOfJoining", formData.dateOfJoining),
             nomineeName: validateField("nomineeName", formData.nomineeName),
             nomineeRelation: validateField("nomineeRelation", formData.nomineeRelation),
             nomineeAadharNo: validateField("nomineeAadharNo", formData.nomineeAadharNo),
-            permanentAddress: validateField("permanentAddress", formData.permanentAddress),
-            temporaryAddress: validateField("temporaryAddress", formData.temporaryAddress),
-            memberType: validateField("memberType", formData.memberType),
         };
 
         setErrors(nextErrors);
@@ -447,7 +440,64 @@ export default function MembersPage() {
         e.preventDefault();
 
         if (!validateForm()) {
-            toast.error("Please fill in all required fields correctly.");
+            const nextErrors = {
+                name: validateField("name", formData.name),
+                surname: validateField("surname", formData.surname),
+                dateOfBirth: validateField("dateOfBirth", formData.dateOfBirth),
+                qualification: validateField("qualification", formData.qualification),
+                bloodGroup: validateField("bloodGroup", formData.bloodGroup),
+                mobileNumber: validateField("mobileNumber", formData.mobileNumber),
+                alternateMobileNumber: validateField("alternateMobileNumber", formData.alternateMobileNumber),
+                email: validateField("email", formData.email),
+                aadharNo: validateField("aadharNo", formData.aadharNo),
+                panCardNo: validateField("panCardNo", formData.panCardNo),
+                permanentAddress: validateField("permanentAddress", formData.permanentAddress),
+                temporaryAddress: validateField("temporaryAddress", formData.temporaryAddress),
+                membershipId: validateField("membershipId", formData.membershipId),
+                memberType: validateField("memberType", formData.memberType),
+                dateOfJoining: validateField("dateOfJoining", formData.dateOfJoining),
+                nomineeName: validateField("nomineeName", formData.nomineeName),
+                nomineeRelation: validateField("nomineeRelation", formData.nomineeRelation),
+                nomineeAadharNo: validateField("nomineeAadharNo", formData.nomineeAadharNo),
+            };
+
+            const fieldLabels = {
+                name: "Full Name",
+                surname: "Surname",
+                dateOfBirth: "Date of Birth",
+                qualification: "Qualification",
+                bloodGroup: "Blood Group",
+                mobileNumber: "Mobile Number",
+                alternateMobileNumber: "Alternate Mobile Number",
+                email: "Email Address",
+                aadharNo: "Aadhar Number",
+                panCardNo: "PAN Card Number",
+                permanentAddress: "Permanent Address",
+                temporaryAddress: "Temporary Address",
+                membershipId: "Membership ID",
+                memberType: "Member Type",
+                dateOfJoining: "Date of Joining",
+                nomineeName: "Nominee Name",
+                nomineeRelation: "Relation with Nominee",
+                nomineeAadharNo: "Nominee Aadhar Number",
+            };
+
+            let firstErrorMsg = "";
+            for (const key of Object.keys(nextErrors)) {
+                const errMsg = nextErrors[key];
+                if (errMsg) {
+                    if (errMsg.toLowerCase().includes("required")) {
+                        firstErrorMsg = `Please fill ${fieldLabels[key]}.`;
+                    } else {
+                        firstErrorMsg = `${fieldLabels[key]}: ${errMsg}`;
+                    }
+                    break;
+                }
+            }
+
+            if (firstErrorMsg) {
+                toast.error(firstErrorMsg);
+            }
             return;
         }
 
@@ -974,7 +1024,7 @@ export default function MembersPage() {
                                     type="submit"
                                     label={isSubmitting ? "Adding Member..." : "Add Member"}
                                     className="min-w-40"
-                                    disabled={isSubmitDisabled || isSubmitting}
+                                    disabled={isSubmitting}
                                 />
                             </div>
                         </div>
