@@ -125,7 +125,7 @@ export default function ViewMemberModal({ isOpen, onClose, member }) {
                             <span className="font-bold text-zinc-900 text-right">{member.amToLmFeeDDNoBank || "N/A"}</span>
                         </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1">
-                            <span className="text-zinc-500">Change to LM Date:</span> 
+                            <span className="text-zinc-500">Assoc to Life Date:</span> 
                             <span className="font-bold text-zinc-900 text-right">{formatDate(member.changeToLifeMemberDate)}</span>
                         </div>
                         <div className="flex justify-between border-b border-zinc-100 pb-1 md:col-span-2">

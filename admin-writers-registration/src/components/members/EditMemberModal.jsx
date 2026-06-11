@@ -273,6 +273,18 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                         <CustomInput label="AM to LM DD/Bank" value={formData.amToLmFeeDDNoBank} onChange={(e) => handleTextChange("amToLmFeeDDNoBank", e.target.value)} />
                     </div>
 
+                    {formData.memberType === "Life Time Member" && (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 border-t border-zinc-200 pt-4">
+                            <CustomInput
+                                label="Assoc to Life Date"
+                                type="date"
+                                value={formData.changeToLifeMemberDate}
+                                onChange={(e) => handleTextChange("changeToLifeMemberDate", e.target.value)}
+                                error={errors.changeToLifeMemberDate}
+                            />
+                        </div>
+                    )}
+
                     {formData.memberType === "Associate Member" && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 border-t border-zinc-200 pt-4">
                             <CustomInput

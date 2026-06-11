@@ -130,18 +130,45 @@ export default function MembersPage() {
     const [isMessageModalOpen, setIsMessageModalOpen] = useState(false);
     const [messageMember, setMessageMember] = useState(null);
 
-
+    const [memberTypeFilter, setMemberTypeFilter] = useState("All");
 
     const filteredSavedMembers = useMemo(() => {
-        if (!searchQuery) return savedMembers;
+        let list = savedMembers;
+
+        if (memberTypeFilter !== "All") {
+            list = list.filter((member) => {
+                const isLife = member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time";
+                if (memberTypeFilter === "Associate Member") {
+                    return !isLife;
+                }
+                if (memberTypeFilter === "Life Time Member") {
+                    return isLife;
+                }
+                if (memberTypeFilter === "Upgraded") {
+                    if (!isLife) return false;
+                    const hasUpgradeHistory = member.upgradeToLifeHistory && Array.isArray(member.upgradeToLifeHistory) && member.upgradeToLifeHistory.length > 0;
+                    let joinDateStr = member.dateOfJoining || (member.createdAt ? member.createdAt.split("T")[0] : "");
+                    if (hasUpgradeHistory) return true;
+                    if (member.changeToLifeMemberDate) {
+                        const changeDateNorm = new Date(member.changeToLifeMemberDate).toDateString();
+                        const joinDateNorm = joinDateStr ? new Date(joinDateStr).toDateString() : "";
+                        return changeDateNorm !== joinDateNorm;
+                    }
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        if (!searchQuery) return list;
         const lowerQuery = searchQuery.toLowerCase();
-        return savedMembers.filter((member) =>
+        return list.filter((member) =>
             (member.name && member.name.toLowerCase().includes(lowerQuery)) ||
             (member.mobileNumber && member.mobileNumber.toLowerCase().includes(lowerQuery)) ||
             (member.membershipId && member.membershipId.toLowerCase().includes(lowerQuery)) ||
             (member.memberType && member.memberType.toLowerCase().includes(lowerQuery))
         );
-    }, [savedMembers, searchQuery]);
+    }, [savedMembers, searchQuery, memberTypeFilter]);
 
     const savedMembersTotalPages = Math.max(1, Math.ceil(filteredSavedMembers.length / savedMembersPageSize));
     const savedMembersStartIndex = (savedMembersPage - 1) * savedMembersPageSize;
@@ -191,8 +218,8 @@ export default function MembersPage() {
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         
-        const headers = ["S No", "Membership ID", "Name", "Member Type", "Mobile", "Email", "Joined On", "Status"];
-        const colWidths = [15, 35, 45, 35, 30, 60, 30, 20];
+        const headers = ["S No", "Membership ID", "Name", "Member Type", "Mobile", "Email", "Joined On", "Assoc to Life Date", "Status"];
+        const colWidths = [12, 30, 38, 25, 25, 50, 25, 40, 25];
         const startX = 13.5;
         
         let yPos = 45;
@@ -287,9 +314,30 @@ export default function MembersPage() {
                 joinedDate = isNaN(cDate.getTime()) ? "-" : cDate.toLocaleDateString("en-GB");
             }
 
-            const memberTypeDisplay = (member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time") 
-                ? "Life Time" 
-                : "Associate";
+            const isLife = member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time";
+            const memberTypeDisplay = isLife ? "Life Time" : "Associate";
+
+            let lmDate = "-";
+            if (isLife) {
+                const hasUpgradeHistory = member.upgradeToLifeHistory && Array.isArray(member.upgradeToLifeHistory) && member.upgradeToLifeHistory.length > 0;
+                let joinDateStr = member.dateOfJoining || (member.createdAt ? member.createdAt.split("T")[0] : "");
+                
+                const formatToGB = (dateVal) => {
+                    const d = new Date(dateVal);
+                    return isNaN(d.getTime()) ? String(dateVal) : d.toLocaleDateString("en-GB");
+                };
+
+                if (hasUpgradeHistory) {
+                    const lastUpgrade = member.upgradeToLifeHistory[member.upgradeToLifeHistory.length - 1];
+                    lmDate = formatToGB(lastUpgrade);
+                } else if (member.changeToLifeMemberDate) {
+                    const changeDateNorm = new Date(member.changeToLifeMemberDate).toDateString();
+                    const joinDateNorm = joinDateStr ? new Date(joinDateStr).toDateString() : "";
+                    if (changeDateNorm !== joinDateNorm) {
+                        lmDate = formatToGB(member.changeToLifeMemberDate);
+                    }
+                }
+            }
 
             const rowData = [
                 String(index + 1),
@@ -299,6 +347,7 @@ export default function MembersPage() {
                 member.mobileNumber || "-",
                 member.email || "-",
                 joinedDate,
+                lmDate,
                 member.status || "Active"
             ];
 
@@ -663,8 +712,12 @@ export default function MembersPage() {
             if (currentMember && updatedFields.memberType && updatedFields.memberType !== currentMember.memberType) {
                 if (!isOldLife && isNewLife) {
                     upgradeToLifeHistory = [...upgradeToLifeHistory, currentDate];
+                    if (!updatedFields.changeToLifeMemberDate && !currentMember.changeToLifeMemberDate) {
+                        updatedFields.changeToLifeMemberDate = currentDate.split('T')[0];
+                    }
                 } else if (isOldLife && !isNewLife) {
                     downgradeToAssociateHistory = [...downgradeToAssociateHistory, currentDate];
+                    updatedFields.changeToLifeMemberDate = "";
                 }
             }
 
@@ -989,6 +1042,15 @@ export default function MembersPage() {
                                         onChange={(e) => handleTextChange("amToLmFeeDDNoBank", e.target.value)}
                                         placeholder="Enter DD No & Bank"
                                     />
+                                    {formData.memberType === "Life Time Member" && (
+                                        <CustomInput
+                                            label="Assoc to Life Date"
+                                            type="date"
+                                            value={formData.changeToLifeMemberDate}
+                                            onChange={(e) => handleTextChange("changeToLifeMemberDate", e.target.value)}
+                                            error={errors.changeToLifeMemberDate}
+                                        />
+                                    )}
                                 </div>
                             </div>
 
@@ -1049,14 +1111,27 @@ export default function MembersPage() {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
-                                <CustomButton
-                                    icon={FaDownload}
-                                    label="Download List"
+                                <div className="w-48">
+                                    <CustomSelect
+                                        label=""
+                                        dropdownData={[
+                                            { label: "All Members", value: "All" },
+                                            { label: "Associate Members", value: "Associate Member" },
+                                            { label: "Life Members", value: "Life Time Member" },
+                                            { label: "Assoc to Life", value: "Upgraded" }
+                                        ]}
+                                        value={memberTypeFilter}
+                                        onChange={(val) => setMemberTypeFilter(val)}
+                                        buttonClassName="bg-zinc-50 h-[38px]"
+                                    />
+                                </div>
+                                <button
                                     onClick={downloadMembersListPDF}
-                                    bgColor="bg-zinc-800 hover:bg-zinc-900"
-                                    textColor="text-white"
-                                    className="py-2 px-4 text-xs font-bold whitespace-nowrap h-[38px] rounded-sm"
-                                />
+                                    className="flex items-center justify-center bg-zinc-800 hover:bg-zinc-900 active:scale-[0.98] transition-all text-white border border-gray-50 p-2.5 rounded-sm cursor-pointer h-[38px] w-[38px] shrink-0"
+                                    title="Download List"
+                                >
+                                    <FaDownload size={14} />
+                                </button>
                             </div>
                         </div>
 
@@ -1080,7 +1155,7 @@ export default function MembersPage() {
                                                         onChange={toggleSelectAll}
                                                     />
                                                 </th>
-                                                {["S No", "Membership ID", "Name", "Member Type", "Mobile", "Email", "Joined On", "Status", "Actions"].map((head) => (
+                                                {["S No", "Membership ID", "Name", "Member Type", "Mobile", "Email", "Joined On", "Assoc to Life Date", "Status", "Actions"].map((head) => (
                                                     <th key={head} className="border border-zinc-200 py-3 px-3 text-left text-xs font-bold text-zinc-600 uppercase whitespace-nowrap">
                                                         {head}
                                                     </th>
@@ -1122,6 +1197,35 @@ export default function MembersPage() {
                                                         {member.dateOfJoining 
                                                             ? new Date(member.dateOfJoining).toLocaleDateString("en-GB") 
                                                             : (member.createdAt ? new Date(member.createdAt).toLocaleString("en-GB", { dateStyle: "short" }) : "-")}
+                                                    </td>
+                                                    <td className="border border-zinc-200 py-2.5 px-3 text-[11px] font-semibold text-purple-700 whitespace-nowrap w-32">
+                                                        {(() => {
+                                                            const isLife = member.memberType === "Life Time Member" || member.memberType === "Life Member" || member.memberType === "Life Time";
+                                                            if (!isLife) return "-";
+                                                            
+                                                            const hasUpgradeHistory = member.upgradeToLifeHistory && Array.isArray(member.upgradeToLifeHistory) && member.upgradeToLifeHistory.length > 0;
+                                                            let joinDateStr = member.dateOfJoining || (member.createdAt ? member.createdAt.split("T")[0] : "");
+                                                            
+                                                            const formatToGB = (dateVal) => {
+                                                                const d = new Date(dateVal);
+                                                                return isNaN(d.getTime()) ? String(dateVal) : d.toLocaleDateString("en-GB");
+                                                            };
+
+                                                            if (hasUpgradeHistory) {
+                                                                 const lastUpgrade = member.upgradeToLifeHistory[member.upgradeToLifeHistory.length - 1];
+                                                                 return formatToGB(lastUpgrade);
+                                                            }
+                                                            
+                                                            if (member.changeToLifeMemberDate) {
+                                                                 const changeDateNorm = new Date(member.changeToLifeMemberDate).toDateString();
+                                                                 const joinDateNorm = joinDateStr ? new Date(joinDateStr).toDateString() : "";
+                                                                 if (changeDateNorm !== joinDateNorm) {
+                                                                     return formatToGB(member.changeToLifeMemberDate);
+                                                                 }
+                                                            }
+                                                            
+                                                            return "-";
+                                                        })()}
                                                     </td>
                                                     <td className="border border-zinc-200 py-2.5 px-3 w-28 text-center whitespace-nowrap">
                                                         <span className={`px-2 py-0.5 rounded text-[11px] font-bold whitespace-nowrap ${

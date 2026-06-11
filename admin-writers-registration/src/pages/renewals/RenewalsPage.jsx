@@ -394,7 +394,8 @@ export default function RenewalsPage() {
                 status: "Active",
                 createdAt: currentDate, // Reset timer for Associate
                 upgradeToLifeHistory,
-                downgradeToAssociateHistory
+                downgradeToAssociateHistory,
+                changeToLifeMemberDate: isNewLife ? currentDate.split('T')[0] : ""
             });
 
             // Log the upgrade transaction
