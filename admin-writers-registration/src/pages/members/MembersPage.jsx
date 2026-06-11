@@ -7,7 +7,7 @@ import CustomInput from "../../components/custom/CustomInput";
 import CustomTextArea from "../../components/custom/CustomTextArea";
 import { CustomSelect } from "../../components/custom/CustomSelect";
 import CustomButton from "../../components/custom/CustomButton";
-import { collection, onSnapshot, doc, setDoc, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, doc, setDoc, query, orderBy, deleteDoc, writeBatch, getDocs, where } from 'firebase/firestore';
 import { db, auth } from '../../firebase';
 import { logAdminActivity } from '../../lib/logger';
 import EditMemberModal from "../../components/members/EditMemberModal";
@@ -468,25 +468,31 @@ export default function MembersPage() {
                 return;
             }
 
-            const existingAadhar = savedMembers.find(m => m.aadharNo === formData.aadharNo);
-            if (existingAadhar) {
-                toast.error(`Aadhar Number is already registered to Member ID: ${existingAadhar.membershipId}`);
-                setIsSubmitting(false);
-                return;
+            if (formData.aadharNo && formData.aadharNo.trim()) {
+                const existingAadhar = savedMembers.find(m => m.aadharNo && m.aadharNo === formData.aadharNo.trim());
+                if (existingAadhar) {
+                    toast.error(`Aadhar Number is already registered to Member ID: ${existingAadhar.membershipId}`);
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
-            const existingPan = savedMembers.find(m => m.panCardNo && m.panCardNo.toUpperCase() === formData.panCardNo.toUpperCase().trim());
-            if (existingPan) {
-                toast.error(`PAN Card Number is already registered to Member ID: ${existingPan.membershipId}`);
-                setIsSubmitting(false);
-                return;
+            if (formData.panCardNo && formData.panCardNo.trim()) {
+                const existingPan = savedMembers.find(m => m.panCardNo && m.panCardNo.toUpperCase() === formData.panCardNo.toUpperCase().trim());
+                if (existingPan) {
+                    toast.error(`PAN Card Number is already registered to Member ID: ${existingPan.membershipId}`);
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
-            const existingMobile = savedMembers.find(m => m.mobileNumber === formData.mobileNumber);
-            if (existingMobile) {
-                toast.error(`Mobile Number is already registered to Member ID: ${existingMobile.membershipId}`);
-                setIsSubmitting(false);
-                return;
+            if (formData.mobileNumber && formData.mobileNumber.trim()) {
+                const existingMobile = savedMembers.find(m => m.mobileNumber && m.mobileNumber === formData.mobileNumber.trim());
+                if (existingMobile) {
+                    toast.error(`Mobile Number is already registered to Member ID: ${existingMobile.membershipId}`);
+                    setIsSubmitting(false);
+                    return;
+                }
             }
 
             const docId = formData.membershipId.trim().toUpperCase();
@@ -557,25 +563,43 @@ export default function MembersPage() {
                 return;
             }
 
-            const existingAadhar = savedMembers.find(m => m.aadharNo === updatedFields.aadharNo && m.membershipId !== membershipId);
-            if (existingAadhar) {
-                toast.error(`Aadhar Number is already registered to Member ID: ${existingAadhar.membershipId}`);
-                setIsSavingEdit(false);
-                return;
+            const newDocId = updatedFields.membershipId ? updatedFields.membershipId.trim().toUpperCase() : membershipId;
+            const isIdChanging = newDocId !== membershipId;
+
+            if (isIdChanging) {
+                const existingMember = savedMembers.find(m => m.membershipId && m.membershipId.toLowerCase() === newDocId.toLowerCase());
+                if (existingMember) {
+                    toast.error(`Membership ID ${newDocId} already exists!`);
+                    setIsSavingEdit(false);
+                    return;
+                }
             }
 
-            const existingPan = savedMembers.find(m => m.panCardNo && m.panCardNo.toUpperCase() === updatedFields.panCardNo.toUpperCase().trim() && m.membershipId !== membershipId);
-            if (existingPan) {
-                toast.error(`PAN Card Number is already registered to Member ID: ${existingPan.membershipId}`);
-                setIsSavingEdit(false);
-                return;
+            if (updatedFields.aadharNo && updatedFields.aadharNo.trim()) {
+                const existingAadhar = savedMembers.find(m => m.aadharNo && m.aadharNo === updatedFields.aadharNo.trim() && m.membershipId !== membershipId);
+                if (existingAadhar) {
+                    toast.error(`Aadhar Number is already registered to Member ID: ${existingAadhar.membershipId}`);
+                    setIsSavingEdit(false);
+                    return;
+                }
             }
 
-            const existingMobile = savedMembers.find(m => m.mobileNumber === updatedFields.mobileNumber && m.membershipId !== membershipId);
-            if (existingMobile) {
-                toast.error(`Mobile Number is already registered to Member ID: ${existingMobile.membershipId}`);
-                setIsSavingEdit(false);
-                return;
+            if (updatedFields.panCardNo && updatedFields.panCardNo.trim()) {
+                const existingPan = savedMembers.find(m => m.panCardNo && m.panCardNo.toUpperCase() === updatedFields.panCardNo.toUpperCase().trim() && m.membershipId !== membershipId);
+                if (existingPan) {
+                    toast.error(`PAN Card Number is already registered to Member ID: ${existingPan.membershipId}`);
+                    setIsSavingEdit(false);
+                    return;
+                }
+            }
+
+            if (updatedFields.mobileNumber && updatedFields.mobileNumber.trim()) {
+                const existingMobile = savedMembers.find(m => m.mobileNumber && m.mobileNumber === updatedFields.mobileNumber.trim() && m.membershipId !== membershipId);
+                if (existingMobile) {
+                    toast.error(`Mobile Number is already registered to Member ID: ${existingMobile.membershipId}`);
+                    setIsSavingEdit(false);
+                    return;
+                }
             }
 
             const currentMember = savedMembers.find(m => m.membershipId === membershipId);
@@ -594,7 +618,7 @@ export default function MembersPage() {
                 }
             }
 
-            const mergedMember = { ...currentMember, ...updatedFields };
+            const mergedMember = { ...currentMember, ...updatedFields, membershipId: newDocId };
             
             let validityExpiresAt = null;
             let status = currentMember?.status || "Active";
@@ -643,13 +667,40 @@ export default function MembersPage() {
                 }
             }
 
-            const memberRef = doc(db, 'members', membershipId);
-            await setDoc(memberRef, { ...updatedFields, upgradeToLifeHistory, downgradeToAssociateHistory, validityExpiresAt, status }, { merge: true });
+            if (isIdChanging) {
+                // Write new document
+                const newMemberRef = doc(db, 'members', newDocId);
+                const finalData = {
+                    ...mergedMember,
+                    upgradeToLifeHistory,
+                    downgradeToAssociateHistory,
+                    validityExpiresAt,
+                    status
+                };
+                await setDoc(newMemberRef, finalData);
+
+                // Update related registrations
+                const regsRef = collection(db, 'registrations');
+                const q = query(regsRef, where('membershipId', '==', membershipId));
+                const querySnapshot = await getDocs(q);
+                const batch = writeBatch(db);
+                querySnapshot.forEach((docSnap) => {
+                    batch.update(docSnap.ref, { membershipId: newDocId });
+                });
+                await batch.commit();
+
+                // Delete old document
+                const oldMemberRef = doc(db, 'members', membershipId);
+                await deleteDoc(oldMemberRef);
+            } else {
+                const memberRef = doc(db, 'members', membershipId);
+                await setDoc(memberRef, { ...updatedFields, upgradeToLifeHistory, downgradeToAssociateHistory, validityExpiresAt, status }, { merge: true });
+            }
             
             const adminEmail = auth.currentUser?.email || JSON.parse(sessionStorage.getItem('employee_admin'))?.email || "Unknown Admin";
-            await logAdminActivity(adminEmail, "Edit Member", `Updated member profile: ${membershipId}`);
+            await logAdminActivity(adminEmail, "Edit Member", `Updated member profile: ${membershipId}${isIdChanging ? ` -> Renamed to ${newDocId}` : ""}`);
 
-            toast.success(`Member ${membershipId} updated successfully!`);
+            toast.success(`Member ${isIdChanging ? `${membershipId} (renamed to ${newDocId})` : membershipId} updated successfully!`);
             setIsEditModalOpen(false);
             setSelectedMember(null);
         } catch (error) {

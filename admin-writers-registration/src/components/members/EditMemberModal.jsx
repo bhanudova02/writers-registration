@@ -7,6 +7,7 @@ import CustomButton from '../custom/CustomButton';
 
 export default function EditMemberModal({ isOpen, onClose, member, onSave, loading }) {
     const [formData, setFormData] = useState({
+        membershipId: "",
         memberType: "",
         dateOfJoining: "",
         name: "",
@@ -40,6 +41,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     useEffect(() => {
         if (member) {
             setFormData({
+                membershipId: member.membershipId || "",
                 memberType: member.memberType || "",
                 dateOfJoining: member.dateOfJoining || "",
                 name: member.name || "",
@@ -74,6 +76,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     const validateField = (fieldName, value) => {
         const trimmedValue = typeof value === 'string' ? value.trim() : value;
         switch (fieldName) {
+            case "membershipId":
             case "memberType":
             case "dateOfJoining":
             case "name":
@@ -124,6 +127,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
 
     const handleSave = () => {
         const nextErrors = {
+            membershipId: validateField("membershipId", formData.membershipId),
             name: validateField("name", formData.name),
             surname: validateField("surname", formData.surname),
             dateOfBirth: validateField("dateOfBirth", formData.dateOfBirth),
@@ -146,6 +150,7 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
         }
 
         onSave(member.membershipId, {
+            membershipId: formData.membershipId.trim().toUpperCase(),
             memberType: formData.memberType,
             dateOfJoining: formData.dateOfJoining,
             name: formData.name.trim(),
@@ -176,7 +181,8 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
     };
 
     const isSubmitDisabled = useMemo(() => {
-        return !formData.memberType
+        return !(formData.membershipId || "").trim()
+            || !formData.memberType
             || !formData.dateOfJoining
             || !(formData.name || "").trim()
             || !(formData.surname || "").trim()
@@ -224,7 +230,13 @@ export default function EditMemberModal({ isOpen, onClose, member, onSave, loadi
                 {/* 3. Membership Details */}
                 <div className="mb-2 bg-zinc-50/50 p-5 rounded-md border border-zinc-200">
                     <h3 className="text-[13px] font-black text-zinc-800 mb-5 uppercase tracking-wide border-b border-zinc-200 pb-2">3. Membership Details</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <CustomInput
+                            label="Membership ID *"
+                            value={formData.membershipId}
+                            onChange={(e) => handleTextChange("membershipId", e.target.value)}
+                            error={errors.membershipId}
+                        />
                         <CustomSelect
                             label="Member Type *"
                             dropdownData={[
