@@ -63,19 +63,40 @@ export default function Login({ setMember, setIsLoggedIn }) {
       return;
     }
 
-    // Developer Bypass for Local Testing
-    if (import.meta.env.DEV && membershipId.trim().toUpperCase() === 'TEST') {
-      setMember({
-        membershipId: 'TEST1001',
-        name: 'Test Developer',
-        memberType: 'Writer',
-        status: 'Active',
-        mobileNumber: phone,
-        email: 'test@tcwa.in',
-        createdAt: new Date().toISOString()
-      });
-      setIsLoggedIn(true);
-      return;
+    // Developer Bypass for Local Testing — Skip OTP, validate against real Firestore data
+    if (import.meta.env.DEV) {
+      try {
+        const docId = membershipId.trim().toUpperCase();
+        const memberRef = doc(db, 'members', docId);
+        const docSnap = await getDoc(memberRef);
+
+        if (!docSnap.exists()) {
+          setLoginError('[DEV MODE] Membership ID not found in database.');
+          setIsValidating(false);
+          return;
+        }
+
+        const memberData = docSnap.data();
+        const enteredPhoneDigits = phone.replace(/\D/g, '').slice(-10);
+        const registeredPhoneDigits = String(memberData.mobileNumber || '').replace(/\D/g, '').slice(-10);
+
+        if (!enteredPhoneDigits || enteredPhoneDigits !== registeredPhoneDigits) {
+          setLoginError('[DEV MODE] Mobile number does not match this Membership ID.');
+          setIsValidating(false);
+          return;
+        }
+
+        console.log('%c[DEV MODE] Skipping OTP — Direct login with real Firestore data', 'color: #22c55e; font-weight: bold;');
+        setMember({ ...memberData, membershipId: docId });
+        setIsLoggedIn(true);
+        setIsValidating(false);
+        return;
+      } catch (devError) {
+        console.error('[DEV MODE] Login error:', devError);
+        setLoginError('[DEV MODE] Failed to fetch member data. Check Firestore connection.');
+        setIsValidating(false);
+        return;
+      }
     }
 
     try {
@@ -425,7 +446,7 @@ export default function Login({ setMember, setIsLoggedIn }) {
                     OTP sent via SMS to <span className="font-extrabold text-slate-900">{phone}</span>.
                   </p>
                 </div>
-                <div>
+                h<div>
                   <label className="block text-xs font-bold text-slate-900 mb-2">
                     6-Digit Verification Code
                   </label>

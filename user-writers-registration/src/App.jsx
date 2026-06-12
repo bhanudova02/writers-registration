@@ -52,8 +52,8 @@ export default function App() {
         if (!isMounted) return;
         unsubscribeAuth = onAuthStateChanged(auth, (firebaseUser) => {
           if (!firebaseUser && isLoggedIn) {
-            // Allow developer bypass in local mode
-            if (import.meta.env.DEV && member?.membershipId?.startsWith('TEST')) {
+            // Allow all developer bypass logins in local DEV mode (no Firebase Auth session needed)
+            if (import.meta.env.DEV) {
               return;
             }
             console.warn("Security Check: No Firebase Auth session found. Forcing logout.");
