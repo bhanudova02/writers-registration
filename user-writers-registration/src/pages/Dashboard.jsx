@@ -678,13 +678,17 @@ ${fullName || ''}
     setIsDownloading(true);
     try {
       const arrayBuffer = await receiptModal.originalFile.arrayBuffer();
-      const pdfDoc = await PDFDocument.load(arrayBuffer);
-      const pages = pdfDoc.getPages();
+      const originalPdfDoc = await PDFDocument.load(arrayBuffer);
+      
+      // Create a NEW PDF document to hold the scaled-down original pages
+      const pdfDoc = await PDFDocument.create();
+      const embeddedPages = await pdfDoc.embedPages(originalPdfDoc.getPages());
+
       const regId = receiptModal.registration.registrationId;
       const dateObj = new Date(receiptModal.registration.createdAt);
       const dateStr = `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
 
-      // Load stamp and signature images
+      // Load stamp and signature images into the NEW document
       let stampImage = null;
       let signImage = null;
       let officialStampTextImage = null;
@@ -701,8 +705,26 @@ ${fullName || ''}
         console.warn("Could not load stamp/signature images:", err);
       }
 
-      pages.forEach((page) => {
+      embeddedPages.forEach((embeddedPage) => {
+        // Create a blank page with the same dimensions as the original
+        const page = pdfDoc.addPage([embeddedPage.width, embeddedPage.height]);
         const { width, height } = page.getSize();
+
+        // Scale down the original content so it leaves a safe margin (60 points) 
+        // on all sides so our borders and text don't overlap the user's script
+        const margin = 60;
+        const scale = Math.min(
+          (width - margin * 2) / width,
+          (height - margin * 2) / height
+        );
+
+        // Draw the scaled original page centered on our new blank page
+        page.drawPage(embeddedPage, {
+          x: width / 2 - (width * scale) / 2,
+          y: height / 2 - (height * scale) / 2,
+          width: width * scale,
+          height: height * scale,
+        });
 
         // Add Background Watermark Text "TCWA"
         page.drawText("TCWA", {
@@ -714,7 +736,7 @@ ${fullName || ''}
           rotate: degrees(45), // Diagonal watermark
         });
 
-        // Draw light border around the page
+        // Draw light border around the page (safely outside the scaled content)
         page.drawRectangle({
           x: 25,
           y: 52,
@@ -724,7 +746,7 @@ ${fullName || ''}
           borderWidth: 1.5,
         });
 
-        // Add stamp text at the top of the page (in the 25pt top margin)
+        // Add stamp text at the top of the page
         page.drawText(`Registered with TCWA | ID: ${regId} | Date: ${dateStr}`, {
           x: width / 2 - 160,
           y: height - 20,
@@ -732,7 +754,7 @@ ${fullName || ''}
           color: rgb(0.4, 0.4, 0.4),
         });
 
-        // Draw seal (increased size) at the bottom left
+        // Draw seal at the bottom left
         if (stampImage) {
           page.drawImage(stampImage, {
             x: 35,
