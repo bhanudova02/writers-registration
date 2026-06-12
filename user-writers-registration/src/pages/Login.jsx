@@ -80,8 +80,10 @@ export default function Login({ setMember, setIsLoggedIn }) {
         const enteredPhoneDigits = phone.replace(/\D/g, '').slice(-10);
         const registeredPhoneDigits = String(memberData.mobileNumber || '').replace(/\D/g, '').slice(-10);
 
+        console.log('[DEV MODE] Phone comparison:', { entered: enteredPhoneDigits, stored: registeredPhoneDigits, rawStored: memberData.mobileNumber });
+
         if (!enteredPhoneDigits || enteredPhoneDigits !== registeredPhoneDigits) {
-          setLoginError('[DEV MODE] Mobile number does not match this Membership ID.');
+          setLoginError(`[DEV MODE] Mobile number does not match. Entered: ${enteredPhoneDigits}, Stored in DB: ${registeredPhoneDigits} (raw: ${memberData.mobileNumber})`);
           setIsValidating(false);
           return;
         }
